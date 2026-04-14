@@ -126,3 +126,5 @@ $RECYCLE.BIN/
 *.tmp
 *.temp
 logs/
+
+/src/main/java/config/DBConfig.java

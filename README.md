@@ -32,8 +32,8 @@
 | `fix` | 버그 수정 | `fix: 회원가입 오류 수정` |
 | `edit` | 기존 코드 수정 | `edit: 메인페이지 버튼 수정` |
 | `style` | UI 스타일 변경 | `style: 메인페이지 디자인 수정` |
+| `chore` | 설정 파일 | `chore: pom.xml 수정` |
 | `docs` | 문서 수정 | `docs: README 수정` |
-
 ---
 
 ## 🔀 작업 순서

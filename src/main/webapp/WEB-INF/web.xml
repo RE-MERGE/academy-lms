@@ -12,7 +12,7 @@
     <welcome-file>default.xhtml</welcome-file>
   </welcome-file-list>
   <servlet>
-    <servlet-name>shop</servlet-name>
+    <servlet-name>academy-lms</servlet-name>
     <servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
     <init-param>
       <param-name>contextClass</param-name>
@@ -28,7 +28,7 @@
     <load-on-startup>1</load-on-startup>
   </servlet>
   <servlet-mapping>
-    <servlet-name>shop</servlet-name>
+    <servlet-name>academy-lms</servlet-name>
     <url-pattern>/</url-pattern>
   </servlet-mapping>
   <filter>

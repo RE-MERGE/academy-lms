@@ -79,3 +79,4 @@ Eclipse: Team → Switch To → 본인 브랜치
 DB명: academy_lms
 포트: 9712
 ```
+![ERD](./docs/erd.png)

@@ -1,10 +1,8 @@
 package config;
 
 import org.springframework.context.MessageSource;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.EnableAspectJAutoProxy;
+import org.springframework.context.annotation.*;
+import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.web.multipart.MultipartResolver;
 import org.springframework.web.multipart.commons.CommonsMultipartResolver;
@@ -24,6 +22,7 @@ import java.util.Locale;
 import java.util.Properties;
 
 @Configuration
+@PropertySource("classpath:application.properties") // @PropertySource = “properties 파일 위치 등록”
 @ComponentScan(basePackages = {"controller", "dto", "service", "dao", "aop","handler"})
 @EnableAspectJAutoProxy
 @EnableWebMvc
@@ -89,4 +88,14 @@ public class MvcConfig implements WebMvcConfigurer {
         return resolver;
     }
 
+    // properties 파일(application.properties)을 읽어서
+    // @Value("${...}") 같은 문법을 사용할 수 있게 해주는 설정 Bean
+    @Bean
+    public static PropertySourcesPlaceholderConfigurer propertyConfig() {
+
+        // PropertySourcesPlaceholderConfigurer 객체 생성
+        // 👉 얘가 properties 파일을 읽고
+        // 👉 ${page.size} 같은 값을 실제 값(10)으로 바꿔주는 역할
+        return new PropertySourcesPlaceholderConfigurer();
+    }
 }

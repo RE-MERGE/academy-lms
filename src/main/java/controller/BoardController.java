@@ -16,8 +16,7 @@ public class BoardController {
     @Autowired
     BoardService boardService;
 
-    @GetMapping("board")
+    @GetMapping("*")
     public void board (Board board){
-
     }
 }

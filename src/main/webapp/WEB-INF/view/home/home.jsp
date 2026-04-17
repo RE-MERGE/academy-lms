@@ -393,7 +393,7 @@
         <% } %>
 
         <div class="btn-row">
-          <button type="button" class="btn btn-register" onclick="location.href='register.jsp'">회원가입</button>
+          <button type="button" class="btn btn-register" onclick="location.href='${pageContext.request.contextPath}/user/joinForm'">회원가입</button>
           <button type="button" class="btn btn-find"     onclick="location.href='findAccount.jsp'">아이디 / 비밀번호 찾기</button>
         </div>
 

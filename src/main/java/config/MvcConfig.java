@@ -4,6 +4,8 @@ import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.*;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import org.springframework.context.support.ResourceBundleMessageSource;
+import org.springframework.validation.Validator;
+import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 import org.springframework.web.multipart.MultipartResolver;
 import org.springframework.web.multipart.commons.CommonsMultipartResolver;
 import org.springframework.web.servlet.HandlerMapping;
@@ -66,12 +68,27 @@ public class MvcConfig implements WebMvcConfigurer {
     }
 
     // 메시지를 코드값으로 처리하기 위한 설정
+    //setBasenames에 errors.properties 추가
     @Bean
     public MessageSource messageSource() {
         ResourceBundleMessageSource ms = new ResourceBundleMessageSource();
-        ms.setBasename("messages");
+        ms.setBasenames("messages", "errors");
         ms.setDefaultEncoding("UTF-8");
         return ms;
+    }
+
+    //@Validated 사용하기 위해 설정 추가
+    @Bean
+    public LocalValidatorFactoryBean validator() {
+        LocalValidatorFactoryBean bean = new LocalValidatorFactoryBean();
+        bean.setValidationMessageSource(messageSource());
+        return bean;
+    }
+
+    //@Validated 사용하기 위해 설정 추가
+    @Override
+    public Validator getValidator() {
+        return validator();
     }
 
     // 인터셉터관련 설정

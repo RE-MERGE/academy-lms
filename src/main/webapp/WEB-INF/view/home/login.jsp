@@ -32,7 +32,7 @@
       <h2 class="card-title">환영합니다 👋</h2>
       <p class="card-sub">계속하려면 로그인하세요</p>
 
-      <form id="loginForm" action="login.do" method="post" onsubmit="return validateLogin()">
+      <form id="loginForm" action="${pageContext.request.contextPath}/user/login" method="post" onsubmit="return validateLogin()">
 
         <div class="field">
           <label for="username">아이디</label>
@@ -60,7 +60,7 @@
 
         <div class="btn-row">
           <button type="button" class="btn btn-register"
-                  onclick="location.href='register.jsp'">회원가입</button>
+                  onclick="location.href='${pageContext.request.contextPath}/user/join'">회원가입</button>
           <button type="button" class="btn btn-find"
                   onclick="location.href='findAccount'">아이디 / 비밀번호 찾기</button>
         </div>

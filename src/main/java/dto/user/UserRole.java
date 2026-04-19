@@ -1,6 +1,6 @@
 package dto.user;
 
-public enum Role {
+public enum UserRole {
 
     STUDENT,
     PROFESSOR,

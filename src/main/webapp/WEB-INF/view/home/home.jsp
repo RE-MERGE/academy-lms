@@ -1,4 +1,6 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ taglib prefix="form" uri="http://www.springframework.org/tags/form" %>
+
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -7,6 +9,7 @@
   <title>re-merge LMS · 로그인</title>
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&family=Syne:wght@700;800&display=swap" rel="stylesheet"/>
+
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -318,7 +321,7 @@
 
     /* ── 에러 메시지 ── */
     .error-msg {
-      display: none;
+      display: block;
       color: #ff6b6b;
       font-size: .78rem;
       margin-top: .4rem;
@@ -368,38 +371,30 @@
       <h2 class="card-title">환영합니다 👋</h2>
       <p class="card-sub">계속하려면 로그인하세요</p>
 
-      <form id="loginForm" action="login.do" method="post" onsubmit="return validateLogin()">
+      <form:form id="loginForm" action="${pageContext.request.contextPath}/user/login" method="post" modelAttribute="loginForm">
 
-        <div class="field">
-          <label for="username">아이디</label>
-          <input type="text" id="username" name="username" placeholder="아이디를 입력하세요" autocomplete="username"/>
-          <p class="error-msg" id="err-id">아이디를 입력해주세요.</p>
-        </div>
+          <div class="field">
+              <label for="userId">아이디</label>
+              <form:input path="userId" id="userId" placeholder="아이디를 입력하세요" autocomplete="username"/>
+              <form:errors path="userId" cssClass="error-msg" element="p"/>
+          </div>
 
-        <div class="field">
-          <label for="password">비밀번호</label>
-          <input type="password" id="password" name="password" placeholder="비밀번호를 입력하세요" autocomplete="current-password"/>
-          <p class="error-msg" id="err-pw">비밀번호를 입력해주세요.</p>
-        </div>
+          <div class="field">
+              <label for="password">비밀번호</label>
+              <form:password path="password" id="password" placeholder="비밀번호를 입력하세요" autocomplete="current-password"/>
+              <form:errors path="password" cssClass="error-msg" element="p"/>
+          </div>
 
-        <%-- 서버에서 로그인 실패 메시지 전달 시 --%>
-        <%
-          String loginError = (String) request.getAttribute("loginError");
-          if (loginError != null) {
-        %>
-        <p style="color:#ff6b6b;font-size:.82rem;margin-bottom:.5rem;padding-left:.2rem;">
-          <%= loginError %>
-        </p>
-        <% } %>
+          <%-- 서버 로그인 실패 메시지 --%>
+          <form:errors path="*" cssClass="error-msg" element="p"/>
 
-        <div class="btn-row">
-          <button type="button" class="btn btn-register" onclick="location.href='${pageContext.request.contextPath}/user/joinForm'">회원가입</button>
-          <button type="button" class="btn btn-find"     onclick="location.href='findAccount.jsp'">아이디 / 비밀번호 찾기</button>
-        </div>
+          <div class="btn-row">
+              <button type="button" class="btn btn-register" onclick="location.href='${pageContext.request.contextPath}/user/joinForm'">회원가입</button>
+              <button type="button" class="btn btn-find" onclick="location.href='findAccount.jsp'">아이디 / 비밀번호 찾기</button>
+          </div>
+          <button type="submit" class="btn-login">로그인</button>
 
-        <button type="submit" class="btn-login">로그인</button>
-
-      </form>
+      </form:form>
 
       <div class="divider">또는</div>
 
@@ -475,37 +470,9 @@
     resize(); init(); draw();
   })();
 
-  /* ── 클라이언트 유효성 검사 ── */
-  function validateLogin() {
-    let valid = true;
-
-    const id = document.getElementById('username');
-    const pw = document.getElementById('password');
-    const errId = document.getElementById('err-id');
-    const errPw = document.getElementById('err-pw');
-
-    if (!id.value.trim()) {
-      errId.style.display = 'block';
-      id.focus();
-      valid = false;
-    } else {
-      errId.style.display = 'none';
-    }
-
-    if (!pw.value.trim()) {
-      errPw.style.display = 'block';
-      if (valid) pw.focus();
-      valid = false;
-    } else {
-      errPw.style.display = 'none';
-    }
-
-    return valid;
-  }
-
   /* Enter 키 제출 */
   document.getElementById('loginForm').addEventListener('keydown', function(e) {
-    if (e.key === 'Enter') validateLogin() && this.submit();
+    if (e.key === 'Enter') this.submit();
   });
 </script>
 

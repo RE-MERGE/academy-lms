@@ -1,6 +1,9 @@
 package controller;
 
+import dto.user.LoginForm;
+import dto.user.UserConst;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
@@ -8,13 +11,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @RequestMapping("home")
 public class HomeController {
 
-    @GetMapping("*")
-    public String home() {
+    @GetMapping("home")
+    public String home(Model model) {
+        model.addAttribute("loginForm", new LoginForm());
         return "home/home";
     }
 
-    @GetMapping("test")
-    public String test() {
-        return "home/test";
-    }
 }

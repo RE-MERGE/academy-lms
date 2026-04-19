@@ -65,7 +65,7 @@
                   onclick="location.href='findAccount'">아이디 / 비밀번호 찾기</button>
         </div>
 
-        <button type="submit" class="btn-login">로그인</button>
+        <button type="submit" class="btn-login" onclick = "${pageContext.request.contextPath}/user/login">로그인</button>
 
       </form>
 

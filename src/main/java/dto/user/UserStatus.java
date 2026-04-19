@@ -1,6 +1,6 @@
 package dto.user;
 
-public enum Status {
+public enum UserStatus {
 
     ACTIVE,     //정상
     INACTIVE,   //휴먼

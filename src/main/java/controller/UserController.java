@@ -55,7 +55,7 @@ public class UserController {
 
         if (bindingResult.hasErrors()) {
             model.addAttribute("findPwForm", new FindPwForm());
-            model.addAttribute("activeTab", "id");  // ← 추가
+            model.addAttribute("activeTab", "id");
             return "home/findAccount";
         }
 

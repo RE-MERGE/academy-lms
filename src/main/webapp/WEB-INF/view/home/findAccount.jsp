@@ -1,272 +1,131 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ taglib prefix="form" uri="http://www.springframework.org/tags/form" %>
 <!DOCTYPE html>
 <html lang="ko">
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>re-merge LMS · 계정 찾기</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com"/>
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&family=Syne:wght@700;800&display=swap" rel="stylesheet"/>
-  <link rel="stylesheet" href="${pageContext.request.contextPath}/css/login.css"/>
+  <link rel="stylesheet" href="${pageContext.request.contextPath}/css/main.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet"/>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { display: flex; align-items: center; justify-content: center; min-height: 100vh; background: linear-gradient(135deg, #f0f4ff 0%, #e8f0fe 100%); }
+    .find-wrap { width: 100%; max-width: 500px; padding: 20px; }
+    .card { background: white; border-radius: 16px; padding: 2.5rem; box-shadow: 0 8px 32px rgba(30, 58, 138, 0.1); border: 1px solid rgba(59, 130, 246, 0.1); }
+    .find-header { text-align: center; margin-bottom: 2rem; }
+    .find-title { font-size: 1.5rem; font-weight: 700; color: #1e3a8a; margin-bottom: 0.4rem; }
+    .find-sub { font-size: 0.85rem; color: #888; }
+    .tab-group { display: grid; grid-template-columns: 1fr 1fr; gap: 0.4rem; margin-bottom: 1.8rem; background: #f1f5f9; border-radius: 12px; padding: 0.3rem; }
+    .tab-btn { padding: 0.65rem; background: transparent; border: none; border-radius: 9px; font-family: 'Noto Sans KR', sans-serif; font-size: 0.85rem; font-weight: 700; color: #888; cursor: pointer; transition: all 0.2s; }
+    .tab-btn.active { background: #1e3a8a; color: white; box-shadow: 0 2px 8px rgba(30, 58, 138, 0.3); }
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+    .field { margin-bottom: 1.1rem; }
+    .field label { display: block; font-size: 0.8rem; font-weight: 600; color: #444; margin-bottom: 0.45rem; letter-spacing: 0.02em; }
+    .field input { width: 100%; padding: 0.78rem 1rem; border: 1.5px solid #e2e8f0; border-radius: 10px; font-family: 'Noto Sans KR', sans-serif; font-size: 0.95rem; outline: none; transition: border-color 0.2s, box-shadow 0.2s; background: #fafbff; }
+    .field input:focus { border-color: #3b82f6; background: white; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12); }
+    .error-msg { color: #e53935; font-size: 0.78rem; margin-top: 0.3rem; display: block; }
+    .btn-submit { width: 100%; padding: 0.88rem; background: linear-gradient(135deg, #1e3a8a, #2563eb); color: white; border: none; border-radius: 10px; font-family: 'Noto Sans KR', sans-serif; font-size: 0.95rem; font-weight: 700; cursor: pointer; margin-top: 0.8rem; transition: opacity 0.2s, transform 0.15s; box-shadow: 0 4px 14px rgba(30, 58, 138, 0.3); }
+    .btn-submit:hover { opacity: 0.9; transform: translateY(-1px); }
+    .btn-submit:active { transform: translateY(0); }
+    .back-link { display: flex; align-items: center; justify-content: center; gap: 0.3rem; margin-top: 1.4rem; font-size: 0.82rem; color: #888; text-decoration: none; transition: color 0.2s; }
+    .back-link:hover { color: #1e3a8a; }
+    .divider { height: 1px; background: #f0f0f0; margin: 1.5rem 0 0; }
+  </style>
 </head>
 <body>
 
-<canvas id="bg-canvas"></canvas>
-<div class="bg-mesh"></div>
+<div class="find-wrap">
+  <div class="card">
 
-<%-- 서버 응답 변수 --%>
-<%
-  /* ── 아이디 찾기 결과 ── */
-  String foundId    = (String) request.getAttribute("foundId");      // 찾은 아이디 (마스킹 권장)
-  String idFindErr  = (String) request.getAttribute("idFindError");  // 실패 메시지
-
-  /* ── 비밀번호 찾기 결과 ── */
-  String pwFindMsg  = (String) request.getAttribute("pwFindMsg");    // 임시PW 발급 or 재설정 링크 안내
-  String pwFindErr  = (String) request.getAttribute("pwFindError");  // 실패 메시지
-
-  /* 탭 유지: 서버 처리 후 어떤 탭으로 돌아올지 */
-  String activeTab  = (String) request.getAttribute("activeTab");    // "id" | "pw"
-  if (activeTab == null) activeTab = "id";
-%>
-
-<div class="page">
-
-  <!-- 왼쪽 브랜드 패널 -->
-  <div class="brand-panel">
-    <p class="brand-eyebrow">Learning Management System</p>
-    <h1 class="brand-logo">re-merge<br/><span>LMS</span></h1>
-    <p class="brand-desc">학생, 강사, 관리자가 하나의 플랫폼에서<br/>수업을 열고, 배우고, 성장합니다.</p>
-    <div class="brand-dots">
-      <span></span><span></span><span></span>
+    <div class="find-header">
+      <h2 class="find-title">계정 찾기 🔍</h2>
+      <p class="find-sub">가입 시 입력한 정보로 계정을 확인하세요</p>
     </div>
+
+    <div class="tab-group">
+      <button class="tab-btn active" onclick="switchTab('id')">아이디 찾기</button>
+      <button class="tab-btn" onclick="switchTab('pw')">비밀번호 찾기</button>
+    </div>
+
+    <!-- 아이디 찾기 탭 -->
+    <div id="panel-id" class="tab-panel active">
+      <form:form action="${pageContext.request.contextPath}/user/findId"
+                 method="post" modelAttribute="findIdForm">
+        <div class="field">
+          <label>이름</label>
+          <form:input path="name" placeholder="가입 시 입력한 이름"/>
+          <form:errors path="name" cssClass="error-msg" element="p"/>
+        </div>
+        <div class="field">
+          <label>이메일</label>
+          <form:input path="email" placeholder="가입 시 입력한 이메일"/>
+          <form:errors path="email" cssClass="error-msg" element="p"/>
+        </div>
+        <div class="field">
+          <label>연락처</label>
+          <form:input path="phone" placeholder="가입 시 등록한 연락처"/>
+          <form:errors path="phone" cssClass="error-msg" element="p"/>
+        </div>
+        <button type="submit" class="btn-submit">아이디 찾기</button>
+      </form:form>
+    </div>
+
+    <!-- 비밀번호 찾기 탭 -->
+    <div id="panel-pw" class="tab-panel">
+      <form:form action="${pageContext.request.contextPath}/user/findPw"
+                 method="post" modelAttribute="findPwForm">
+        <div class="field">
+          <label>학번</label>
+          <form:input path="userCode" placeholder="학번을 입력하세요"/>
+          <form:errors path="userCode" cssClass="error-msg" element="p"/>
+        </div>
+        <div class="field">
+          <label>이메일</label>
+          <form:input path="email" placeholder="가입 시 입력한 이메일"/>
+          <form:errors path="email" cssClass="error-msg" element="p"/>
+        </div>
+        <div class="field">
+          <label>연락처</label>
+          <form:input path="phone" placeholder="010-0000-0000"/>
+          <form:errors path="phone" cssClass="error-msg" element="p"/>
+        </div>
+        <button type="submit" class="btn-submit">인증 메일 발송</button>
+      </form:form>
+    </div>
+
+    <div class="divider"></div>
+    <a href="${pageContext.request.contextPath}/home/login" class="back-link">
+      ← 로그인으로 돌아가기
+    </a>
+
   </div>
+</div>
 
-  <!-- 오른쪽 폼 패널 -->
-  <div class="form-panel">
-    <div class="card">
-
-      <h2 class="card-title">계정 찾기 🔍</h2>
-      <p class="card-sub">가입 시 입력한 정보로 계정을 확인하세요</p>
-
-      <!-- ── 탭 ── -->
-      <div class="tab-group" role="tablist">
-        <button class="tab-btn <%="id".equals(activeTab) ? "active" : ""%>"
-                id="tab-id-btn" role="tab" aria-controls="panel-id"
-                onclick="switchTab('id')">아이디 찾기</button>
-        <button class="tab-btn <%="pw".equals(activeTab) ? "active" : ""%>"
-                id="tab-pw-btn" role="tab" aria-controls="panel-pw"
-                onclick="switchTab('pw')">비밀번호 찾기</button>
-      </div>
-
-      <!-- ════════════════════════════════════
-           TAB 1 : 아이디 찾기
-           ════════════════════════════════════ -->
-      <div id="panel-id" class="tab-panel <%="id".equals(activeTab) ? "active" : ""%>"
-           role="tabpanel">
-
-        <form id="findIdForm" action="findId.do" method="post"
-              onsubmit="return validateFindId()">
-          <input type="hidden" name="activeTab" value="id"/>
-
-          <div class="field">
-            <label for="fi-name">이름</label>
-            <input type="text" id="fi-name" name="name"
-                   placeholder="가입 시 입력한 이름" autocomplete="name"/>
-            <p class="error-msg" id="err-fi-name">이름을 입력해주세요.</p>
-          </div>
-
-          <div class="field">
-            <label for="fi-email">이메일</label>
-            <input type="email" id="fi-email" name="email"
-                   placeholder="가입 시 입력한 이메일" autocomplete="email"/>
-            <p class="error-msg" id="err-fi-email">올바른 이메일을 입력해주세요.</p>
-          </div>
-
-          <button type="submit" class="btn-submit">아이디 찾기</button>
-        </form>
-
-        <!-- 서버 결과 -->
-        <%
-          if (foundId != null) {
-        %>
-        <div class="result-box" style="display:block;">
-          🎉 회원님의 아이디는 <strong><%= foundId %></strong> 입니다.
-        </div>
-        <% } else if (idFindErr != null) { %>
-        <div class="result-box error" style="display:block;">
-          ⚠ <%= idFindErr %>
-        </div>
-        <% } %>
-
-      </div><!-- /panel-id -->
-
-
-      <!-- ════════════════════════════════════
-           TAB 2 : 비밀번호 찾기
-           ════════════════════════════════════ -->
-      <div id="panel-pw" class="tab-panel <%="pw".equals(activeTab) ? "active" : ""%>"
-           role="tabpanel">
-
-        <form id="findPwForm" action="findPw.do" method="post"
-              onsubmit="return validateFindPw()">
-          <input type="hidden" name="activeTab" value="pw"/>
-
-          <div class="field">
-            <label for="fp-id">아이디</label>
-            <input type="text" id="fp-id" name="username"
-                   placeholder="가입 시 사용한 아이디" autocomplete="username"/>
-            <p class="error-msg" id="err-fp-id">아이디를 입력해주세요.</p>
-          </div>
-
-          <div class="field">
-            <label for="fp-name">이름</label>
-            <input type="text" id="fp-name" name="name"
-                   placeholder="가입 시 입력한 이름" autocomplete="name"/>
-            <p class="error-msg" id="err-fp-name">이름을 입력해주세요.</p>
-          </div>
-
-          <div class="field">
-            <label for="fp-email">이메일</label>
-            <input type="email" id="fp-email" name="email"
-                   placeholder="가입 시 입력한 이메일" autocomplete="email"/>
-            <p class="error-msg" id="err-fp-email">올바른 이메일을 입력해주세요.</p>
-          </div>
-
-          <button type="submit" class="btn-submit">인증 메일 발송</button>
-        </form>
-
-        <!-- 서버 결과 -->
-        <%
-          if (pwFindMsg != null) {
-        %>
-        <div class="result-box" style="display:block;">
-          ✉ <%= pwFindMsg %>
-        </div>
-        <% } else if (pwFindErr != null) { %>
-        <div class="result-box error" style="display:block;">
-          ⚠ <%= pwFindErr %>
-        </div>
-        <% } %>
-
-        <!-- ── 비밀번호 직접 재설정 섹션 (토큰 검증 후 서버에서 show=true 전달 시 표시) ── -->
-        <%
-          String showReset = (String) request.getAttribute("showReset"); // "true"
-          String resetToken = (String) request.getAttribute("resetToken");
-          if ("true".equals(showReset)) {
-        %>
-        <div class="pw-reset-section" style="display:block;">
-          <form id="resetPwForm" action="resetPw.do" method="post"
-                onsubmit="return validateResetPw()">
-            <input type="hidden" name="token" value="<%= resetToken != null ? resetToken : "" %>"/>
-
-            <div class="field">
-              <label for="rp-new">새 비밀번호</label>
-              <input type="password" id="rp-new" name="newPassword"
-                     placeholder="새 비밀번호 (8자 이상)"/>
-              <p class="error-msg" id="err-rp-new">비밀번호는 8자 이상이어야 합니다.</p>
-            </div>
-
-            <div class="field">
-              <label for="rp-confirm">비밀번호 확인</label>
-              <input type="password" id="rp-confirm" name="confirmPassword"
-                     placeholder="비밀번호를 다시 입력하세요"/>
-              <p class="error-msg" id="err-rp-confirm">비밀번호가 일치하지 않습니다.</p>
-            </div>
-
-            <button type="submit" class="btn-submit">비밀번호 변경</button>
-          </form>
-        </div>
-        <% } %>
-
-      </div><!-- /panel-pw -->
-
-      <!-- 뒤로가기 -->
-      <a href="login" class="back-link">
-        &#8592; 로그인으로 돌아가기
-      </a>
-
-    </div><!-- /card -->
-  </div><!-- /form-panel -->
-
-</div><!-- /page -->
-
-<script src="${pageContext.request.contextPath}/js/bgParticle.js"></script>
 <script>
-  /* ── 탭 전환 ── */
+  // 페이지가 로드될 때 실행되는 함수
+  window.onload = function() {
+    // 서버에서 넘겨준 activeTab 값을 확인 (${activeTab}은 스프링 EL문법)
+    const tabToOpen = "${activeTab}";
+
+    if (tabToOpen === 'pw') {
+      // 서버에서 'pw' 신호를 보냈다면 비밀번호 탭 활성화 함수 호출
+      switchTab('pw');
+    }
+  };
+
   function switchTab(tab) {
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
     document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
 
-    document.getElementById('tab-' + tab + '-btn').classList.add('active');
-    document.getElementById('panel-' + tab).classList.add('active');
-  }
-
-  /* ── 아이디 찾기 유효성 ── */
-  function validateFindId() {
-    let valid = true;
-
-    const name  = document.getElementById('fi-name');
-    const email = document.getElementById('fi-email');
-    const errN  = document.getElementById('err-fi-name');
-    const errE  = document.getElementById('err-fi-email');
-
-    if (!name.value.trim()) {
-      errN.style.display = 'block'; name.focus(); valid = false;
-    } else { errN.style.display = 'none'; }
-
-    const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRe.test(email.value.trim())) {
-      errE.style.display = 'block'; if (valid) email.focus(); valid = false;
-    } else { errE.style.display = 'none'; }
-
-    return valid;
-  }
-
-  /* ── 비밀번호 찾기 유효성 ── */
-  function validateFindPw() {
-    let valid = true;
-
-    const uid   = document.getElementById('fp-id');
-    const name  = document.getElementById('fp-name');
-    const email = document.getElementById('fp-email');
-    const errU  = document.getElementById('err-fp-id');
-    const errN  = document.getElementById('err-fp-name');
-    const errE  = document.getElementById('err-fp-email');
-
-    if (!uid.value.trim()) {
-      errU.style.display = 'block'; uid.focus(); valid = false;
-    } else { errU.style.display = 'none'; }
-
-    if (!name.value.trim()) {
-      errN.style.display = 'block'; if (valid) name.focus(); valid = false;
-    } else { errN.style.display = 'none'; }
-
-    const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRe.test(email.value.trim())) {
-      errE.style.display = 'block'; if (valid) email.focus(); valid = false;
-    } else { errE.style.display = 'none'; }
-
-    return valid;
-  }
-
-  /* ── 비밀번호 재설정 유효성 ── */
-  function validateResetPw() {
-    let valid = true;
-
-    const newPw  = document.getElementById('rp-new');
-    const confPw = document.getElementById('rp-confirm');
-    const errN   = document.getElementById('err-rp-new');
-    const errC   = document.getElementById('err-rp-confirm');
-
-    if (newPw.value.trim().length < 8) {
-      errN.style.display = 'block'; newPw.focus(); valid = false;
-    } else { errN.style.display = 'none'; }
-
-    if (newPw.value !== confPw.value) {
-      errC.style.display = 'block'; if (valid) confPw.focus(); valid = false;
-    } else { errC.style.display = 'none'; }
-
-    return valid;
+    if (tab === 'id') {
+      document.querySelectorAll('.tab-btn')[0].classList.add('active');
+      document.getElementById('panel-id').classList.add('active');
+    } else {
+      document.querySelectorAll('.tab-btn')[1].classList.add('active');
+      document.getElementById('panel-pw').classList.add('active');
+    }
   }
 </script>
 

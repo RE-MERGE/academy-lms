@@ -6,6 +6,7 @@ import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.validation.Validator;
 import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartResolver;
 import org.springframework.web.multipart.commons.CommonsMultipartResolver;
 import org.springframework.web.servlet.HandlerMapping;
@@ -25,7 +26,7 @@ import java.util.Properties;
 
 @Configuration
 @PropertySource("classpath:application.properties") // @PropertySource = “properties 파일 위치 등록”
-@ComponentScan(basePackages = {"controller", "dto", "service", "dao", "aop","handler"})
+@ComponentScan(basePackages = {"controller", "dto", "service", "dao", "aop","handler", "config"})
 @EnableAspectJAutoProxy
 @EnableWebMvc
 public class MvcConfig implements WebMvcConfigurer {
@@ -114,5 +115,11 @@ public class MvcConfig implements WebMvcConfigurer {
         // 👉 얘가 properties 파일을 읽고
         // 👉 ${page.size} 같은 값을 실제 값(10)으로 바꿔주는 역할
         return new PropertySourcesPlaceholderConfigurer();
+    }
+
+    //네이버
+    @Bean
+    public RestTemplate restTemplate() {
+        return new RestTemplate();
     }
 }

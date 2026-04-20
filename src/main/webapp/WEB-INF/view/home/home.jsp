@@ -390,7 +390,7 @@
 
           <div class="btn-row">
               <button type="button" class="btn btn-register" onclick="location.href='${pageContext.request.contextPath}/user/joinForm'">회원가입</button>
-              <button type="button" class="btn btn-find" onclick="location.href='findAccount.jsp'">아이디 / 비밀번호 찾기</button>
+              <button type="button" class="btn btn-find" onclick="location.href='${pageContext.request.contextPath}/home/findAccount'">아이디 / 비밀번호 찾기</button>
           </div>
           <button type="submit" class="btn-login">로그인</button>
 
@@ -398,7 +398,7 @@
 
       <div class="divider">또는</div>
 
-      <button class="btn-naver" onclick="location.href='naverLogin.do'">
+      <button class="btn-naver" onclick="location.href='${pageContext.request.contextPath}/user/naverLogin'">
         <span class="naver-n">N</span>
         네이버 계정으로 로그인
       </button>

@@ -1,6 +1,8 @@
 package controller;
 
+import config.NaverLoginConfig;
 import dto.user.*;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -9,25 +11,26 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
+import service.NaverLoginService;
 import service.UserService;
 
 import javax.servlet.http.HttpSession;
 import java.io.File;
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.Map;
 import java.util.UUID;
 
 @Controller
 @RequestMapping("user")
+@RequiredArgsConstructor
 public class UserController {
 
     private final UserService userService;
-
-    @Autowired
-    public UserController(UserService userService) {
-        this.userService = userService;
-    }
+    private final NaverLoginConfig naverLoginConfig;
+    private final NaverLoginService naverLoginService;
 
     @GetMapping("joinForm")
     public String joinForm(Model model) {
@@ -38,8 +41,67 @@ public class UserController {
     @PostMapping("login")
     public String login() {
 
-    //비교 로직
-        return "main";
+        //비교 로직
+        return "home/main";
+    }
+
+    @PostMapping("findId")
+    public String findId(@Validated FindIdForm findIdForm, BindingResult bindingResult, Model model) {
+
+        if (bindingResult.hasErrors()) {
+            model.addAttribute("findPwForm", new FindPwForm());
+            return "home/findAccount";
+        }
+
+        return "redirect:home/main";
+    }
+
+    @PostMapping("findPw")
+    public String findPw(@Validated FindPwForm findPwForm, BindingResult bindingResult, Model model) {
+
+        if (bindingResult.hasErrors()) {
+            model.addAttribute("findIdForm", new FindIdForm());
+            return "home/findAccount";
+        }
+        return "redirect:home/main";
+    }
+
+    @GetMapping("naverLogin")
+    public String naverLogin(HttpSession session) {
+
+        String state = UUID.randomUUID().toString();
+        session.setAttribute("naverState", state);
+
+        return "redirect:" + naverLoginConfig.getNaverAuthorizeUrl(state);
+    }
+
+    @GetMapping("naverCallback")
+    public String naverCallback(@RequestParam String code, @RequestParam String state,
+                                HttpSession session) {
+
+        String savedState = (String) session.getAttribute("naverState");
+        if (!state.equals(savedState)) {
+            return "redirect:/user/login";
+        }
+
+        // 액세스 토큰 요청
+        String accessToken = naverLoginService.getAccessToken(code, state);
+
+        // 사용자 정보 요청
+        Map<String, Object> userInfo = naverLoginService.getUserInfo(accessToken);
+
+        // 세션 저장
+        LoginUser loginUser = new LoginUser(
+                0,
+                (String) userInfo.get("id"),
+                (String) userInfo.get("name"),
+                UserRole.STUDENT,
+                (String) userInfo.get("profile_image")
+        );
+        session.setAttribute(UserConst.LOGIN_USER, loginUser);
+
+        return "redirect:/home/home";
+
     }
 
     @PostMapping("join")

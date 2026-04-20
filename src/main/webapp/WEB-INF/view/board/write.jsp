@@ -19,22 +19,21 @@
         </div>
         <div class="header-actions">
             <button type="button" class="btn-cancel" onclick="history.back();">취소</button>
-            <button type="submit" form="writeForm" class="btn-submit">등록하기</button>
+            <button type="submit" form="write" class="btn-submit">등록하기</button>
         </div>
     </div>
 
+
     <div class="card write-card">
-        <form id="writeForm" action="boardWriteAction.do" method="post" enctype="multipart/form-data">
+        <form id="write" action="write" method="post" enctype="multipart/form-data">
 
             <div class="form-row">
                 <div class="form-group group-category">
                     <label for="boardType">분류</label>
                     <select name="boardType" id="boardType" class="lms-select">
-                        <option value="공지">공지</option>
-                        <option value="자유" selected>자유</option>
-                        <option value="질문">질문</option>
-                        <option value="스터디">스터디</option>
-                        <option value="정보">정보</option>
+                        <option value="NOTICE">공지</option>
+                        <option value="FREE" selected>자유</option>
+                        <option value="QNA">질문</option>
                     </select>
                 </div>
                 <div class="form-group group-title">

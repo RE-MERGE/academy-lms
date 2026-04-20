@@ -89,7 +89,6 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="${pageContext.request.contextPath}/css/login.css">
   <link rel="stylesheet" href="${pageContext.request.contextPath}/css/board.css">
 </head>
 <body>
@@ -110,7 +109,7 @@
              placeholder="검색어를 입력하세요" value="${keyword}">
       <button type="submit" class="btn-search">검색</button>
     </form>
-    <button class="btn-write" onclick="alert('글쓰기 페이지로 이동합니다.')">✏ 글쓰기</button>
+    <button class="btn-write" onclick="location='${pageContext.request.contextPath}/board/write'">글쓰기</button>
   </div>
 
   <!-- 검색 결과 안내 -->

@@ -1,5 +1,8 @@
 package service;
 
+import dao.BoardDao;
+import dto.Board;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -9,6 +12,8 @@ import java.util.Map;
 @Service
 public class BoardService {
 
+    @Autowired
+    BoardDao boardDao;
     @Value("${page.size}")
     private int pageSize;
     @Value("${page.block-size}")
@@ -44,5 +49,9 @@ public class BoardService {
         result.put("next", next);
 
         return result;
+    }
+
+    public void insert(Board board) {
+        boardDao.insert(board);
     }
 }

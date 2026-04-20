@@ -23,6 +23,7 @@ public class User {
     private LocalDateTime createdAt;      // 회원가입 날짜
     private LocalDateTime updatedAt;      // 비밀번호 마지막 변경 시간
     private int lock_count;         //로그인 시도 횟수
+    private int last_password_changed;
 
 
 

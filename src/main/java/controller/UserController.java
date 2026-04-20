@@ -50,6 +50,7 @@ public class UserController {
 
         if (bindingResult.hasErrors()) {
             model.addAttribute("findPwForm", new FindPwForm());
+            model.addAttribute("activeTab", "id");  // ← 추가
             return "home/findAccount";
         }
 
@@ -61,6 +62,7 @@ public class UserController {
 
         if (bindingResult.hasErrors()) {
             model.addAttribute("findIdForm", new FindIdForm());
+            model.addAttribute("activeTab", "pw");
             return "home/findAccount";
         }
         return "redirect:home/main";

@@ -1,5 +1,6 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="form" uri="http://www.springframework.org/tags/form" %>
+
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -45,27 +46,35 @@
     </div>
 
     <div class="tab-group">
-      <button class="tab-btn active" onclick="switchTab('id')">아이디 찾기</button>
-      <button class="tab-btn" onclick="switchTab('pw')">비밀번호 찾기</button>
+      <button class="tab-btn ${activeTab eq 'id' || empty activeTab ? 'active' : ''}" onclick="switchTab('id')">
+        아이디 찾기
+      </button>
+      <button class="tab-btn ${activeTab eq 'pw' ? 'active' : ''}" onclick="switchTab('pw')">
+        비밀번호 찾기
+      </button>
+<%--      <button class="tab-btn active" onclick="switchTab('id')">아이디 찾기</button>--%>
+<%--      <button class="tab-btn " onclick="switchTab('pw')">비밀번호 찾기</button>--%>
+<%--   --%>
     </div>
 
     <!-- 아이디 찾기 탭 -->
-    <div id="panel-id" class="tab-panel active">
+    <div id="panel-id" class="tab-panel ${activeTab eq 'id' || empty activeTab ? 'active' : ''}">
+<%--    <div id="panel-id" class="tab-panel active">--%>
       <form:form action="${pageContext.request.contextPath}/user/findId"
                  method="post" modelAttribute="findIdForm">
         <div class="field">
           <label>이름</label>
-          <form:input path="name" placeholder="가입 시 입력한 이름"/>
+          <form:input path="name" placeholder="실명을 입력하세요."/>
           <form:errors path="name" cssClass="error-msg" element="p"/>
         </div>
         <div class="field">
           <label>이메일</label>
-          <form:input path="email" placeholder="가입 시 입력한 이메일"/>
+          <form:input path="email" placeholder="이메일을 입력하세요."/>
           <form:errors path="email" cssClass="error-msg" element="p"/>
         </div>
         <div class="field">
           <label>연락처</label>
-          <form:input path="phone" placeholder="가입 시 등록한 연락처"/>
+          <form:input path="phone" placeholder="연락처를 입력하세요."/>
           <form:errors path="phone" cssClass="error-msg" element="p"/>
         </div>
         <button type="submit" class="btn-submit">아이디 찾기</button>
@@ -73,22 +82,23 @@
     </div>
 
     <!-- 비밀번호 찾기 탭 -->
-    <div id="panel-pw" class="tab-panel">
+<%--    <div id="panel-pw" class="tab-panel">--%>
+    <div id="panel-pw" class="tab-panel ${activeTab eq 'pw' ? 'active' : ''}">
       <form:form action="${pageContext.request.contextPath}/user/findPw"
                  method="post" modelAttribute="findPwForm">
         <div class="field">
-          <label>학번</label>
-          <form:input path="userCode" placeholder="학번을 입력하세요"/>
-          <form:errors path="userCode" cssClass="error-msg" element="p"/>
+          <label>아이디</label>
+          <form:input path="userId" placeholder="아이디를 입력하세요."/>
+          <form:errors path="userId" cssClass="error-msg" element="p"/>
         </div>
         <div class="field">
           <label>이메일</label>
-          <form:input path="email" placeholder="가입 시 입력한 이메일"/>
+          <form:input path="email" placeholder="이메일을 입력하세요."/>
           <form:errors path="email" cssClass="error-msg" element="p"/>
         </div>
         <div class="field">
           <label>연락처</label>
-          <form:input path="phone" placeholder="010-0000-0000"/>
+          <form:input path="phone" placeholder="연락처를 입력하세요."/>
           <form:errors path="phone" cssClass="error-msg" element="p"/>
         </div>
         <button type="submit" class="btn-submit">인증 메일 발송</button>
@@ -104,17 +114,6 @@
 </div>
 
 <script>
-  // 페이지가 로드될 때 실행되는 함수
-  window.onload = function() {
-    // 서버에서 넘겨준 activeTab 값을 확인 (${activeTab}은 스프링 EL문법)
-    const tabToOpen = "${activeTab}";
-
-    if (tabToOpen === 'pw') {
-      // 서버에서 'pw' 신호를 보냈다면 비밀번호 탭 활성화 함수 호출
-      switchTab('pw');
-    }
-  };
-
   function switchTab(tab) {
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
     document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));

@@ -1,0 +1,146 @@
+body {
+  margin: 0;
+  font-family: 'Noto Sans KR', Arial, sans-serif;
+  background: #f5f7fb;
+}
+
+.header {
+  background: #1e3a8a;
+  color: black;
+  padding: 15px 30px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.container {
+  width: 1200px;
+  margin: 20px auto;
+}
+
+.card {
+  background: white;
+  border-radius: 10px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.flex {
+  display: flex;
+  gap: 20px;
+}
+
+.left { flex: 2; }
+.right { flex: 1; }
+
+.course {
+  border-bottom: 1px solid #eee;
+  padding: 10px 0;
+}
+
+.progress {
+  height: 8px;
+  background: #ddd;
+  border-radius: 5px;
+  margin-top: 5px;
+}
+
+.progress div {
+  height: 100%;
+  background: #3b82f6;
+  border-radius: 5px;
+}
+
+.quick-menu {
+  display: flex;
+  justify-content: space-between;
+}
+
+.quick-item {
+  width: 22%;
+  background: #f1f5f9;
+  padding: 20px;
+  text-align: center;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.quick-item:hover {
+  background: #e2e8f0;
+}
+
+/* ===== 팝업 스타일 ===== */
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 999;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.4);
+}
+
+.modal-content {
+  background: white;
+  margin: 10% auto;
+  padding: 20px;
+  width: 400px;
+  border-radius: 10px;
+}
+
+.close {
+  float: right;
+  font-size: 20px;
+  cursor: pointer;
+}
+
+.sidebar {
+  width: 240px;
+  background: linear-gradient(#4b6cb7, #182848);
+  color: white;
+  padding: 20px;
+}
+
+.sidebar h2 {
+  margin-bottom: 30px;
+}
+
+.menu {
+  margin-bottom: 20px;
+}
+
+.menu-title {
+  font-weight: bold;
+  margin-bottom: 8px;
+}
+
+.menu a {
+  display: inline-block;
+  margin-right: 10px;
+  color: white;
+  text-decoration: none;
+  font-size: 14px;
+}
+
+/* 메인 영역 */
+.main {
+  flex: 1;
+  background: #f5f6f7;
+}
+
+/* 상단 헤더 */
+.header {
+  display: flex;
+  justify-content: flex-end;
+  padding: 15px 30px;
+  background: white;
+  border-bottom: 1px solid #ddd;
+  font-size: 14px;
+}
+
+/* 콘텐츠 영역 */
+.content {
+  padding: 40px;
+}

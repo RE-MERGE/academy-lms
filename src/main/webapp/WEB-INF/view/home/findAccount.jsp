@@ -52,14 +52,10 @@
       <button class="tab-btn ${activeTab eq 'pw' ? 'active' : ''}" onclick="switchTab('pw')">
         비밀번호 찾기
       </button>
-<%--      <button class="tab-btn active" onclick="switchTab('id')">아이디 찾기</button>--%>
-<%--      <button class="tab-btn " onclick="switchTab('pw')">비밀번호 찾기</button>--%>
-<%--   --%>
     </div>
 
     <!-- 아이디 찾기 탭 -->
     <div id="panel-id" class="tab-panel ${activeTab eq 'id' || empty activeTab ? 'active' : ''}">
-<%--    <div id="panel-id" class="tab-panel active">--%>
       <form:form action="${pageContext.request.contextPath}/user/findId"
                  method="post" modelAttribute="findIdForm">
         <div class="field">

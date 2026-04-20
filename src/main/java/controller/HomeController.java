@@ -25,5 +25,13 @@ public class HomeController {
         model.addAttribute("findPwForm", new FindPwForm());
         return "home/findAccount";
     }
+    @GetMapping("dashboard")
+    public String dashboard(Model model) {
+        return "home/dashboard";
+    }
 
+    @GetMapping("dashboard")
+    public String dashboard() {
+        return "home/dashboard";
+    }
 }

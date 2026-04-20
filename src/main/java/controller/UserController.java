@@ -42,7 +42,12 @@ public class UserController {
     public String login() {
 
         //비교 로직
-        return "home/main";
+        return "home/dashboard";
+    }
+
+    @GetMapping("myPage")
+    public String myPage() {
+        return "user/myPage";
     }
 
     @PostMapping("findId")
@@ -54,7 +59,7 @@ public class UserController {
             return "home/findAccount";
         }
 
-        return "redirect:home/main";
+        return "redirect:home/dashboard";
     }
 
     @PostMapping("findPw")
@@ -65,7 +70,7 @@ public class UserController {
             model.addAttribute("activeTab", "pw");
             return "home/findAccount";
         }
-        return "redirect:home/main";
+        return "redirect:home/dashboard";
     }
 
     @GetMapping("naverLogin")

@@ -108,6 +108,5 @@
     form.submit();
   }
 </script>
-<script src="${pageContext.request.contextPath}/js/bgParticle.js"></script>
 </body>
 </html>

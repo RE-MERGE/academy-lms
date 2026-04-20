@@ -98,18 +98,9 @@
 <div class="bg-mesh"></div>
 <!-- ── 본문 ── -->
 <main class="board-wrap">
-  <!-- 통계 칩 -->
-  <div class="stats-bar">
-    <div class="stat-chip"><span class="dot" style="background:#ff6b6b"></span>공지 <strong>2</strong></div>
-    <div class="stat-chip"><span class="dot" style="background:#4ade80"></span>자유 <strong>18</strong></div>
-    <div class="stat-chip"><span class="dot" style="background:#fbbf24"></span>질문 <strong>12</strong></div>
-    <div class="stat-chip"><span class="dot" style="background:var(--bright)"></span>스터디 <strong>10</strong></div>
-    <div class="stat-chip"><span class="dot" style="background:#c4b5fd"></span>정보 <strong>8</strong></div>
-  </div>
-
   <!-- 툴바 -->
   <div class="board-toolbar">
-    <form class="search-form" method="get" action="board.jsp">
+    <form class="search-form" method="get" action="searchType">
       <select name="searchType" class="search-select">
         <option value="title"  <c:if test="${searchType == 'title'}">selected</c:if>>제목</option>
         <option value="writer" <c:if test="${searchType == 'writer'}">selected</c:if>>작성자</option>
@@ -247,6 +238,5 @@
 
 </main>
 
-<script src="${pageContext.request.contextPath}/js/bgParticle.js"></script>
 </body>
 </html>

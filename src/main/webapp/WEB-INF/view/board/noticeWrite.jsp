@@ -126,8 +126,6 @@
 
   </form>
 </div>
-
-<script src="${pageContext.request.contextPath}/js/bgParticle.js"></script>
 <script>
   /* ── 파일 드래그앤드롭 + 미리보기 ── */
   const dropZone   = document.getElementById('fileDropZone');

@@ -150,6 +150,5 @@
 
 </div><!-- /board-wrap -->
 
-<script src="${pageContext.request.contextPath}/js/bgParticle.js"></script>
 </body>
 </html>

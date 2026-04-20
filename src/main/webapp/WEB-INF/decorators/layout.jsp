@@ -87,7 +87,7 @@
         <span class="si-label">수강신청</span>
       </a>
 
-      <a href="${pageContext.request.contextPath}/board" class="sidebar-item">
+      <a href="${pageContext.request.contextPath}/board/board" class="sidebar-item">
         <span class="si-icon">📋</span>
         <span class="si-label">게시판</span>
       </a>

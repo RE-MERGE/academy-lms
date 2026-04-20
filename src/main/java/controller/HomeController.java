@@ -26,4 +26,8 @@ public class HomeController {
         return "home/findAccount";
     }
 
+    @GetMapping("dashboard")
+    public String dashboard() {
+        return "home/dashboard";
+    }
 }

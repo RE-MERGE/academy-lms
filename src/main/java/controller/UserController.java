@@ -39,7 +39,7 @@ public class UserController {
     public String login() {
 
     //비교 로직
-        return "home/test";
+        return "main";
     }
 
     @PostMapping("join")

@@ -5,7 +5,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.ModelAndView;
 import service.BoardService;
 
@@ -17,6 +20,12 @@ public class BoardController {
     BoardService boardService;
 
     @GetMapping("*")
-    public void board (Board board){
+    public void getBoard(Board board) {
+    }
+    @PostMapping("write")
+    public String write(Board board, @RequestParam("uploadFile") MultipartFile uploadFile) {
+        board.setWriterNo(1);
+        boardService.insert(board);
+        return "redirect:/board/board";
     }
 }

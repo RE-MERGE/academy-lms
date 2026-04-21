@@ -13,11 +13,13 @@ public class SitemeshFilter extends ConfigurableSiteMeshFilter{
         builder.addDecoratorPath("/*", "layout.jsp")
                 .addExcludedPath("/ajax/*") // 요청 url이 /ajax/ 인 모든 요청에 대해서 layout 적용 안하도록 설정
                 .addExcludedPath("/home/findAccount")
+                .addExcludedPath("/home/home")
                 .addExcludedPath("/user/joinForm")
                 .addExcludedPath("/user/findId")
                 .addExcludedPath("/user/findPw")
-                .addExcludedPath("/home/home")
-        		.addExcludedPath("/home/login");
+                .addExcludedPath("/user/login")
+                .addExcludedPath("/user/join")
+                .addExcludedPath("/user/logout");
     }
     
 }

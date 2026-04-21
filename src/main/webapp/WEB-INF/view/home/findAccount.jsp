@@ -70,26 +70,40 @@
 
     <!-- 아이디 찾기 탭 -->
     <div id="panel-id" class="tab-panel ${empty activeTab || activeTab == 'id' ? 'active' : ''}">
-      <form:form action="${pageContext.request.contextPath}/user/findId"
-                 method="post" modelAttribute="findIdForm">
-        <div class="field">
-          <label><span class="field-icon">✦</span>이름</label>
-          <form:input path="name" placeholder="실명을 입력하세요."/>
-          <form:errors path="name" cssClass="error-msg" element="p"/>
-        </div>
-        <div class="field">
-          <label><span class="field-icon">✦</span>이메일</label>
-          <form:input path="email" placeholder="이메일을 입력하세요."/>
-          <form:errors path="email" cssClass="error-msg" element="p"/>
-        </div>
-        <div class="field">
-          <label><span class="field-icon">✦</span>연락처</label>
-          <form:input path="phone" placeholder="연락처를 입력하세요."/>
-          <form:errors path="phone" cssClass="error-msg" element="p"/>
-        </div>
-        <button type="submit" class="btn-submit">아이디 찾기</button>
-      </form:form>
+      <c:choose>
+        <%-- 1. 결과가 있는 경우: 결과 박스만 보여줌 --%>
+        <c:when test="${not empty findUserId}">
+          <div class="result-box" style="text-align:center; padding: 20px; background: #f8faff; border-radius: 12px; border: 1px dashed #3b82f6; margin-bottom: 1rem;">
+            <p style="color: #1e3a8a; font-weight: bold; font-size: 1.1rem;">귀하의 ID입니다.</p>
+            <h3 style="margin: 20px 0; color: #2563eb; font-size: 1.4rem; letter-spacing: 0.05em;">${findUserId}</h3>
+            <a href="${pageContext.request.contextPath}/user/loginForm" class="btn-submit" style="display:block; text-decoration:none; text-align:center;">로그인하러 가기</a>
+          </div>
+        </c:when>
+
+        <%-- 2. 결과가 없는 경우: 입력 폼을 보여줌 --%>
+        <c:otherwise>
+          <form:form action="${pageContext.request.contextPath}/user/findId" method="post" modelAttribute="findIdForm">
+            <div class="field">
+              <label>이름</label>
+              <form:input path="name" placeholder="실명을 입력하세요."/>
+              <form:errors path="name" cssClass="error-msg" element="p"/>
+            </div>
+            <div class="field">
+              <label>이메일</label>
+              <form:input path="email" placeholder="이메일을 입력하세요."/>
+              <form:errors path="email" cssClass="error-msg" element="p"/>
+            </div>
+            <div class="field">
+              <label>연락처</label>
+              <form:input path="phone" placeholder="연락처를 입력하세요."/>
+              <form:errors path="phone" cssClass="error-msg" element="p"/>
+            </div>
+            <button type="submit" class="btn-submit">아이디 찾기</button>
+          </form:form>
+        </c:otherwise>
+      </c:choose>
     </div>
+
 
     <!-- 비밀번호 찾기 탭 -->
     <div id="panel-pw" class="tab-panel ${activeTab == 'pw' ? 'active' : ''}">
@@ -115,7 +129,7 @@
     </div>
 
     <div class="divider"></div>
-    <a href="${pageContext.request.contextPath}/home/login" class="back-link">
+    <a href="${pageContext.request.contextPath}/home/home" class="back-link">
       ← 로그인으로 돌아가기
     </a>
 

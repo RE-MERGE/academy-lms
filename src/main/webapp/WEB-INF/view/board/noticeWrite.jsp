@@ -8,7 +8,6 @@
   <title>re-merge LMS · ${empty notice.id ? '공지 등록' : '공지 수정'}</title>
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&family=Syne:wght@700;800&display=swap" rel="stylesheet"/>
-  <link rel="stylesheet" href="${pageContext.request.contextPath}/css/login.css"/>
   <link rel="stylesheet" href="${pageContext.request.contextPath}/css/board.css"/>
 </head>
 <body>
@@ -126,8 +125,6 @@
 
   </form>
 </div>
-
-<script src="${pageContext.request.contextPath}/js/bgParticle.js"></script>
 <script>
   /* ── 파일 드래그앤드롭 + 미리보기 ── */
   const dropZone   = document.getElementById('fileDropZone');

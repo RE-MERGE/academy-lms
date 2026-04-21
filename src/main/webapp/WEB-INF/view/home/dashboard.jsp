@@ -11,7 +11,7 @@
 
 body {
   font-family: 'Noto Sans KR', Arial, sans-serif;
-  background: #f5f7fb;
+  min-height: 100vh;
   margin: 0;
   padding: 20px;
 }

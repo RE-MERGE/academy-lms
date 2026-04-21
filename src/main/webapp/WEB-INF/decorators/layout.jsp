@@ -67,7 +67,7 @@
       <!-- 메인 -->
       <span class="sidebar-section-label">메인</span>
 
-      <a href="${pageContext.request.contextPath}/dashBoard" class="sidebar-item">
+      <a href="${pageContext.request.contextPath}/home/dashboard" class="sidebar-item">
         <span class="si-icon">🏠</span>
         <span class="si-label">대시보드</span>
       </a>
@@ -87,7 +87,7 @@
         <span class="si-label">수강신청</span>
       </a>
 
-      <a href="${pageContext.request.contextPath}/board/board" class="sidebar-item">
+      <a href="${pageContext.request.contextPath}/board/board?boardType=NOTICE" class="sidebar-item">
         <span class="si-icon">📋</span>
         <span class="si-label">게시판</span>
       </a>

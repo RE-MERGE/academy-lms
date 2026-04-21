@@ -12,7 +12,12 @@
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet"/>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { display: flex; align-items: center; justify-content: center; min-height: 100vh; background: linear-gradient(135deg, #f0f4ff 0%, #e8f0fe 100%); }
+    body { 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    min-height: 100vh; 
+    background: linear-gradient(135deg, #f0f4ff 0%, #e8f0fe 100%); }
     .find-wrap { width: 100%; max-width: 500px; padding: 20px; }
     .card { background: white; border-radius: 16px; padding: 2.5rem; box-shadow: 0 8px 32px rgba(30, 58, 138, 0.1); border: 1px solid rgba(59, 130, 246, 0.1); }
     .find-header { text-align: center; margin-bottom: 2rem; }
@@ -24,8 +29,20 @@
     .tab-panel { display: none; }
     .tab-panel.active { display: block; }
     .field { margin-bottom: 1.1rem; }
-    .field label { display: block; font-size: 0.8rem; font-weight: 600; color: #444; margin-bottom: 0.45rem; letter-spacing: 0.02em; }
-    .field input { width: 100%; padding: 0.78rem 1rem; border: 1.5px solid #e2e8f0; border-radius: 10px; font-family: 'Noto Sans KR', sans-serif; font-size: 0.95rem; outline: none; transition: border-color 0.2s, box-shadow 0.2s; background: #fafbff; }
+.field label {
+    display: flex;
+    align-items: center;
+    gap: .35rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #444;
+    margin-bottom: 0.45rem;
+    letter-spacing: 0.02em;
+}
+.field-icon {
+    color: #3b82f6;
+    font-size: 0.78rem;
+}    .field input { width: 100%; padding: 0.78rem 1rem; border: 1.5px solid #e2e8f0; border-radius: 10px; font-family: 'Noto Sans KR', sans-serif; font-size: 0.95rem; outline: none; transition: border-color 0.2s, box-shadow 0.2s; background: #fafbff; }
     .field input:focus { border-color: #3b82f6; background: white; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12); }
     .error-msg { color: #e53935 !important; font-size: 0.78rem; margin-top: 0.3rem; display: block; font-weight: 600; }
     .btn-submit { width: 100%; padding: 0.88rem; background: linear-gradient(135deg, #1e3a8a, #2563eb); color: white; border: none; border-radius: 10px; font-family: 'Noto Sans KR', sans-serif; font-size: 0.95rem; font-weight: 700; cursor: pointer; margin-top: 0.8rem; transition: opacity 0.2s, transform 0.15s; box-shadow: 0 4px 14px rgba(30, 58, 138, 0.3); }
@@ -93,17 +110,17 @@
       <form:form action="${pageContext.request.contextPath}/user/findPw"
                  method="post" modelAttribute="findPwForm">
         <div class="field">
-          <label>아이디</label>
+          <label><span class="field-icon">✦</span>아이디</label>
           <form:input path="userId" placeholder="아이디를 입력하세요."/>
           <form:errors path="userId" cssClass="error-msg" element="p"/>
         </div>
         <div class="field">
-          <label>이메일</label>
+          <label><span class="field-icon">✦</span>이메일</label>
           <form:input path="email" placeholder="이메일을 입력하세요."/>
           <form:errors path="email" cssClass="error-msg" element="p"/>
         </div>
         <div class="field">
-          <label>연락처</label>
+          <label><span class="field-icon">✦</span>연락처</label>
           <form:input path="phone" placeholder="연락처를 입력하세요."/>
           <form:errors path="phone" cssClass="error-msg" element="p"/>
         </div>

@@ -1,5 +1,6 @@
 package dao.mapper;
 
+import dto.Course;
 import dto.board.*;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Param;
@@ -49,4 +50,19 @@ public interface BoardMapper {
             "        JOIN USERS u ON b.writer_no = u.user_no" +
             "        WHERE board_no=#{value}")
     PostDetail postDetail(int boardNo);
+
+    @Select("select * from COURSE where course_no = #{course_no}")
+    Course getCourse(Course course);
+
+    @Select("SELECT USERS.name FROM USERS JOIN COURSE ON USERS.user_no = COURSE.professor_no WHERE COURSE.course_no = #{course_no}")
+    String getProfessorName(@Param("course_no") int course_no);
+    
+    @Select("select * from COURSE")
+    List<Course> getAllCourses();
+
+
+
+
+
 }
+

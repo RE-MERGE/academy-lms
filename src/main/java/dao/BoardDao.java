@@ -1,6 +1,7 @@
 package dao;
 
 import dao.mapper.BoardMapper;
+import dto.Course;
 import dto.board.*;
 import org.mybatis.spring.SqlSessionTemplate;
 import org.springframework.beans.factory.annotation.Autowired;

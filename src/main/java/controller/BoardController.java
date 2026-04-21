@@ -1,6 +1,11 @@
 package controller;
 
 import dto.Board;
+import dto.Course;
+import dto.user.User;
+
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
@@ -18,6 +23,20 @@ public class BoardController {
 
     @Autowired
     BoardService boardService;
+    
+    @GetMapping("subject")
+    public ModelAndView getSubject(@RequestParam(value="no", defaultValue="1") int no) {
+        ModelAndView mav = new ModelAndView();
+        Course courseDetail = boardService.selectCourse(no);
+        String profName = boardService.selectProfessorName(no);
+        List<Course> courseList = boardService.selectAllCourses();
+        mav.addObject("Course", courseDetail);
+        mav.addObject("profName", profName);
+        mav.addObject("courseList",courseList);
+        mav.setViewName("board/subject");
+        return mav;
+    }
+    
 
     @GetMapping("*")
     public void getBoard(Board board) {

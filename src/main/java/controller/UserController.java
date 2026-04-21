@@ -75,9 +75,6 @@ public class UserController {
         SessionUser sessionUser = createSessionUser(dbUser);
         session.setAttribute(UserConst.SESSION_USER, sessionUser);
 
-
-        System.out.println("sessionUser = " + sessionUser);
-        System.out.println("session.getAttribute(UserConst.SESSION_USER) = " + session.getAttribute(UserConst.SESSION_USER));
         return "redirect:/home/dashboard";
 //        return "redirect:" + redirectURL;
     }

@@ -2,6 +2,7 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <!DOCTYPE html>
 <html lang="ko">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -64,11 +65,17 @@
     <!-- ── 사이드바 ── -->
     <nav class="sidebar">
 
+<style>
+.si-label {
+  margin-left: 15px;
+}
+</style>
+
       <!-- 메인 -->
       <span class="sidebar-section-label">메인</span>
 
-      <a href="${pageContext.request.contextPath}/home/dashboard" class="sidebar-item">
-        <span class="si-icon">🏠</span>
+      <a href="${pageContext.request.contextPath}/home/dashboard" class="sidebar-item" >
+         <img src="${pageContext.request.contextPath}/img/icon_dashboard.png" alt="대시보드 아이콘" width="50px" height="50px" >
         <span class="si-label">대시보드</span>
       </a>
 
@@ -78,17 +85,17 @@
       <span class="sidebar-section-label">학습</span>
 
       <a href="${pageContext.request.contextPath}/board/subject" class="sidebar-item">
-        <span class="si-icon">📚</span>
+        <img src="${pageContext.request.contextPath}/img/icon_courses.png" alt="전체과목 아이콘" width="50px" height="50px" >
         <span class="si-label">전체 과목</span>
       </a>
 
       <a href="${pageContext.request.contextPath}/user/enrollment" class="sidebar-item">
-        <span class="si-icon">🎓</span>
+        <img src="${pageContext.request.contextPath}/img/icon_enrollment.png" alt="수강신청 아이콘" width="50px" height="50px" >
         <span class="si-label">수강신청</span>
       </a>
 
       <a href="${pageContext.request.contextPath}/board/board" class="sidebar-item">
-        <span class="si-icon">📋</span>
+        <img src="${pageContext.request.contextPath}/img/icon_board.png" alt="게시판 아이콘" width="50px" height="50px" >
         <span class="si-label">게시판</span>
       </a>
 
@@ -98,7 +105,7 @@
       <span class="sidebar-section-label">계정</span>
 
       <a href="${pageContext.request.contextPath}/user/myPage" class="sidebar-item">
-        <span class="si-icon">👤</span>
+        <img src="${pageContext.request.contextPath}/img/icon_mypage.png" alt="마이페이지 아이콘" width="50px" height="50px" >
         <span class="si-label">마이페이지</span>
       </a>
 

@@ -89,8 +89,8 @@
                 <span style="background: #333; color: #fff; border-radius: 50%; width: 18px; height: 18px; display: inline-flex; justify-content: center; align-items: center; font-size: 10px; margin-right: 5px;">✔</span>
                 강의일시
             </p>
-            <p style="margin: 2px 0; font-size: 14px;">2025학년도 2학기</p>
-            <p style="margin: 2px 0; font-size: 14px;">월 15:00 - 17:50</p>
+            <p style="margin: 2px 0; font-size: 14px;">${Course.semester}학기</p>
+            <p style="margin: 2px 0; font-size: 14px;">${Course.day_of_week}요일 ${Course.start_time} ~ ${Course.end_time}</p>
         </div>
     </div>
 </div>
@@ -130,17 +130,6 @@
 	    </tr>
 	</c:forEach>
 
-    <%--<c:forEach var="i" begin="1" end="16">
-    <tr class="empty-row">
-        <td class="cell-date">
-            <%-- ${i}가 1, 2, 3... 순서대로 출력됩니다 
-            <div class="week-label">${i}주차</div>
-            <div class="date-label">예정된 강의가 없습니다.</div>
-        </td>
-        <td class="cell-time">-</td>
-        <td class="cell-status"></td>
-    </tr>
-</c:forEach>--%>
 </tbody>
 </table>
 <script>

@@ -158,8 +158,7 @@ border-radius: 10px; font-size: 18px; font-weight: 600; color: #fff; cursor: poi
               <form:errors path="password" cssClass="error-msg" element="p"/>
           </div>
 
-          <%-- 서버 에러 메시지 --%>
-          <form:errors path="*" cssClass="error-msg" element="p"/>
+          <form:errors path="" cssClass="error-msg" element="p" />
 
           <div class="aux-row">
             <button type="button" class="aux-btn2" onclick="location.href='${pageContext.request.contextPath}/user/joinForm'">회원가입</button>

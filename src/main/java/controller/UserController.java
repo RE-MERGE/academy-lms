@@ -67,7 +67,7 @@ public class UserController {
         if (dbUser == null || loginForm.getPassword() == null ||
                 !loginForm.getPassword().equals(dbUser.getPassword())) {
 
-            bindingResult.reject( "error.loginFail");
+            bindingResult.reject("error.loginFail", "아이디 또는 비밀번호가 맞지 않습니다.");
 
             return "home/home";
         }
@@ -75,8 +75,7 @@ public class UserController {
         SessionUser sessionUser = createSessionUser(dbUser);
         session.setAttribute(UserConst.SESSION_USER, sessionUser);
 
-        return "redirect:/home/dashboard";
-//        return "redirect:" + redirectURL;
+        return "redirect:" + redirectURL;
     }
 
     @GetMapping("myPage")
@@ -97,6 +96,13 @@ public class UserController {
         }
 
         String findUserId = userDao.selectUserIdByEmail(findIdForm.getEmail());
+
+        if (findUserId == null) {
+            bindingResult.reject( "error.mismatch.info");
+            model.addAttribute("findPwForm", new FindPwForm());
+            return "home/findAccount";
+        }
+
         String maskedId = findUserId.replaceAll("^(.{2}).*", "$1****");
 
         model.addAttribute("findUserId", maskedId);

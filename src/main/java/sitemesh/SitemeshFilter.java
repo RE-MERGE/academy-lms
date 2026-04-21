@@ -16,7 +16,8 @@ public class SitemeshFilter extends ConfigurableSiteMeshFilter{
                 .addExcludedPath("/user/joinForm")
                 .addExcludedPath("/user/findId")
                 .addExcludedPath("/user/findPw")
-                .addExcludedPath("/home/home");
+                .addExcludedPath("/home/home")
+        		.addExcludedPath("/home/login");
     }
     
 }

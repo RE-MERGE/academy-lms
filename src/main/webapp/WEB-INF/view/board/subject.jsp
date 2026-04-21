@@ -32,10 +32,46 @@
 <div style="display: flex; justify-content: space-between; align-items: flex-end; padding: 20px 0; font-family: sans-serif;">
     
     <div style="flex: 1; text-align: left;">
-        <div style="display: flex; align-items: baseline;">
-            <h1 style="margin: 0; color: #004595; font-size: 28px;">${Course.course_name}</h1>
-            <span style="margin-left: 10px; color: #666;">${Course.credits}학점</span>
-        </div>
+        <div style="display: flex; align-items: baseline; position: relative;">
+    <h1 id="courseNameDisplay" 
+        style="margin: 0; color: #004595; font-size: 28px; cursor: pointer;" 
+        onclick="toggleDropdown()">
+        ${Course.course_name} <span style="font-size: 18px;">▾</span>
+    </h1>
+    
+    <!-- 커스텀 드롭다운 -->
+    <div id="courseDropdown" style="
+        display: none;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        background: #fff;
+        border: 1px solid #d0d7f0;
+        border-radius: 8px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+        z-index: 999;
+        min-width: 220px;
+        overflow: hidden;
+    ">
+        <c:forEach var="c" items="${courseList}">
+            <div onclick="changeCourse(${c.course_no})" style="
+                padding: 12px 20px;
+                font-size: 16px;
+                cursor: pointer;
+                color: ${c.course_no == Course.course_no ? '#fff' : '#333'};
+                background: ${c.course_no == Course.course_no ? '#004595' : '#fff'};
+                font-weight: ${c.course_no == Course.course_no ? 'bold' : 'normal'};
+            "
+            onmouseover="if(${c.course_no} !== ${Course.course_no}) this.style.background='#f0f5ff'"
+            onmouseout="if(${c.course_no} !== ${Course.course_no}) this.style.background='#fff'"
+            >
+                ${c.course_name}
+            </div>
+        </c:forEach>
+    </div>
+
+    <span style="margin-left: 10px; color: #666;">${Course.credits}학점</span>
+</div>
         <div style="margin-top: 10px; color: #888; font-size: 13px; line-height: 1.5;">
             <p style="margin: 0;">23359-01</p>
             <p style="margin: 0;">203관(서라벌홀) 817호 &lt;강의실&gt;</p>
@@ -76,34 +112,54 @@
         </tr>
     </thead>
     <tbody>
-    <c:forEach var="item" items="${attendanceList}" varStatus="status">
-        <tr>
-            <td class="cell-date">
-                <div class="week-label">${status.count}주차</div>
-                <div class="date-label">${item.lectureDate}(${item.dayOfWeek})</div>
-            </td>
-            <td class="cell-time">${item.startTime}~${item.endTime}</td>
-            <td class="cell-status">
-                <div class="status-badge">
-                    <span class="check-circle-small">✔</span>
-                    ${item.statusText} </div>
-            </td>
-        </tr>
-    </c:forEach>
+    <c:forEach var="i" begin="1" end="16">
+	    <tr>
+	        <td class="cell-date">
+	            <div class="week-label">${i}주차</div>
+	            <div class="date-label">${Course.day_of_week}요일</div>
+	        </td>
+	        <td class="cell-time">
+	            ${Course.start_time} ~ ${Course.end_time}
+	        </td>
+	        <td class="cell-status">
+	            <div class="status-badge">
+	                <span class="check-circle-small">✔</span>
+	                ${not empty Course.status ? Course.status : '강의 예정'}
+	            </div>
+	        </td>
+	    </tr>
+	</c:forEach>
 
-    <c:if test="">
-        <c:forEach begin="1" end="16">
-            <tr class="empty-row">
-                <td class="cell-date">
-                    <div class="week-label">${status.index}주차</div>
-                    <div class="date-label">예정된 강의가 없습니다.</div>
-                </td>
-                <td class="cell-time">-</td>
-                <td class="cell-status"></td>
-            </tr>
-        </c:forEach>
-    </c:if>
+    <%--<c:forEach var="i" begin="1" end="16">
+    <tr class="empty-row">
+        <td class="cell-date">
+            <%-- ${i}가 1, 2, 3... 순서대로 출력됩니다 
+            <div class="week-label">${i}주차</div>
+            <div class="date-label">예정된 강의가 없습니다.</div>
+        </td>
+        <td class="cell-time">-</td>
+        <td class="cell-status"></td>
+    </tr>
+</c:forEach>--%>
 </tbody>
 </table>
+<script>
+    function toggleDropdown() {
+        const dropdown = document.getElementById('courseDropdown');
+        dropdown.style.display = dropdown.style.display === 'none' ? 'block' : 'none';
+    }
+
+    function changeCourse(course_no) {
+        location.href = '${pageContext.request.contextPath}/board/subject?no=' + course_no;
+    }
+
+    // 외부 클릭시 닫기
+    document.addEventListener('click', function(e) {
+        const display = document.getElementById('courseNameDisplay');
+        const dropdown = document.getElementById('courseDropdown');
+        if (!display.contains(e.target) && !dropdown.contains(e.target)) {
+            dropdown.style.display = 'none';
+        }
+    });
+</script>
 </body>  
-  

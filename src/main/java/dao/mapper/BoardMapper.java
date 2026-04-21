@@ -4,6 +4,8 @@ import dto.Board;
 import dto.Course;
 import dto.user.User;
 
+import java.util.List;
+
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
@@ -18,4 +20,7 @@ public interface BoardMapper {
 
     @Select("SELECT USERS.name FROM USERS JOIN COURSE ON USERS.user_no = COURSE.professor_no WHERE COURSE.course_no = #{course_no}")
     String getProfessorName(@Param("course_no") int course_no);
+    
+    @Select("select * from COURSE")
+    List<Course> getAllCourses();
 }

@@ -21,4 +21,5 @@ public class Course {
     private LocalDateTime created_at;
     private String semester;
     private int credits;
+    private int counts;
 }

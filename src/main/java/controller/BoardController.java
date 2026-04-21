@@ -4,6 +4,8 @@ import dto.Board;
 import dto.Course;
 import dto.user.User;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
@@ -27,8 +29,10 @@ public class BoardController {
         ModelAndView mav = new ModelAndView();
         Course courseDetail = boardService.selectCourse(no);
         String profName = boardService.selectProfessorName(no);
+        List<Course> courseList = boardService.selectAllCourses();
         mav.addObject("Course", courseDetail);
         mav.addObject("profName", profName);
+        mav.addObject("courseList",courseList);
         mav.setViewName("board/subject");
         return mav;
     }

@@ -5,6 +5,8 @@ import dto.Board;
 import dto.Course;
 import dto.user.User;
 
+import java.util.List;
+
 import org.mybatis.spring.SqlSessionTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
@@ -28,5 +30,9 @@ public class BoardDao {
 
     public String selectProfessorName(int course_no) {
         return template.getMapper(cls).getProfessorName(course_no);
+    }
+    
+    public List<Course> selectAllCourses() {
+    	return template.getMapper(cls).getAllCourses();
     }
 }

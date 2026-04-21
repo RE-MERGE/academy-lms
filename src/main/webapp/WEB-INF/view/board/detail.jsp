@@ -254,7 +254,7 @@
 </head>
 <body>
 <div class="board-wrap">
-
+  <div class="board-card" style="padding: 40px 40px 1px 40px; margin-top: 10px;">
   <!-- 게시글 헤더 -->
   <div class="detail-head">
 <%--    <div class="detail-meta-top">--%>
@@ -301,14 +301,15 @@
       <button class="btn-delete" onclick="confirmDelete(${postDetail.boardNo})">삭제</button>
   </c:if>
   </div>
+  </div>
 
   <!-- 댓글 영역 -->
   <div class="comment-section">
+
     <div class="comment-header">
       💬 댓글
 <%--      <span class="comment-count-badge">${fn:length(commentList)}</span>--%>
     </div>
-
     <!-- 댓글 입력 -->
     <form method="post" action="${pageContext.request.contextPath}/comment/write">
       <input type="hidden" name="boardNo" value="${postDetail.boardNo}">

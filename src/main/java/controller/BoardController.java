@@ -56,6 +56,8 @@ import dto.board.*;
             List<PostList> postList;
             postList = boardService.postList(courseNo, boardType);
             mav.addObject("postList", postList);
+            mav.addObject("courseNo", courseNo);
+            mav.addObject("boardType", boardType);
             return mav;
         }
 

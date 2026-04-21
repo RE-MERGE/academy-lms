@@ -67,7 +67,7 @@
       <!-- 메인 -->
       <span class="sidebar-section-label">메인</span>
 
-      <a href="${pageContext.request.contextPath}/dashBoard" class="sidebar-item">
+      <a href="${pageContext.request.contextPath}/home/dashboard" class="sidebar-item">
         <span class="si-icon">🏠</span>
         <span class="si-label">대시보드</span>
       </a>

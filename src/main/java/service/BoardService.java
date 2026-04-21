@@ -1,6 +1,7 @@
 package service;
 
 import dao.BoardDao;
+import dto.Course;
 import dto.board.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;

@@ -1,234 +1,489 @@
-/* myPage.css */
+/* ================================================================
+   re-merge LMS — 마이페이지 스타일 (myPage.css)
+   ================================================================ */
 
-/* 디자인 시스템 변수 정의 */
-:root {
-  --primary:      #1d4ed8; /* LMS 포인트 블루 */
-  --primary-dark: #1e3a8a;
-  --primary-light:#3b82f6;
-  --primary-pale: #eff6ff;
-  --primary-tint: #dbeafe;
-
-  --gray-50:  #f9fafb;
-  --gray-100: #f3f4f6;
-  --gray-200: #e5e7eb;
-  --gray-300: #d1d5db;
-  --gray-400: #9ca3af;
-  --gray-500: #6b7280;
-  --gray-600: #4b5563;
-  --gray-700: #374151;
-  --gray-800: #1f2937;
-  --gray-900: #111827;
-
-  --green:    #16a34a;
-  --white:    #ffffff;
-
-  --shadow-sm: 0 1px 3px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04);
-  --shadow-md: 0 4px 10px rgba(0,0,0,.07), 0 2px 4px rgba(0,0,0,.04);
-  --shadow-lg: 0 8px 24px rgba(0,0,0,.08), 0 3px 8px rgba(0,0,0,.04);
-
-  --radius-sm: 6px;
-  --radius-md: 10px;
-  --radius-lg: 14px;
+.mypage-wrap {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem;
 }
 
-body {
-    background-color: var(--gray-50);
-    font-family: 'Pretendard', sans-serif;
-    color: var(--gray-900);
+/* ── 페이지 타이틀 ── */
+.mypage-title {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #1e3a6e;
+  margin-bottom: 1.8rem;
+  padding-bottom: 0.8rem;
+  border-bottom: 2px solid #e2e8f0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
-.page-container {
-    max-width: 900px;
-    margin: 2rem auto;
-    padding: 0 1.5rem;
+/* ================================================================
+   프로필 카드
+   ================================================================ */
+.profile-card {
+  background: white;
+  border-radius: 16px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 2px 12px rgba(30, 58, 110, 0.07);
+  padding: 2rem;
+  display: flex;
+  gap: 2.5rem;
+  align-items: flex-start;
+  margin-bottom: 1.5rem;
 }
 
-/* 페이지 헤더 */
-.page-header {
-    margin-bottom: 2rem;
+/* 프로필 이미지 영역 */
+.profile-img-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  flex-shrink: 0;
 }
 
-.page-title {
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: var(--gray-900);
-    margin-bottom: 0.5rem;
+.profile-img {
+  width: 110px;
+  height: 110px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid #1e3a6e;
+  box-shadow: 0 4px 12px rgba(30, 58, 110, 0.15);
 }
 
-.page-breadcrumb {
-    font-size: 0.8rem;
-    color: var(--gray-400);
-    font-weight: 500;
-}
-.page-breadcrumb a { text-decoration: none; color: var(--gray-500); }
-.page-breadcrumb a:hover { color: var(--primary); }
-.page-breadcrumb span { color: var(--gray-300); }
-
-/* 카드 공통 스타일 */
-.card {
-    background: var(--white);
-    border: 1px solid var(--gray-200);
-    border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-sm);
-    padding: 2.5rem;
+.profile-img-default {
+  width: 110px;
+  height: 110px;
+  border-radius: 50%;
+  background: #dbeafe;
+  border: 3px solid #1e3a6e;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.5rem;
+  color: #1e3a6e;
 }
 
-/* 프로필 메인 카드 */
-.profile-main-card {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 2.5rem;
-    margin-bottom: 2rem;
+.profile-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 0.25rem 0.7rem;
+  border-radius: 20px;
+  background: #dcfce7;
+  color: #166534;
+  border: 1px solid #86efac;
 }
 
-/* 아바타 영역 */
-.profile-avatar-wrap {
-    position: relative;
-    width: 150px;
-    height: 150px;
+.profile-status::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #22c55e;
 }
 
-.profile-img-large {
-    width: 100%;
-    height: 100%;
-    border-radius: 50%;
-    object-fit: cover;
-    border: 5px solid var(--primary-pale);
-    box-shadow: var(--shadow-md);
+/* 프로필 정보 영역 */
+.profile-info {
+  flex: 1;
 }
 
-.badge {
-    padding: 0.25rem 0.8rem;
-    font-size: 0.65rem;
-    font-weight: 700;
-    border-radius: 999px;
-    letter-spacing: 0.04em;
-}
-.badge-primary {
-    background: var(--primary-pale);
-    color: var(--primary);
-    border: 1px solid var(--primary-tint);
+.profile-name {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #1a1a2e;
+  margin-bottom: 0.3rem;
 }
 
-.readonly-tag {
-    position: absolute;
-    bottom: -10px;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 10;
+.profile-dept {
+  font-size: 0.85rem;
+  color: #64748b;
+  margin-bottom: 1.2rem;
 }
 
-/* 상세 정보 그리드 */
-.profile-info-grid {
-    width: 100%;
-    max-width: 500px;
-    border-top: 1px solid var(--gray-100);
+.profile-table {
+  width: 100%;
+  border-collapse: collapse;
 }
 
-.info-row {
-    display: flex;
-    padding: 1rem 0.5rem;
-    border-bottom: 1px solid var(--gray-100);
+.profile-table tr {
+  border-bottom: 1px solid #f1f5f9;
 }
 
-.info-label {
-    width: 120px;
-    font-size: 0.9rem;
-    font-weight: 700;
-    color: var(--primary-mid);
+.profile-table tr:last-child {
+  border-bottom: none;
 }
 
-.info-value {
-    flex: 1;
-    font-size: 0.95rem;
-    color: var(--gray-800);
-    font-weight: 500;
+.profile-table th {
+  width: 100px;
+  padding: 0.6rem 0;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #94a3b8;
+  text-align: left;
+  letter-spacing: 0.03em;
 }
 
-.join-type {
-    font-size: 0.75rem;
-    color: var(--gray-400);
-    margin-left: 8px;
+.profile-table td {
+  padding: 0.6rem 0;
+  font-size: 0.88rem;
+  color: #334155;
+  font-weight: 500;
 }
 
-/* 빠른 가기 버튼 영역 */
-.profile-quick-nav {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 1rem;
-    margin-bottom: 2rem;
+/* 프로필 우측 액션 버튼 */
+.profile-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  flex-shrink: 0;
 }
 
-.quick-btn {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.6rem;
-    padding: 1.5rem;
-    background: var(--white);
-    border: 1.5px solid var(--gray-200);
-    border-radius: var(--radius-lg);
-    text-decoration: none;
-    color: var(--gray-600);
-    font-weight: 700;
-    font-size: 0.85rem;
-    transition: all 0.2s;
+.btn-action {
+  padding: 0.55rem 1.1rem;
+  border-radius: 8px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: center;
+  white-space: nowrap;
+  text-decoration: none;
+  display: inline-block;
 }
 
-.quick-btn:hover {
-    border-color: var(--primary-tint);
-    color: var(--primary);
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-md);
+.btn-action-primary {
+  background: #1e3a6e;
+  color: white;
+  border: none;
 }
 
-.quick-btn.active {
-    background: var(--green); /* 사진 참고 */
-    color: var(--white);
-    border-color: var(--green);
+.btn-action-primary:hover {
+  background: #2563eb;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(30, 58, 110, 0.25);
 }
 
-.quick-btn .si-icon {
-    font-size: 1.8rem;
+.btn-action-outline {
+  background: white;
+  color: #1e3a6e;
+  border: 1.5px solid #1e3a6e;
 }
 
-/* 하단 설정 버튼 */
-.profile-settings-wrap {
-    display: flex;
-    justify-content: flex-end;
-    gap: 0.75rem;
-    padding-top: 1.5rem;
-    border-top: 1px dashed var(--gray-200);
+.btn-action-outline:hover {
+  background: #eff6ff;
+  transform: translateY(-1px);
 }
 
-/* 버튼 공통 스타일 */
-.btn-primary, .btn-secondary {
-    padding: 0.6rem 1.2rem;
-    border-radius: var(--radius-md);
-    font-family: 'Pretendard', sans-serif;
-    font-size: 0.82rem;
-    font-weight: 700;
-    cursor: pointer;
-    transition: all 0.16s;
-    border: none;
+/* ================================================================
+   메뉴 탭
+   ================================================================ */
+.mypage-tabs {
+  display: flex;
+  gap: 0.3rem;
+  margin-bottom: 1.5rem;
+  background: #f8fafc;
+  border-radius: 12px;
+  padding: 0.35rem;
+  border: 1px solid #e2e8f0;
 }
 
-.btn-primary {
-    background: #fbbf24; /* 사진의 노란색 참고 */
-    color: #1f2937;
-}
-.btn-primary:hover {
-    background: #f59e0b;
-    transform: translateY(-1px);
+.mypage-tab {
+  flex: 1;
+  padding: 0.65rem;
+  border: none;
+  border-radius: 9px;
+  font-family: 'Noto Sans KR', sans-serif;
+  font-size: 0.83rem;
+  font-weight: 700;
+  color: #64748b;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: transparent;
+  text-align: center;
 }
 
-.btn-secondary {
-    background: #fbbf24; /* 사진의 노란색 참고 */
-    color: #1f2937;
-    opacity: 0.8;
+.mypage-tab:hover {
+  background: #e2e8f0;
+  color: #1e3a6e;
 }
-.btn-secondary:hover {
-    background: #f59e0b;
-    opacity: 1;
+
+.mypage-tab.active {
+  background: #1e3a6e;
+  color: white;
+  box-shadow: 0 2px 8px rgba(30, 58, 110, 0.25);
+}
+
+/* ================================================================
+   탭 패널
+   ================================================================ */
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
+/* ================================================================
+   수강 과목 카드
+   ================================================================ */
+.section-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #1e3a6e;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.section-title span {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #94a3b8;
+}
+
+.course-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.course-card {
+  background: white;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  padding: 1.2rem;
+  transition: all 0.2s;
+  cursor: pointer;
+}
+
+.course-card:hover {
+  border-color: #93c5fd;
+  box-shadow: 0 4px 16px rgba(30, 58, 110, 0.1);
+  transform: translateY(-2px);
+}
+
+.course-badge {
+  display: inline-block;
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 0.2rem 0.6rem;
+  border-radius: 4px;
+  margin-bottom: 0.6rem;
+}
+
+.badge-blue  { background: #dbeafe; color: #1e40af; }
+.badge-green { background: #dcfce7; color: #166534; }
+.badge-amber { background: #fef3c7; color: #92400e; }
+.badge-red   { background: #fee2e2; color: #991b1b; }
+
+.course-name {
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: #1a1a2e;
+  margin-bottom: 0.3rem;
+}
+
+.course-prof {
+  font-size: 0.78rem;
+  color: #64748b;
+  margin-bottom: 0.8rem;
+}
+
+.course-progress-label {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.72rem;
+  color: #94a3b8;
+  margin-bottom: 0.3rem;
+}
+
+.course-progress-bar {
+  height: 5px;
+  background: #f1f5f9;
+  border-radius: 99px;
+  overflow: hidden;
+}
+
+.course-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #1e3a6e, #3b82f6);
+  border-radius: 99px;
+  transition: width 0.6s ease;
+}
+
+/* ================================================================
+   성적 테이블
+   ================================================================ */
+.grade-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 2px 8px rgba(30, 58, 110, 0.05);
+}
+
+.grade-table thead {
+  background: #1e3a6e;
+  color: white;
+}
+
+.grade-table thead th {
+  padding: 0.85rem 1rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-align: left;
+  letter-spacing: 0.03em;
+}
+
+.grade-table tbody tr {
+  border-bottom: 1px solid #f1f5f9;
+  transition: background 0.15s;
+}
+
+.grade-table tbody tr:last-child {
+  border-bottom: none;
+}
+
+.grade-table tbody tr:hover {
+  background: #f8fafc;
+}
+
+.grade-table tbody td {
+  padding: 0.8rem 1rem;
+  font-size: 0.85rem;
+  color: #334155;
+}
+
+.grade-badge {
+  display: inline-block;
+  padding: 0.2rem 0.6rem;
+  border-radius: 4px;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.grade-a { background: #dcfce7; color: #166534; }
+.grade-b { background: #dbeafe; color: #1e40af; }
+.grade-c { background: #fef3c7; color: #92400e; }
+.grade-d { background: #fee2e2; color: #991b1b; }
+
+.grade-summary {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.grade-summary-card {
+  flex: 1;
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 1rem;
+  text-align: center;
+}
+
+.grade-summary-label {
+  font-size: 0.72rem;
+  color: #94a3b8;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  margin-bottom: 0.4rem;
+}
+
+.grade-summary-value {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #1e3a6e;
+}
+
+/* ================================================================
+   시간표
+   ================================================================ */
+.timetable {
+  background: white;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(30, 58, 110, 0.05);
+}
+
+.timetable-header {
+  display: grid;
+  grid-template-columns: 60px repeat(5, 1fr);
+  background: #1e3a6e;
+  color: white;
+}
+
+.timetable-header div {
+  padding: 0.7rem;
+  text-align: center;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.timetable-row {
+  display: grid;
+  grid-template-columns: 60px repeat(5, 1fr);
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.timetable-row:last-child {
+  border-bottom: none;
+}
+
+.timetable-time {
+  padding: 0.6rem;
+  text-align: center;
+  font-size: 0.72rem;
+  color: #94a3b8;
+  font-weight: 600;
+  background: #f8fafc;
+  border-right: 1px solid #e2e8f0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.timetable-cell {
+  padding: 0.3rem;
+  border-right: 1px solid #f1f5f9;
+  min-height: 52px;
+}
+
+.timetable-cell:last-child {
+  border-right: none;
+}
+
+.timetable-subject {
+  height: 100%;
+  border-radius: 6px;
+  padding: 0.35rem 0.5rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.subject-blue  { background: #dbeafe; color: #1e40af; }
+.subject-green { background: #dcfce7; color: #166534; }
+.subject-amber { background: #fef3c7; color: #92400e; }
+.subject-rose  { background: #ffe4e6; color: #9f1239; }
+.subject-purple{ background: #f3e8ff; color: #6b21a8; }
+
+/* ================================================================
+   반응형
+   ================================================================ */
+@media (max-width: 768px) {
+  .profile-card { flex-direction: column; align-items: center; text-align: center; }
+  .profile-table th { width: 80px; }
+  .profile-actions { flex-direction: row; flex-wrap: wrap; justify-content: center; }
+  .course-grid { grid-template-columns: 1fr; }
+  .grade-summary { flex-wrap: wrap; }
+  .timetable { overflow-x: auto; }
 }

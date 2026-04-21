@@ -4,7 +4,6 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 @Getter
 @Setter
@@ -20,12 +19,10 @@ public class User {
     private UserRole role;
     private UserStatus status;
     private String profileImg;             //이미지 이름
-    private LocalDateTime lastLoginAt;    //마지막 로그인 날짜
-    private LocalDateTime createdAt;      // 회원가입 날짜
-    private LocalDateTime updatedAt;      // 비밀번호 마지막 변경 시간
+    private LocalDate  lastLoginAt;    //마지막 로그인 날짜
+    private LocalDate createdAt;      // 회원가입 날짜
+    private LocalDate  updatedAt;      // 비밀번호 마지막 변경 시간
     private int lock_count;         //로그인 시도 횟수
     private LocalDate last_password_changed;
-
-
 
 }

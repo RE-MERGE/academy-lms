@@ -2,6 +2,9 @@ package service;
 
 import dao.BoardDao;
 import dto.Board;
+import dto.Course;
+import dto.user.User;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -54,4 +57,14 @@ public class BoardService {
     public void insert(Board board) {
         boardDao.insert(board);
     }
+    
+
+	public Course selectCourse(int no) {
+		Course course = boardDao.selectCourse(no);
+    	return course;
+	}
+
+	public String selectProfessorName(int course_no) {
+	    return boardDao.selectProfessorName(course_no);
+	}
 }

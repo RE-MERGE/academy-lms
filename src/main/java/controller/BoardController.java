@@ -22,6 +22,7 @@ public class BoardController {
     @GetMapping("*")
     public void getBoard(Board board) {
     }
+
     @PostMapping("write")
     public String write(Board board, @RequestParam("uploadFile") MultipartFile uploadFile) {
         board.setWriterNo(1);

@@ -1,5 +1,6 @@
 package config;
 
+import interceptor.LoginCheckInterceptor;
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.*;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
@@ -7,6 +8,7 @@ import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.validation.Validator;
 import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.multipart.MultipartResolver;
 import org.springframework.web.multipart.commons.CommonsMultipartResolver;
 import org.springframework.web.servlet.HandlerMapping;
@@ -21,6 +23,7 @@ import org.springframework.web.servlet.i18n.FixedLocaleResolver;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 import org.springframework.web.servlet.view.InternalResourceViewResolver;
 
+import java.util.List;
 import java.util.Locale;
 import java.util.Properties;
 
@@ -95,8 +98,27 @@ public class MvcConfig implements WebMvcConfigurer {
     // 인터셉터관련 설정
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
-//        registry.addInterceptor(new BoardIntercepter()) 
-//                .addPathPatterns("/board/write")
+        registry.addInterceptor(new LoginCheckInterceptor())
+                .order(1)
+                .addPathPatterns("/**")
+                .excludePathPatterns(
+                        "/",
+                        "/css/**",
+                        "/img/**",
+                        "/js/**",
+                        "/home/home",
+                        "/home/findAccount",
+//                        "/home/dashboard",
+                        "/user/join",
+                        "/user/findId",
+                        "/user/findPw",
+                        "/user/loginForm",
+                        "/user/login",
+                        "/user/joinForm",
+                        "/user/join",
+                        "/user/naverLogin",
+                        "/user/naverCallback"
+                );
     }
 
     @Bean
@@ -122,4 +144,11 @@ public class MvcConfig implements WebMvcConfigurer {
     public RestTemplate restTemplate() {
         return new RestTemplate();
     }
+
+    @Override
+    public void addArgumentResolvers(List<HandlerMethodArgumentResolver> resolvers) {
+        resolvers.add(new LoginUserArgumentResolver());
+    }
+
+
 }

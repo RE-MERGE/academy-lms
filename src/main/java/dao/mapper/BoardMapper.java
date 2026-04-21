@@ -50,7 +50,7 @@ public interface BoardMapper {
             "        JOIN USERS u ON b.writer_no = u.user_no" +
             "        WHERE board_no=#{value}")
     PostDetail postDetail(int boardNo);
-    
+
     @Select("select * from COURSE where course_no = #{course_no}")
     Course getCourse(Course course);
 
@@ -59,4 +59,11 @@ public interface BoardMapper {
     
     @Select("select * from COURSE")
     List<Course> getAllCourses();
+
+
+
+
+
+
 }
+

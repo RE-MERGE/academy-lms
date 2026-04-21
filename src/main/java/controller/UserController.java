@@ -5,14 +5,12 @@ import dao.UserDao;
 import dto.user.*;
 import dto.user.login.Login;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import service.NaverLoginService;
 import service.UserService;
 
@@ -20,8 +18,8 @@ import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 import java.io.File;
 import java.io.IOException;
-import java.net.http.HttpResponse;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.UUID;
 
@@ -40,6 +38,64 @@ public class UserController {
         model.addAttribute(UserConst.USER_JOIN_FORM, new UserJoinForm());
         return "user/joinForm";
     }
+
+    @PostMapping("join")
+    public String join(@Validated UserJoinForm userJoinForm, BindingResult bindingResult) {
+
+        validatePasswordMatch(userJoinForm, bindingResult);
+
+        if (bindingResult.hasErrors()) {
+            return "user/joinForm";
+        }
+
+        User dbUser = userDao.selectUser(userJoinForm.getUserId());
+
+        //아이디가 중복인 경우
+        if (dbUser != null) {
+            bindingResult.reject("{error.duplication.userId}");
+            return "user/joinForm";
+        }
+
+
+        //비밀번호 값이 틀리거나, 없는 경우
+        if(userJoinForm.getPassword() == null || userJoinForm.getPasswordConfirm() == null ||
+                !userJoinForm.getPassword().equals(userJoinForm.getPasswordConfirm())) {
+            bindingResult.reject("{error.mismatch.password}");
+            return "user/joinForm";
+        }
+
+        User joinUser = createUser(userJoinForm);
+
+        userDao.join(joinUser);
+
+        return "redirect:/home/home";
+
+    }
+
+//    @PostMapping("join")
+//    public String join(@Validated UserJoinForm userJoinForm,
+//                       BindingResult bindingResult,
+//                       HttpSession session) {
+//
+//        //두 개의 비밀번호 일치 여부 확인
+//        validatePasswordMatch(userJoinForm, bindingResult);
+//
+//        if (bindingResult.hasErrors()) {
+//            return "user/joinForm";
+//        }
+//
+//        //DB에 저장할 user, DB에 저장(service 필요)
+//        User user = toUser(userJoinForm);
+//        userService.join(user);
+//
+//        //로그인에 저장할 user
+//        LoginUser loginUser = toLoginUser(user);
+//
+//        session.setAttribute(UserConst.LOGIN_USER, loginUser);
+//
+//        return "redirect:/home/login";
+//    }
+
 
     @GetMapping("loginForm")
     public String loginForm(Model model) {
@@ -67,7 +123,7 @@ public class UserController {
         if (dbUser == null || loginForm.getPassword() == null ||
                 !loginForm.getPassword().equals(dbUser.getPassword())) {
 
-            bindingResult.reject("error.loginFail", "아이디 또는 비밀번호가 맞지 않습니다.");
+            bindingResult.reject("error.loginFail");
 
             return "home/home";
         }
@@ -164,29 +220,7 @@ public class UserController {
 
     }
 
-    @PostMapping("join")
-    public String join(@Validated UserJoinForm userJoinForm,
-                       BindingResult bindingResult,
-                       HttpSession session) {
 
-        //두 개의 비밀번호 일치 여부 확인
-        validatePasswordMatch(userJoinForm, bindingResult);
-
-        if (bindingResult.hasErrors()) {
-            return "user/joinForm";
-        }
-
-        //DB에 저장할 user, DB에 저장(service 필요)
-        User user = toUser(userJoinForm);
-        userService.join(user);
-
-        //로그인에 저장할 user
-        LoginUser loginUser = toLoginUser(user);
-
-        session.setAttribute(UserConst.LOGIN_USER, loginUser);
-
-        return "redirect:/home/login";
-    }
 
     private static LoginUser toLoginUser(User user) {
         LoginUser loginUser = new LoginUser(
@@ -209,9 +243,9 @@ public class UserController {
         user.setPhone(userJoinForm.getPhone());
         user.setRole(UserRole.valueOf(userJoinForm.getRole()));
 
-        user.setCreatedAt(LocalDate.now());
+        user.setCreatedAt(LocalDateTime.now());
         user.setUpdatedAt(LocalDate.now());
-        user.setStatus(UserStatus.PEDING);
+        user.setStatus(UserStatus.PENDING);
         user.setLock_count(0);
 
         user.setProfileImg(saveProfileImage(userJoinForm.getProfileImg()));
@@ -220,8 +254,8 @@ public class UserController {
     }
 
     private static String saveProfileImage(MultipartFile file) {
-        if (file != null && !file.isEmpty()) {
 
+        if (file != null && !file.isEmpty()) {
             File saveForder = new File(UserConst.UPLOAD_PROFILES_IMG_PATH);
 
             if (!saveForder.exists()) {
@@ -265,6 +299,51 @@ public class UserController {
                 dbUser.getProfileImg()
         );
         return sessionUser;
+    }
+
+    private int getUserCode() {
+
+        int currentYear = LocalDate.now().getYear();
+        int lastUserCode = userDao.getLastUserCode();
+
+        int lastYearPart = (lastUserCode % 1000000) / 10000;
+        int currentYearPart = currentYear % 100;
+
+        if (currentYearPart > lastYearPart) {
+            int prefix = lastUserCode / 1000000;
+            return (prefix * 1000000) + (currentYearPart * 10000) + 1;
+        } else {
+            return lastUserCode + 1;
+        }
+
+    }
+
+    private User createUser(UserJoinForm userJoinForm) {
+
+        String profileImage = "";
+        if (userJoinForm.getProfileImg() != null && !userJoinForm.getProfileImg().isEmpty()) {
+            profileImage = saveProfileImage(userJoinForm.getProfileImg());
+        }
+
+        int findUserCode = getUserCode();
+
+        User joinUser = new User();
+        joinUser.setUserCode(findUserCode);
+        joinUser.setUserId(userJoinForm.getUserId());
+        joinUser.setPassword(userJoinForm.getPassword());
+        joinUser.setName(userJoinForm.getName());
+        joinUser.setEmail(userJoinForm.getEmail());
+        joinUser.setPhone(userJoinForm.getPhone());
+        joinUser.setRole(UserRole.valueOf(userJoinForm.getRole().toUpperCase()));
+        joinUser.setStatus(UserStatus.PENDING);
+        joinUser.setProfileImg(profileImage);
+        joinUser.setCreatedAt(LocalDateTime.now());
+        joinUser.setLast_password_changed(LocalDate.now());
+        joinUser.setLock_count(0);
+        joinUser.setLastLoginAt(LocalDate.now());
+        joinUser.setUpdatedAt(LocalDate.now());
+
+        return joinUser;
     }
 
 }

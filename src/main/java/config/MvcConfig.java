@@ -108,7 +108,6 @@ public class MvcConfig implements WebMvcConfigurer {
                         "/js/**",
                         "/home/home",
                         "/home/findAccount",
-//                        "/home/dashboard",
                         "/user/join",
                         "/user/findId",
                         "/user/findPw",

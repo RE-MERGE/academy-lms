@@ -1,14 +1,23 @@
 package service;
 
+import dao.BoardDao;
+import dto.Board;
+import dto.Course;
+import dto.user.User;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Service
 public class BoardService {
 
+    @Autowired
+    BoardDao boardDao;
     @Value("${page.size}")
     private int pageSize;
     @Value("${page.block-size}")
@@ -45,4 +54,22 @@ public class BoardService {
 
         return result;
     }
+
+    public void insert(Board board) {
+        boardDao.insert(board);
+    }
+    
+
+	public Course selectCourse(int no) {
+		Course course = boardDao.selectCourse(no);
+    	return course;
+	}
+
+	public String selectProfessorName(int course_no) {
+	    return boardDao.selectProfessorName(course_no);
+	}
+
+	public List<Course> selectAllCourses() {
+		return boardDao.selectAllCourses();
+	}
 }

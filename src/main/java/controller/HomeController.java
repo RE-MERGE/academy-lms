@@ -29,9 +29,4 @@ public class HomeController {
     public String dashboard(Model model) {
         return "home/dashboard";
     }
-
-    @GetMapping("login")
-    public String login(Model model) {
-        return "home/login";
-    }
 }

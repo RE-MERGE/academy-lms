@@ -1,5 +1,6 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="form" uri="http://www.springframework.org/tags/form" %>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 
 <!DOCTYPE html>
 <html lang="ko">
@@ -43,7 +44,7 @@
     font-size: 0.78rem;
 }    .field input { width: 100%; padding: 0.78rem 1rem; border: 1.5px solid #e2e8f0; border-radius: 10px; font-family: 'Noto Sans KR', sans-serif; font-size: 0.95rem; outline: none; transition: border-color 0.2s, box-shadow 0.2s; background: #fafbff; }
     .field input:focus { border-color: #3b82f6; background: white; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12); }
-    .error-msg { color: #e53935; font-size: 0.78rem; margin-top: 0.3rem; display: block; }
+    .error-msg { color: #e53935 !important; font-size: 0.78rem; margin-top: 0.3rem; display: block; font-weight: 600; }
     .btn-submit { width: 100%; padding: 0.88rem; background: linear-gradient(135deg, #1e3a8a, #2563eb); color: white; border: none; border-radius: 10px; font-family: 'Noto Sans KR', sans-serif; font-size: 0.95rem; font-weight: 700; cursor: pointer; margin-top: 0.8rem; transition: opacity 0.2s, transform 0.15s; box-shadow: 0 4px 14px rgba(30, 58, 138, 0.3); }
     .btn-submit:hover { opacity: 0.9; transform: translateY(-1px); }
     .btn-submit:active { transform: translateY(0); }
@@ -63,16 +64,12 @@
     </div>
 
     <div class="tab-group">
-      <button class="tab-btn ${activeTab eq 'id' || empty activeTab ? 'active' : ''}" onclick="switchTab('id')">
-        아이디 찾기
-      </button>
-      <button class="tab-btn ${activeTab eq 'pw' ? 'active' : ''}" onclick="switchTab('pw')">
-        비밀번호 찾기
-      </button>
+      <button class="tab-btn ${empty activeTab || activeTab == 'id' ? 'active' : ''}" onclick="switchTab('id')">아이디 찾기</button>
+      <button class="tab-btn ${activeTab == 'pw' ? 'active' : ''}" onclick="switchTab('pw')">비밀번호 찾기</button>
     </div>
 
     <!-- 아이디 찾기 탭 -->
-    <div id="panel-id" class="tab-panel ${activeTab eq 'id' || empty activeTab ? 'active' : ''}">
+    <div id="panel-id" class="tab-panel ${empty activeTab || activeTab == 'id' ? 'active' : ''}">
       <form:form action="${pageContext.request.contextPath}/user/findId"
                  method="post" modelAttribute="findIdForm">
         <div class="field">
@@ -95,8 +92,7 @@
     </div>
 
     <!-- 비밀번호 찾기 탭 -->
-<%--    <div id="panel-pw" class="tab-panel">--%>
-    <div id="panel-pw" class="tab-panel ${activeTab eq 'pw' ? 'active' : ''}">
+    <div id="panel-pw" class="tab-panel ${activeTab == 'pw' ? 'active' : ''}">
       <form:form action="${pageContext.request.contextPath}/user/findPw"
                  method="post" modelAttribute="findPwForm">
         <div class="field">
@@ -138,6 +134,10 @@
       document.querySelectorAll('.tab-btn')[1].classList.add('active');
       document.getElementById('panel-pw').classList.add('active');
     }
+
+    // 탭 전환 시 에러 메시지 및 입력값 초기화
+    document.querySelectorAll('.error-msg').forEach(e => e.style.display = 'none');
+    document.querySelectorAll('.field input').forEach(i => i.value = '');
   }
 </script>
 

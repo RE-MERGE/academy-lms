@@ -89,7 +89,6 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="${pageContext.request.contextPath}/css/login.css">
   <link rel="stylesheet" href="${pageContext.request.contextPath}/css/board.css">
 </head>
 <body>
@@ -98,18 +97,9 @@
 <div class="bg-mesh"></div>
 <!-- ── 본문 ── -->
 <main class="board-wrap">
-  <!-- 통계 칩 -->
-  <div class="stats-bar">
-    <div class="stat-chip"><span class="dot" style="background:#ff6b6b"></span>공지 <strong>2</strong></div>
-    <div class="stat-chip"><span class="dot" style="background:#4ade80"></span>자유 <strong>18</strong></div>
-    <div class="stat-chip"><span class="dot" style="background:#fbbf24"></span>질문 <strong>12</strong></div>
-    <div class="stat-chip"><span class="dot" style="background:var(--bright)"></span>스터디 <strong>10</strong></div>
-    <div class="stat-chip"><span class="dot" style="background:#c4b5fd"></span>정보 <strong>8</strong></div>
-  </div>
-
   <!-- 툴바 -->
   <div class="board-toolbar">
-    <form class="search-form" method="get" action="board.jsp">
+    <form class="search-form" method="get" action="searchType">
       <select name="searchType" class="search-select">
         <option value="title"  <c:if test="${searchType == 'title'}">selected</c:if>>제목</option>
         <option value="writer" <c:if test="${searchType == 'writer'}">selected</c:if>>작성자</option>
@@ -119,7 +109,7 @@
              placeholder="검색어를 입력하세요" value="${keyword}">
       <button type="submit" class="btn-search">검색</button>
     </form>
-    <button class="btn-write" onclick="alert('글쓰기 페이지로 이동합니다.')">✏ 글쓰기</button>
+    <button class="btn-write" onclick="location='${pageContext.request.contextPath}/board/write'">글쓰기</button>
   </div>
 
   <!-- 검색 결과 안내 -->
@@ -247,6 +237,5 @@
 
 </main>
 
-<script src="${pageContext.request.contextPath}/js/bgParticle.js"></script>
 </body>
 </html>

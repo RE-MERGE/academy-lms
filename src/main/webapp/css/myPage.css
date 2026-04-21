@@ -1,0 +1,234 @@
+/* myPage.css */
+
+/* 디자인 시스템 변수 정의 */
+:root {
+  --primary:      #1d4ed8; /* LMS 포인트 블루 */
+  --primary-dark: #1e3a8a;
+  --primary-light:#3b82f6;
+  --primary-pale: #eff6ff;
+  --primary-tint: #dbeafe;
+
+  --gray-50:  #f9fafb;
+  --gray-100: #f3f4f6;
+  --gray-200: #e5e7eb;
+  --gray-300: #d1d5db;
+  --gray-400: #9ca3af;
+  --gray-500: #6b7280;
+  --gray-600: #4b5563;
+  --gray-700: #374151;
+  --gray-800: #1f2937;
+  --gray-900: #111827;
+
+  --green:    #16a34a;
+  --white:    #ffffff;
+
+  --shadow-sm: 0 1px 3px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04);
+  --shadow-md: 0 4px 10px rgba(0,0,0,.07), 0 2px 4px rgba(0,0,0,.04);
+  --shadow-lg: 0 8px 24px rgba(0,0,0,.08), 0 3px 8px rgba(0,0,0,.04);
+
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+}
+
+body {
+    background-color: var(--gray-50);
+    font-family: 'Pretendard', sans-serif;
+    color: var(--gray-900);
+}
+
+.page-container {
+    max-width: 900px;
+    margin: 2rem auto;
+    padding: 0 1.5rem;
+}
+
+/* 페이지 헤더 */
+.page-header {
+    margin-bottom: 2rem;
+}
+
+.page-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--gray-900);
+    margin-bottom: 0.5rem;
+}
+
+.page-breadcrumb {
+    font-size: 0.8rem;
+    color: var(--gray-400);
+    font-weight: 500;
+}
+.page-breadcrumb a { text-decoration: none; color: var(--gray-500); }
+.page-breadcrumb a:hover { color: var(--primary); }
+.page-breadcrumb span { color: var(--gray-300); }
+
+/* 카드 공통 스타일 */
+.card {
+    background: var(--white);
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    padding: 2.5rem;
+}
+
+/* 프로필 메인 카드 */
+.profile-main-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2.5rem;
+    margin-bottom: 2rem;
+}
+
+/* 아바타 영역 */
+.profile-avatar-wrap {
+    position: relative;
+    width: 150px;
+    height: 150px;
+}
+
+.profile-img-large {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 5px solid var(--primary-pale);
+    box-shadow: var(--shadow-md);
+}
+
+.badge {
+    padding: 0.25rem 0.8rem;
+    font-size: 0.65rem;
+    font-weight: 700;
+    border-radius: 999px;
+    letter-spacing: 0.04em;
+}
+.badge-primary {
+    background: var(--primary-pale);
+    color: var(--primary);
+    border: 1px solid var(--primary-tint);
+}
+
+.readonly-tag {
+    position: absolute;
+    bottom: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
+}
+
+/* 상세 정보 그리드 */
+.profile-info-grid {
+    width: 100%;
+    max-width: 500px;
+    border-top: 1px solid var(--gray-100);
+}
+
+.info-row {
+    display: flex;
+    padding: 1rem 0.5rem;
+    border-bottom: 1px solid var(--gray-100);
+}
+
+.info-label {
+    width: 120px;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--primary-mid);
+}
+
+.info-value {
+    flex: 1;
+    font-size: 0.95rem;
+    color: var(--gray-800);
+    font-weight: 500;
+}
+
+.join-type {
+    font-size: 0.75rem;
+    color: var(--gray-400);
+    margin-left: 8px;
+}
+
+/* 빠른 가기 버튼 영역 */
+.profile-quick-nav {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.quick-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 1.5rem;
+    background: var(--white);
+    border: 1.5px solid var(--gray-200);
+    border-radius: var(--radius-lg);
+    text-decoration: none;
+    color: var(--gray-600);
+    font-weight: 700;
+    font-size: 0.85rem;
+    transition: all 0.2s;
+}
+
+.quick-btn:hover {
+    border-color: var(--primary-tint);
+    color: var(--primary);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.quick-btn.active {
+    background: var(--green); /* 사진 참고 */
+    color: var(--white);
+    border-color: var(--green);
+}
+
+.quick-btn .si-icon {
+    font-size: 1.8rem;
+}
+
+/* 하단 설정 버튼 */
+.profile-settings-wrap {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    padding-top: 1.5rem;
+    border-top: 1px dashed var(--gray-200);
+}
+
+/* 버튼 공통 스타일 */
+.btn-primary, .btn-secondary {
+    padding: 0.6rem 1.2rem;
+    border-radius: var(--radius-md);
+    font-family: 'Pretendard', sans-serif;
+    font-size: 0.82rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.16s;
+    border: none;
+}
+
+.btn-primary {
+    background: #fbbf24; /* 사진의 노란색 참고 */
+    color: #1f2937;
+}
+.btn-primary:hover {
+    background: #f59e0b;
+    transform: translateY(-1px);
+}
+
+.btn-secondary {
+    background: #fbbf24; /* 사진의 노란색 참고 */
+    color: #1f2937;
+    opacity: 0.8;
+}
+.btn-secondary:hover {
+    background: #f59e0b;
+    opacity: 1;
+}

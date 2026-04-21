@@ -1,12 +1,13 @@
 package service;
 
 import dao.BoardDao;
-import dto.Board;
+import dto.board.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -51,7 +52,15 @@ public class BoardService {
         return result;
     }
 
-    public void insert(Board board) {
-        boardDao.insert(board);
+    public void insertPost(PostCreate board, int writerNo) {
+        boardDao.insertPost(board, writerNo);
+    }
+
+    public List<PostList> postList(Integer courseNo, String boardType) {
+        return boardDao.postList(courseNo, boardType);
+    }
+
+    public PostDetail postDetail(int boardNo) {
+        return boardDao.postDetail(boardNo);
     }
 }

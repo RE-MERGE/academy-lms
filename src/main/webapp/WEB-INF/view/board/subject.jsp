@@ -98,9 +98,9 @@
 <hr style="border: 0; border-top: 2px solid #ccc; margin: 0;">
 
 <div style="text-align: right; padding: 15px 0; font-size: 16px;">
-    출석 <span style="color: blue; font-weight: bold;">N</span>회 / 
-    지각 <span style="color: orange; font-weight: bold;">N</span>회 / 
-    결석 <span style="color: red; font-weight: bold;">N</span>회
+    출석 <span id="count-present" style="color: blue; font-weight: bold;">0</span>회 / 
+    지각 <span id="count-late" style="color: orange; font-weight: bold;">0</span>회 / 
+    결석 <span id="count-absent" style="color: red; font-weight: bold;">0</span>회
 </div>
 
 <table class="attendance-table">
@@ -122,10 +122,14 @@
 	            ${Course.start_time} ~ ${Course.end_time}
 	        </td>
 	        <td class="cell-status">
-	            <div class="status-badge">
-	                <span class="check-circle-small">✔</span>
-	                ${not empty Course.status ? Course.status : '강의 예정'}
-	            </div>
+	            <select class="status-select" onchange="updateCounts()"
+                    style="padding: 6px 12px; border-radius: 6px; border: 1px solid #d0d7f0; font-size: 14px; cursor: pointer;">
+                    <option value="NONE">강의 예정</option>
+                    <option value="PRESENT">✔ 출석</option>
+                    <option value="LATE">⏰ 지각</option>
+                    <option value="ABSENT">✖ 결석</option>
+                    <option value="EXCUSED">📋 자퇴</option>
+                </select>
 	        </td>
 	    </tr>
 	</c:forEach>
@@ -150,5 +154,21 @@
             dropdown.style.display = 'none';
         }
     });
+    
+    document.addEventListener('DOMContentLoaded', function() {
+    	updateCounts();
+    });
+    
+    function updateCounts() {
+    	let present = 0, late = 0, absent = 0;
+    	document.querySelectorAll('.status-select').forEach(function(select) {
+    		if(select.value === 'PRESENT') present++;
+    		else if(select.value === 'LATE') late++;
+    		else if(select.value === 'ABSENT') absent++;
+    	});
+    	document.getElementById('count-present').textContent = present;
+    	document.getElementById('count-late').textContent = late;
+    	document.getElementById('count-absent').textContent = absent;
+    }
 </script>
 </body>  

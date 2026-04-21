@@ -78,4 +78,8 @@ public class BoardService {
 	public List<Course> selectAllCourses() {
 		return boardDao.selectAllCourses();
 	}
+
+    public void updatePost(PostUpdate postUpdate) {
+        boardDao.updatePost(postUpdate);
+    }
 }

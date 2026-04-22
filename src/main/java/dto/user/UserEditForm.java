@@ -9,6 +9,7 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
+import java.time.LocalDate;
 
 @Getter
 @Setter
@@ -37,8 +38,10 @@ public class UserEditForm {
 
     //최소 8자 이상, 영문자와 숫자 최소 1개씩 포함
     @NotBlank(message = "{error.required.password}")
-    @Pattern(regexp = UserPattern.PASSWORD_PATTERN, message = "{error.input.password}")
     private String password;
+
+    private LocalDate updatedAt;      // 비밀번호 마지막 변경 시간
+
 
     public UserEditForm(){}
 

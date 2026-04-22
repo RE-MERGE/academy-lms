@@ -1,5 +1,6 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="form" uri="http://www.springframework.org/tags/form" %>
+<%@ taglib prefix="input" uri="http://www.springframework.org/tags/form" %>
 <!DOCTYPE html>
 <html>
 <head>
@@ -279,40 +280,42 @@
                     <p class="find-sub">새로운 비밀번호를 설정하세요.</p>
                 </div>
 
-                <form action="${pageContext.request.contextPath}/user/changePassword" method="post">
+                <form:form action="${pageContext.request.contextPath}/user/updatePassword"
+                           method="post" modelAttribute="updatePwForm">
+
+                    <form:hidden path="userId" />
 
                     <div class="fields-divider"><span>현재 비밀번호 확인</span></div>
 
                     <div class="field">
                         <label><span class="field-icon">✦</span> 현재 비밀번호</label>
-                        <input type="password" name="currentPassword" placeholder="현재 비밀번호를 입력하세요" />
+                        <form:password path="currentPassword" placeholder="현재 비밀번호를 입력하세요" />
+                        <form:errors path="currentPassword" cssClass="error-msg" />
                     </div>
 
                     <div class="fields-divider"><span>새 비밀번호 설정</span></div>
 
                     <div class="field">
                         <label><span class="field-icon">✦</span> 새 비밀번호</label>
-                        <input type="password" name="newPassword" placeholder="새 비밀번호를 입력하세요" />
-                        <p class="field-hint">영문자, 숫자, 특수문자 포함 최소 8~20자</p>
+                        <form:password path="newPassword" placeholder="새 비밀번호를 입력하세요" />
+                        <form:errors path="newPassword" cssClass="error-msg" />
                     </div>
 
                     <div class="field">
                         <label><span class="field-icon">✦</span> 새 비밀번호 확인</label>
-                        <input type="password" name="newPasswordConfirm" placeholder="한 번 더 입력하세요" />
+                        <form:password path="newPasswordConfirm" placeholder="한 번 더 입력하세요" />
+                        <form:errors path="newPasswordConfirm" cssClass="error-msg" />
                     </div>
 
                     <div class="btn-row">
                         <a href="${pageContext.request.contextPath}/user/myPage" class="btn-cancel">
-                            <i class="fa-solid fa-xmark"></i>
-                            변경 취소
+                            <i class="fa-solid fa-xmark"></i> 변경 취소
                         </a>
                         <button type="submit" class="btn-submit">
-                            <i class="fa-solid fa-floppy-disk"></i>
-                            저장
+                            <i class="fa-solid fa-floppy-disk"></i> 저장
                         </button>
                     </div>
-
-                </form>
+                </form:form>
 
             </div><!-- /find-card-body -->
 

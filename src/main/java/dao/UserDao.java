@@ -7,9 +7,6 @@ import org.mybatis.spring.SqlSessionTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
-import javax.validation.constraints.Email;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.Pattern;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -62,5 +59,9 @@ public class UserDao {
 
         template.getMapper(cls).updateInfo(userEditForm);
 //        template.getMapper(cls).updateInfo(param);
+    }
+
+    public void updateProfileImg(String userId, String currentProfileImg) {
+        template.getMapper(cls).updateProfileImg(userId, currentProfileImg);
     }
 }

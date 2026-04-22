@@ -47,23 +47,15 @@ public interface UserMapper {
     @Update("UPDATE USERS SET password = #{tempPassword} WHERE user_id = #{userId}")
     void updatePassword(@Param("userId") String userId, @Param("tempPassword") String tempPassword);
 
-    @Update("<script>" +
-            "UPDATE USERS " +
-            "<set>" +
+    @Update("UPDATE USERS " +
+            "SET " +
             "  name = #{name}, " +
             "  email = #{email}, " +
-            "  phone = #{phone}, " +
-            "  <if test='password != null and password != \"\"'> " +
-            "    , password = #{password} " +
-            "  </if> " +
-            "  <if test='currentProfileImg != null and currentProfileImg != \"\"'> " +
-            "    , profile_img = #{currentProfileImg} " +
-            "  </if> " +
-            "  , updated_at = NOW() " +
-            "</set>" +
-            "WHERE user_id = #{userId}" +
-            "</script>")
+            "  phone = #{phone} " +
+            "WHERE user_id = #{userId}")
     void updateInfo(UserEditForm userEditForm);
 
-    void updateInfo(Map<String, Object> param);
-}
+    @Update("UPDATE USERS " +
+            "SET profile_img = #{profileImg} " +
+            "WHERE user_id = #{userId}")
+    void updateProfileImg(@Param("userId") String userId, @Param("profileImg") String profileImg);}

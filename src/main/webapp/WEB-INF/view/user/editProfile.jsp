@@ -424,7 +424,7 @@
                 <!-- 프로필 업로드 -->
                 <div class="profile-upload-container">
                     <img id="preview"
-                     src="${pageContext.request.contextPath}/upload/profiles/${userEditForm.currentProfileImg}" class="profile-preview" alt="프로필 미리보기">
+                         src="${pageContext.request.contextPath}/upload/profiles/${userEditForm.currentProfileImg}" class="profile-preview" alt="프로필 미리보기">
                     <label for="profile-input" class="camera-icon-label" title="사진 변경">
                         <i class="fa-solid fa-camera"></i>
                     </label>
@@ -432,6 +432,7 @@
 
                 <form:form action="${pageContext.request.contextPath}/user/editProfile" method="post"
                            enctype="multipart/form-data" modelAttribute="userEditForm">
+                    <input type="hidden" name="currentProfileImg" value="${userEditForm.currentProfileImg}"/>
 
                     <input type="file" id="profile-input" name="profileImg" accept="image/*"
                            onchange="previewImage(this)">
@@ -468,12 +469,13 @@
                     </div>
 
 
-<div class="fields-divider"><span>비밀번호 인증</span></div>
+                    <div class="fields-divider"><span>비밀번호 인증</span></div>
 
-<div class="field">
-    <label><span class="field-icon">✦</span> 현재 비밀번호</label>
-    <input type="password" name="currentPassword" placeholder="현재 비밀번호를 입력하세요" />
-</div>
+                    <div class="field">
+                        <label><span class="field-icon">✦</span> 현재 비밀번호</label>
+                        <form:password path="password" placeholder="현재 비밀번호를 입력하세요" />
+                        <form:errors path="password" cssClass="error-msg" />
+                    </div>
 
                     <!-- 버튼 -->
                     <div class="btn-row">

@@ -69,7 +69,7 @@
             <a href="${pageContext.request.contextPath}/user/editProfile" class="btn-action btn-action-primary">
                 회원정보 수정
             </a>
-            <a href="${pageContext.request.contextPath}/user/changePassword" class="btn-action btn-action-outline">
+            <a href="${pageContext.request.contextPath}/user/updatePwForm" class="btn-action btn-action-outline">
                 비밀번호 변경
             </a>
         </div>

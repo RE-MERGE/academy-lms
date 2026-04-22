@@ -40,4 +40,8 @@ public class BoardDao {
     public List<Course> selectAllCourses() {
     	return template.getMapper(cls).getAllCourses();
     }
+
+    public void updatePost(PostUpdate postUpdate) {
+        template.getMapper(cls).updatePost(postUpdate);
+    }
 }

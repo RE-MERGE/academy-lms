@@ -5,6 +5,7 @@ import dto.board.*;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
+import org.apache.ibatis.annotations.Update;
 
 import java.util.List;
 
@@ -61,9 +62,11 @@ public interface BoardMapper {
     List<Course> getAllCourses();
 
 
-
-
-
-
+    @Update("UPDATE BOARD\n" +
+            "       SET title = #{title},\n" +
+            "           content = #{content},\n" +
+            "           created_at = NOW() \n" +
+            "     WHERE board_no = #{boardNo} ")
+    void updatePost(PostUpdate postUpdate);
 }
 

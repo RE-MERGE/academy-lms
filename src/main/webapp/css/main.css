@@ -412,6 +412,52 @@ html, body {
   color: var(--primary);
 }
 
+.flyout-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 .6rem;
+}
+
+.flyout-item a {
+    flex: 1;
+    padding: .6rem .6rem;
+    font-size: .84rem;
+    font-weight: 500;
+    color: var(--gray-600);
+    text-decoration: none;
+    border-radius: var(--radius-md);
+    transition: all .16s;
+}
+
+.flyout-item a:hover {
+    background: var(--primary-pale);
+    color: var(--primary);
+}
+
+.fav-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1.1rem;
+    color: var(--gray-400);
+    padding: .3rem;
+    border-radius: 50%;
+    transition: all .16s;
+    line-height: 1;
+    flex-shrink: 0;
+}
+
+.fav-btn:hover {
+    color: #f5a623;
+    background: #fff8ee;
+    transform: scale(1.2);
+}
+
+.fav-btn.active {
+    color: #f5a623;
+}
+
 /* ================================================================
    메인 콘텐츠
    ================================================================ */

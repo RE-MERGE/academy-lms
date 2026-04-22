@@ -1,5 +1,6 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <!DOCTYPE html>
 <html lang="ko">
 
@@ -116,11 +117,17 @@
 	        	<c:if test="${not empty courseList}">
 	        	<li class="flyout-list">&nbsp;과목</li>
 	            	<c:forEach var="course" items="${courseList}">
-		                <li>
-		                    <a href="${pageContext.request.contextPath}/course/subject?no=${course.course_no}">
-		                        ${course.course_name}
-		                    </a>
-		                </li>
+		                <li class="flyout-item">
+        <a href="${pageContext.request.contextPath}/course/subject?no=${course.course_no}">
+            ${course.course_name}
+        </a>
+        <button class="fav-btn" onclick="toggleFavorite(event, this, ${course.course_no})">
+            <c:choose>
+                <c:when test="${fn:contains(favoriteNos, course.course_no)}">★</c:when>
+                <c:otherwise>☆</c:otherwise>
+            </c:choose>
+        </button>
+    </li>
 	            	</c:forEach>
 	        	</c:if>
 	   	 	</ul>
@@ -161,6 +168,29 @@ document.addEventListener('DOMContentLoaded', function() {
         }, 100);
     });
 });
+
+function toggleFavorite(event, btn, courseNo) {
+    event.preventDefault();
+    event.stopPropagation();
+    const isFav = btn.classList.contains('active');
+    const contextPath = '<%=request.getContextPath()%>';
+    const url = isFav
+        ? contextPath + '/course/remove'
+        : contextPath + '/course/add';
+
+    fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: 'course_no=' + courseNo
+    })
+    .then(res => res.text())
+    .then(result => {
+        if (result === 'ok') {
+            btn.classList.toggle('active');
+            btn.textContent = isFav ? '☆' : '★';
+        }
+    });
+}
 </script>
 </body>
 </html>

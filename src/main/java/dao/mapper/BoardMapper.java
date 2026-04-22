@@ -52,21 +52,8 @@ public interface BoardMapper {
             "        WHERE board_no=#{value}")
     PostDetail postDetail(int boardNo);
 
-    @Select("select * from COURSE where course_no = #{course_no}")
-    Course getCourse(Course course);
-
-    @Select("SELECT USERS.name FROM USERS JOIN COURSE ON USERS.user_no = COURSE.professor_no WHERE COURSE.course_no = #{course_no}")
-    String getProfessorName(@Param("course_no") int course_no);
-    
-    @Select("select * from COURSE")
-    List<Course> getAllCourses();
 
 
-    @Update("UPDATE BOARD\n" +
-            "       SET title = #{title},\n" +
-            "           content = #{content},\n" +
-            "           created_at = NOW() \n" +
-            "     WHERE board_no = #{boardNo} ")
-    void updatePost(PostUpdate postUpdate);
+
 }
 

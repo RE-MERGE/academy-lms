@@ -143,7 +143,7 @@
     }
 
     function changeCourse(course_no) {
-        location.href = '${pageContext.request.contextPath}/board/subject?no=' + course_no;
+        location.href = '${pageContext.request.contextPath}/course/subject?no=' + course_no;
     }
 
     // 외부 클릭시 닫기

@@ -13,24 +13,25 @@
 
 <div class="mypage-wrap">
 
-    <h2 class="mypage-title">👤 마이페이지</h2>
+    <h2 class="mypage-title">마이페이지</h2>
 
     <!-- ── 프로필 카드 ── -->
     <div class="profile-card">
 
         <!-- 프로필 이미지 -->
-        <div class="profile-img-wrap">
-            <c:choose>
-                <c:when test="${not empty sessionUser.profileImg}">
-                    <img src="${pageContext.request.contextPath}/upload/profiles/${sessionUser.profileImg}"
-                         alt="프로필 이미지" class="profile-img"/>
-                </c:when>
-                <c:otherwise>
-                    <div class="profile-img-default">👤</div>
-                </c:otherwise>
-            </c:choose>
-            <span class="profile-status">재학중</span>
-        </div>
+       <div class="profile-img-wrap">
+    <c:choose>
+        <c:when test="${not empty sessionUser.profileImg}">
+            <img src="${pageContext.request.contextPath}/upload/profiles/${sessionUser.profileImg}"
+                 alt="프로필 이미지" class="profile-img"/>
+        </c:when>
+        <c:otherwise>
+            <img src="${pageContext.request.contextPath}/img/default-profile3.png"
+                 alt="프로필 이미지" class="profile-img"/>
+        </c:otherwise>
+    	</c:choose>
+   	 	<span class="profile-status">재학중</span>
+		</div>
 
         <!-- 프로필 정보 -->
         <div class="profile-info">

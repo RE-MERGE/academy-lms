@@ -436,4 +436,10 @@ public class UserController {
     //--------------------------------------------------------------
     
     
+    @GetMapping("/editProfile")   // 개인정보 수정 기능X
+    public String editForm(Model model) {
+        model.addAttribute("userEditForm", new User());
+        return "user/editProfile";
+    }
+    
 }

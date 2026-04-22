@@ -424,7 +424,7 @@
                 <!-- 프로필 업로드 -->
                 <div class="profile-upload-container">
                     <img id="preview"
-     src="${pageContext.request.contextPath}/img/default-profile3.png" class="profile-preview" alt="프로필 미리보기">
+                     src="${pageContext.request.contextPath}/upload/profiles/${userEditForm.currentProfileImg}" class="profile-preview" alt="프로필 미리보기">
                     <label for="profile-input" class="camera-icon-label" title="사진 변경">
                         <i class="fa-solid fa-camera"></i>
                     </label>

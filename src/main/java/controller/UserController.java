@@ -71,7 +71,7 @@ public class UserController {
         }
 
         //비밀번호 값이 틀리거나, 없는 경우
-        if(userJoinForm.getPassword() == null || userJoinForm.getPasswordConfirm() == null ||
+        if (userJoinForm.getPassword() == null || userJoinForm.getPasswordConfirm() == null ||
                 !userJoinForm.getPassword().equals(userJoinForm.getPasswordConfirm())) {
             bindingResult.reject("{error.mismatch.password}");
             return "user/joinForm";
@@ -117,7 +117,7 @@ public class UserController {
         }
 
         //활동 가능한 상태의 아이디가 아니라면,
-        if(dbUser.getStatus() != UserStatus.ACTIVE) {
+        if (dbUser.getStatus() != UserStatus.ACTIVE) {
             bindingResult.reject("error.status.notActive");
             return "home/home";
         }
@@ -147,7 +147,7 @@ public class UserController {
         String findUserId = userDao.selectUserIdByEmail(findIdForm.getEmail());
 
         if (findUserId == null) {
-            bindingResult.reject( "error.mismatch.info");
+            bindingResult.reject("error.mismatch.info");
             model.addAttribute("findPwForm", new FindPwForm());
             return "home/findAccount";
         }
@@ -202,8 +202,8 @@ public class UserController {
         message.setTo(email);
         message.setSubject("[re-merge LMS] 임시 비밀번호 발급 ");
         message.setText("안녕하세요, [re-merge LMS]입니다. \n" +
-                    "요청하신 임시 비밀번호는 [ " + tempPassword + "] 입니다.\n" +
-                    "로그인 후 반드시 비밀번호를 변경해주세요.");
+                "요청하신 임시 비밀번호는 [ " + tempPassword + "] 입니다.\n" +
+                "로그인 후 반드시 비밀번호를 변경해주세요.");
 
         mailSender.send(message);
 
@@ -244,10 +244,50 @@ public class UserController {
         session.setAttribute(UserConst.LOGIN_USER, loginUser);
 
         return "redirect:/home/home";
-
     }
 
+    @GetMapping("editProfile")   // 개인정보 수정 기능X
+    public String editForm(Model model, UserEditForm userEditForm, @Login SessionUser sessionUser) {
 
+        model.addAttribute("userEditForm", new UserEditForm(
+                sessionUser.getProfileImg(),
+                sessionUser.getUserId(),
+                sessionUser.getName(),
+                sessionUser.getEmail(),
+                sessionUser.getPhone(),
+                ""
+        ));
+
+        return "user/editProfile";
+    }
+
+    @PostMapping("editProfile")
+    public String editForm(@Validated UserEditForm userEditForm, BindingResult bindingResult, @Login SessionUser sessionUser) {
+
+        if (bindingResult.hasErrors()) {
+            return "user/editProfile";
+        }
+
+        User dbUser = userDao.selectUser(sessionUser.getUserId());
+
+        if (!userEditForm.getPassword().equals(dbUser.getPassword())) {
+            bindingResult.rejectValue("password", "${error.mismatch.password}");
+            return "user/editProfile";
+        }
+
+        if (userEditForm.getProfileImg() != null && !userEditForm.getProfileImg().isEmpty()) {
+            String newProfileImgName = saveProfileImage(userEditForm.getProfileImg());
+            userEditForm.setCurrentProfileImg(newProfileImgName);
+        }
+
+        userDao.updateInfo(userEditForm);
+
+        System.out.println("===================================");
+        System.out.println("userEditForm = " + userEditForm);
+        System.out.println("===================================");
+
+        return "redirect:/user/myPage";
+    }
 
     private static LoginUser toLoginUser(User user) {
         LoginUser loginUser = new LoginUser(
@@ -275,7 +315,6 @@ public class UserController {
         user.setLock_count(0);
 
         user.setProfileImg(saveProfileImage(userJoinForm.getProfileImg()));
-        System.out.println("user.getProfileImg() = " + user.getProfileImg());
         return user;
     }
 
@@ -320,6 +359,7 @@ public class UserController {
                 dbUser.getUserCode(),
                 dbUser.getUserId(),
                 dbUser.getEmail(),
+                dbUser.getPhone(),
                 dbUser.getName(),
                 dbUser.getRole(),
                 dbUser.getStatus(),
@@ -372,9 +412,8 @@ public class UserController {
 
         return joinUser;
     }
-/*   adminadminUserList 빈껍데기 컨트롤러 기능X
- * 
-    @GetMapping("/adminUserList")
+
+    @GetMapping("adminUserList")
     public String adminUserList(Model model) {
         model.addAttribute("userList", new ArrayList<>());
         model.addAttribute("currentPage", 1);
@@ -382,89 +421,14 @@ public class UserController {
     }  
   
     
-    @GetMapping("/adminCourseList") // 빈껍데기 컨트롤러 기능X
+    @GetMapping("adminCourseList") // 빈껍데기 컨트롤러 기능X
     public String adminCourseList(@RequestParam(defaultValue = "1") int page, Model model) {
         model.addAttribute("courseList", new ArrayList<>());
         model.addAttribute("currentPage", page);
         model.addAttribute("totalPages", 1);
         return "user/adminCourseList";
     }
-    
-    */
-    //=========================== DB연동 전 adminList, adminCorseList 리스트 출력 "테스트"용 지워도됨
 
-    @GetMapping("/adminUserList")
-    public String adminUserList(@RequestParam(defaultValue = "1") int page, Model model) {
-        
-        List<Map<String, Object>> userList = new ArrayList<>();
-        
-        Map<String, Object> u1 = new HashMap<>();
-        u1.put("user_no", 1); u1.put("name", "김일번");
-        u1.put("email", "1111@naver.com"); u1.put("role", "STUDENT");
-        u1.put("status", "ACTIVE"); u1.put("student_id", "261111");
-        u1.put("apply_date", "2026-01-01"); userList.add(u1);
-
-        Map<String, Object> u2 = new HashMap<>();
-        u2.put("user_no", 2); u2.put("name", "김이번");
-        u2.put("email", "2222@naver.com"); u2.put("role", "STUDENT");
-        u2.put("status", "INACTIVE"); u2.put("student_id", "261112");
-        u2.put("apply_date", "2026-01-02"); userList.add(u2);
-
-        Map<String, Object> u3 = new HashMap<>();
-        u3.put("user_no", 3); u3.put("name", "박삼번");
-        u3.put("email", "3333@gmail.com"); u3.put("role", "STUDENT");
-        u3.put("status", "PENDING"); u3.put("student_id", "261113");
-        u3.put("apply_date", "2026-01-03"); userList.add(u3);
-
-        model.addAttribute("userList", userList);
-        model.addAttribute("currentPage", page);
-        model.addAttribute("totalPages", 3);
-        return "user/adminUserList";
-    }
-    
-    @GetMapping("/adminCourseList")
-    public String adminCourseList(@RequestParam(defaultValue = "1") int page, Model model) {
-
-        List<Map<String, Object>> courseList = new ArrayList<>();
-
-        Map<String, Object> c1 = new HashMap<>();
-        c1.put("course_no", 1); c1.put("prof_name", "김교수");
-        c1.put("course_name", "수능 영어 정복반"); c1.put("status", "APPROVED");
-        c1.put("course_code", "261111"); c1.put("apply_date", "2026-01-01");
-        c1.put("classroom", "203관 817호"); c1.put("day_of_week", "월");
-        c1.put("start_time", "09:00"); c1.put("end_time", "11:00");
-        c1.put("credits", 3); courseList.add(c1);
-
-        Map<String, Object> c2 = new HashMap<>();
-        c2.put("course_no", 2); c2.put("prof_name", "이교수");
-        c2.put("course_name", "고난도 독해 집중반"); c2.put("status", "PENDING");
-        c2.put("course_code", "261112"); c2.put("apply_date", "2026-01-02");
-        c2.put("classroom", "203관 818호"); c2.put("day_of_week", "화");
-        c2.put("start_time", "13:00"); c2.put("end_time", "15:00");
-        c2.put("credits", 2); courseList.add(c2);
-
-        Map<String, Object> c3 = new HashMap<>();
-        c3.put("course_no", 3); c3.put("prof_name", "박교수");
-        c3.put("course_name", "너무 어려워 콩글리쉬반"); c3.put("status", "CANCELED");
-        c3.put("course_code", "261113"); c3.put("apply_date", "2026-01-03");
-        c3.put("classroom", "203관 819호"); c3.put("day_of_week", "목");
-        c3.put("start_time", "15:00"); c3.put("end_time", "17:00");
-        c3.put("credits", 3); courseList.add(c3);
-
-        model.addAttribute("courseList", courseList);
-        model.addAttribute("currentPage", page);
-        model.addAttribute("totalPages", 3);
-        return "user/adminCourseList";
-    }
-    
-    //--------------------------------------------------------------
-    
-    
-    @GetMapping("/editProfile")   // 개인정보 수정 기능X
-    public String editForm(Model model) {
-        model.addAttribute("userEditForm", new User());
-        return "user/editProfile";
-    }
     
     @GetMapping("/changePassword") // 개인정보 비번수정 기능X
     public String changePasswordForm() {

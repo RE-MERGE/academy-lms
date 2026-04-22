@@ -22,6 +22,13 @@ public class CourseService {
     	return course;
 	}
 
+	public int insertCourse(Course course) {
+		return coursedao.insertCourse(course);
+	}
+
+	public List<Course> getBlockedCourses(String room, String semester) {
+    return coursedao.getBlockedCourses(room, semester);
+  }
 	public String selectProfessorName(int course_no) {
 	    return coursedao.selectProfessorName(course_no);
 	}

@@ -442,4 +442,17 @@ public class UserController {
         return "user/editProfile";
     }
     
+    @GetMapping("/changePassword") // 개인정보 비번수정 기능X
+    public String changePasswordForm() {
+        return "user/changePassword";
+    }
+    
+    @GetMapping("/gradeManage")
+    public String gradeManage(@RequestParam(defaultValue = "1") int page, Model model) {
+        model.addAttribute("studentList", new ArrayList<>());
+        model.addAttribute("currentPage", page);
+        model.addAttribute("totalPages", 1);
+        return "user/gradeManage";
+    }
+    
 }

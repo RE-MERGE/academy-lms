@@ -37,10 +37,10 @@
         <span class="header-semester">2026학년도 1학기</span>
 
         <c:choose>
-          <c:when test="${sessionScope.loginUser.role == 'admin'}">
+          <c:when test="${sessionScope.sessionUser.role == 'ADMIN'}">
             <span class="user-role-badge role-admin">관리자</span>
           </c:when>
-          <c:when test="${sessionScope.loginUser.role == 'professor'}">
+          <c:when test="${sessionScope.sessionUser.role == 'PROFESSOR'}">
             <span class="user-role-badge role-teacher">강사</span>
           </c:when>
           <c:otherwise>
@@ -48,12 +48,12 @@
           </c:otherwise>
         </c:choose>
 
+        <div class="avatar">${fn:substring(sessionScope.sessionUser.name, 0, 1)}</div>
         <div class="header-user-info">
-          <span class="user-name">${sessionScope.loginUser.name}</span>
-          <span class="user-id">${sessionScope.loginUser.userId}</span>
+          <span class="user-id">${sessionScope.sessionUser.userId}</span>
+          <span class="user-name">${sessionScope.sessionUser.name}</span>
         </div>
 
-        <div class="avatar"><%--${fn:substring(sessionScope.loginUser.name, 0, 1)}--%></div>
 
         <a href="${pageContext.request.contextPath}/user/logout" class="btn-logout">로그아웃</a>
       </div>
@@ -112,21 +112,24 @@
 
     </nav>
 <div class="flyout" id="course-flyout">
-	    <h3 class="flyout-title">전체 과목</h3>
+	    <h3 class="flyout-title">${course.course_name}</h3>
 	    	<ul class="flyout-list">
 	        	<c:if test="${not empty courseList}">
-	        	<li class="flyout-list">&nbsp;과목</li>
+	        	<!-- <li class="flyout-list">&nbsp;과목</li>-->
 	            	<c:forEach var="course" items="${courseList}">
 		                <li class="flyout-item">
-        <a href="${pageContext.request.contextPath}/course/subject?no=${course.course_no}">
+        <a href="${pageContext.request.contextPath}/course/mainSubject?no=${course.course_no}">
             ${course.course_name}
         </a>
-        <button class="fav-btn" onclick="toggleFavorite(event, this, ${course.course_no})">
-            <c:choose>
-                <c:when test="${fn:contains(favoriteNos, course.course_no)}">★</c:when>
-                <c:otherwise>☆</c:otherwise>
-            </c:choose>
-        </button>
+        <c:set var="isFav" value="false"/>
+    <c:forEach var="fno" items="${favoriteNos}">
+        <c:if test="${fno == course.course_no}">
+            <c:set var="isFav" value="true"/>
+        </c:if>
+    </c:forEach>
+        <button class="fav-btn ${isFav ? 'active' : ''}" onclick="toggleFavorite(event, this, ${course.course_no})">
+        ${isFav ? '★' : '☆'}
+    </button>
     </li>
 	            	</c:forEach>
 	        	</c:if>
@@ -191,6 +194,7 @@ function toggleFavorite(event, btn, courseNo) {
         }
     });
 }
+
 </script>
 </body>
 </html>

@@ -315,10 +315,11 @@
                     <label for="profile-input" class="camera-icon-label">
                         <i class="fa-solid fa-camera"></i>
                     </label>
-                    <input type="file" id="profile-input" name="profileImg" accept="image/*" onchange="previewImage(this)">
                 </div>
 
-                <form:form action="join" method="post" enctype="multipart/form-data" modelAttribute="userJoinForm">
+                <form:form action="${pageContext.request.contextPath}/user/join" method="post" enctype="multipart/form-data" modelAttribute="userJoinForm">
+
+                    <input type="file" id="profile-input" name="profileImg" accept="image/*" onchange="previewImage(this)">
 
                     <div class="field">
                         <label><span class="field-icon">✦</span> 이름</label>
@@ -366,7 +367,7 @@
                         <label><span class="field-icon">✦</span> 직책</label>
                         <form:select path="role">
                             <form:option value="STUDENT">학생</form:option>
-                            <form:option value="TEACHER">교수</form:option>
+                            <form:option value="PROFESSOR">교수</form:option>
                         </form:select>
                     </div>
 

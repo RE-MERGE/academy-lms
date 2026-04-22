@@ -17,7 +17,11 @@ public class LoginCheckInterceptor implements HandlerInterceptor {
 
         if (session == null || session.getAttribute(UserConst.SESSION_USER) == null) {
 
-            response.sendRedirect(request.getContextPath() + "/home/home?redirectURL=" + requestURI);
+            String contextPath = request.getContextPath();
+            String redirectURL = requestURI.substring(contextPath.length());
+
+            response.sendRedirect(contextPath + "/home/home?redirectURL=" + redirectURL);
+
             return false;
         }
 

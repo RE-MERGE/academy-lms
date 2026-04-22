@@ -16,15 +16,25 @@ public class CourseService {
 	public List<Course> list() {
 		return coursedao.list();
 	}
+	
+	public Course selectCourse(int no) {
+		Course course = coursedao.selectCourse(no);
+    	return course;
+	}
 
 	public int insertCourse(Course course) {
 		return coursedao.insertCourse(course);
-		
 	}
 
 	public List<Course> getBlockedCourses(String room, String semester) {
     return coursedao.getBlockedCourses(room, semester);
-}
+  }
+	public String selectProfessorName(int course_no) {
+	    return coursedao.selectProfessorName(course_no);
+	}
 
+	public List<Course> selectAllCourses() {
+		return coursedao.selectAllCourses();
+	}
 	
 }

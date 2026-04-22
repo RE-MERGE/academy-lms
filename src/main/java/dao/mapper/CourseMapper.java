@@ -18,6 +18,12 @@ public interface CourseMapper {
 	@Select("SELECT course_no, day_of_week, start_time, end_time FROM COURSE WHERE room_info = #{room} AND semester = #{semester} AND status != 'REJECTED'")
 	public List<Course> getBlokcedCourse(@Param("room") String room, @Param("semester") String semester);
 
-	
+	@Select("select * from COURSE where course_no = #{course_no}")
+    Course getCourse(Course course);
 
+    @Select("SELECT USERS.name FROM USERS JOIN COURSE ON USERS.user_no = COURSE.professor_no WHERE COURSE.course_no = #{course_no}")
+    String getProfessorName(@Param("course_no") int course_no);
+    
+    @Select("select * from COURSE")
+    List<Course> getAllCourses();
 }

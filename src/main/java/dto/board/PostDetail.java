@@ -12,6 +12,7 @@ import java.util.Date;
 @AllArgsConstructor
 public class PostDetail {
     private int boardNo;
+    private int writerNo;
     private Integer courseNo;
     private String boardType;
     private String title;

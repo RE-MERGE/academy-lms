@@ -257,9 +257,9 @@
   <div class="board-card" style="padding: 40px 40px 1px 40px; margin-top: 10px;">
   <!-- 게시글 헤더 -->
   <div class="detail-head">
-<%--    <div class="detail-meta-top">--%>
-<%--      <span class="badge-category ${postDetail.boardType}">${postDetail.boardType}</span>--%>
-<%--    </div>--%>
+    <div class="detail-meta-top">
+      <span class="badge-category ${postDetail.boardType}">${postDetail.boardType=="NOTICE"?"공지사항":"자유게시판"}</span>
+    </div>
     <h2 class="detail-title">${postDetail.title}</h2>
     <div class="detail-meta">
       <span>✍ ${postDetail.writerName}</span>
@@ -291,12 +291,12 @@
 
   <!-- 뒤로가기 -->
   <div class="detail-actions">
-  <a href="board?boardType=${postDetail.boardType}<c:if test='${not empty postDetail.courseNo}'>&courseNo=${postDetail.courseNo}</c:if>"
-     class="back-link">&#8592; 목록으로</a>
+  <a href="list?boardType=${postDetail.boardType}<c:if test='${not empty postDetail.courseNo}'>&courseNo=${postDetail.courseNo}</c:if>"
+     class="btn-search">목록으로</a>
 
   <!-- 관리 버튼: 작성자·관리자만 -->
-  <c:if test="${sessionScope.loginUser.role eq 'ADMIN'
-               or sessionScope.loginUser.userNo eq postDetail.writerName}">
+  <c:if test="${sessionScope.sessionUser.role eq 'ADMIN'
+               or sessionScope.sessionUser.userNo eq postDetail.writerNo}">
       <a href="update?boardNo=${postDetail.boardNo}" class="btn-edit">수정</a>
       <button class="btn-delete" onclick="confirmDelete(${postDetail.boardNo})">삭제</button>
   </c:if>
@@ -355,11 +355,16 @@
     const form = document.createElement('form');
     form.method = 'post';
     form.action = '${pageContext.request.contextPath}/board/delete';
-    const input = document.createElement('input');
-    input.type  = 'hidden';
-    input.name  = 'boardNo';
-    input.value = boardNo;
-    form.appendChild(input);
+    const input_boardNo = document.createElement('input');
+    input_boardNo.type  = 'hidden';
+    input_boardNo.name  = 'boardNo';
+    input_boardNo.value = boardNo;
+    const input_writerNo = document.createElement("input");
+    input_writerNo.type = "hidden"
+    input_writerNo.name = "writerNo"
+    input_writerNo.value = ${postDetail.writerNo}
+    form.appendChild(input_writerNo);
+    form.appendChild(input_boardNo);
     document.body.appendChild(form);
     form.submit();
   }

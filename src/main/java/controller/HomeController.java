@@ -31,4 +31,9 @@ public class HomeController {
         return "home/dashboard";
     }
 
+    @GetMapping("/404")  //오류메세지
+    public String error404() {
+        return "home/404";
+    }
+    
 }

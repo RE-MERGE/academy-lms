@@ -16,7 +16,7 @@ public class BoardDao {
     private static final Class<BoardMapper> cls = BoardMapper.class;
 
     public void insertPost(PostCreate board, int writerNo) {
-        template.getMapper(cls).InsertPost(board, writerNo);
+        template.getMapper(cls).insertPost(board, writerNo);
     }
 
     public List<PostList> postList(Integer courseNo, String boardType) {
@@ -30,5 +30,17 @@ public class BoardDao {
 
     public void updatePost(PostUpdate postUpdate) {
         template.getMapper(cls).updatePost(postUpdate);
+    }
+
+    public void deletePost(String boardNo) {
+        template.getMapper(cls).deletePost(boardNo);
+    }
+
+    public int getTotalCount(String boardType, String keyword, String searchType) {
+        return template.getMapper(cls).getTotalCount(boardType, keyword, searchType);
+    }
+
+    public List<PostList> getList(BoardListRequest dto) {
+        return template.getMapper(cls).getList(dto);
     }
 }

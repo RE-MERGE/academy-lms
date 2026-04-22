@@ -17,41 +17,9 @@ public class BoardService {
     @Autowired
     BoardDao boardDao;
     @Value("${page.size}")
-    private int pageSize;
+    private int PAGE_SIZE;
     @Value("${page.block-size}")
-    private int blockSize;
-
-    public Map<String, Object> page(int page, int totalCount) {
-        Map<String, Object> result = new HashMap<>();
-
-        // 전체 페이지 수 계산
-        int totalPage = (int) Math.ceil((double) totalCount / pageSize);
-
-        // 시작 페이지
-        int startPage = ((page - 1) / blockSize) * blockSize + 1;
-
-        // 끝 페이지
-        int endPage = startPage + blockSize - 1;
-
-        // 마지막 페이지 보정
-        if (endPage > totalPage) {
-            endPage = totalPage;
-        }
-
-        // 이전 / 다음 블럭 여부
-        boolean prev = startPage > 1;
-        boolean next = endPage < totalPage;
-
-        // 결과 담기
-        result.put("page", page);
-        result.put("startPage", startPage);
-        result.put("endPage", endPage);
-        result.put("totalPage", totalPage);
-        result.put("prev", prev);
-        result.put("next", next);
-
-        return result;
-    }
+    private int BLOCK_SIZE;
 
     public void insertPost(PostCreate board, int writerNo) {
         boardDao.insertPost(board, writerNo);
@@ -68,5 +36,35 @@ public class BoardService {
 
     public void updatePost(PostUpdate postUpdate) {
         boardDao.updatePost(postUpdate);
+    }
+
+    public void deletePost(String boardNo) {
+        boardDao.deletePost(boardNo);
+    }
+
+    public Map<String, Object> getBoardList(String boardType, String keyword,
+                                            String searchType, int page) {
+        int totalCount = boardDao.getTotalCount(boardType, keyword, searchType);
+        PageInfo pageInfo = new PageInfo(page, totalCount, PAGE_SIZE, BLOCK_SIZE);
+
+        BoardListRequest dto = new BoardListRequest();
+        dto.setBoardType(boardType);
+        dto.setKeyword(keyword);
+        dto.setSearchType(searchType);
+        dto.setOffset(pageInfo.getOffset());
+        dto.setPageSize(PAGE_SIZE);
+
+        List<PostList> postList = boardDao.getList(dto);
+
+        // rowNum 세팅
+        int rowNum = totalCount - pageInfo.getOffset();
+        for (PostList post : postList) {
+            post.setRowNum(rowNum--);
+        }
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("postList", postList);
+        result.put("pageInfo", pageInfo);
+        return result;
     }
 }

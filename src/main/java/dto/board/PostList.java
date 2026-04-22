@@ -11,6 +11,7 @@ import java.util.Date;
 @NoArgsConstructor
 @AllArgsConstructor
 public class PostList {
+    private int rowNum;
     private int boardNo;
     private Integer courseNo;    // null 이면 글로벌 게시판
     private String boardType;

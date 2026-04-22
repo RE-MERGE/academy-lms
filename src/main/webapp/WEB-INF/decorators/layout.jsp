@@ -37,10 +37,10 @@
         <span class="header-semester">2026학년도 1학기</span>
 
         <c:choose>
-          <c:when test="${sessionScope.loginUser.role == 'admin'}">
+          <c:when test="${sessionScope.sessionUser.role == 'ADMIN'}">
             <span class="user-role-badge role-admin">관리자</span>
           </c:when>
-          <c:when test="${sessionScope.loginUser.role == 'professor'}">
+          <c:when test="${sessionScope.sessionUser.role == 'PROFESSOR'}">
             <span class="user-role-badge role-teacher">강사</span>
           </c:when>
           <c:otherwise>
@@ -48,12 +48,12 @@
           </c:otherwise>
         </c:choose>
 
+        <div class="avatar">${fn:substring(sessionScope.sessionUser.name, 0, 1)}</div>
         <div class="header-user-info">
-          <span class="user-name">${sessionScope.loginUser.name}</span>
-          <span class="user-id">${sessionScope.loginUser.userId}</span>
+          <span class="user-id">${sessionScope.sessionUser.userId}</span>
+          <span class="user-name">${sessionScope.sessionUser.name}</span>
         </div>
 
-        <div class="avatar"><%--${fn:substring(sessionScope.loginUser.name, 0, 1)}--%></div>
 
         <a href="${pageContext.request.contextPath}/user/logout" class="btn-logout">로그아웃</a>
       </div>

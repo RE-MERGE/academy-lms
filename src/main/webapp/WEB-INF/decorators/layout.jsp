@@ -23,7 +23,7 @@
     <header class="lms-header">
 
       <!-- 로고 -->
-      <a href="${pageContext.request.contextPath}/dashBoard" class="lms-logo-wrap">
+      <a href="${pageContext.request.contextPath}/home/dashboard" class="lms-logo-wrap">
         <div class="lms-logo-text">
           <span class="lms-logo-main">re<span>·</span>merge</span>
           <span class="lms-logo-sub">Learning Management System</span>

@@ -98,11 +98,18 @@
               <form:input path="phone" placeholder="연락처를 입력하세요."/>
               <form:errors path="phone" cssClass="error-msg" element="p"/>
             </div>
+
+            <form:errors path="" cssClass="error-msg" element="p" />
+
             <button type="submit" class="btn-submit">아이디 찾기</button>
+
           </form:form>
         </c:otherwise>
       </c:choose>
+
+
     </div>
+
 
 
     <!-- 비밀번호 찾기 탭 -->
@@ -127,6 +134,7 @@
         <button type="submit" class="btn-submit">인증 메일 발송</button>
       </form:form>
     </div>
+
 
     <div class="divider"></div>
     <a href="${pageContext.request.contextPath}/home/home" class="back-link">

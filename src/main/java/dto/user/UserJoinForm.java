@@ -15,7 +15,7 @@ import javax.validation.constraints.Pattern;
 //회원가입용 클래스
 public class UserJoinForm {
 
-    private static final String USERID_PATTERN = "^$|^[a-z][a-z0-9]{3,14}$";
+    private static final String USERID_PATTERN = "^$|^[a-zA-Z][a-zA-Z0-9]{3,14}$";
     private static final String PASSWORD_PATTERN = "^$|^(?=.*[A-Za-z])(?=.*\\d).{8,}$";
     private static final String PHONE_PATTERN = "^$|^01(?:0|1|[6-9])-(?:\\d{3}|\\d{4})-\\d{4}$";
     private static final String EMAIL_PATTERN = "^$|^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$";

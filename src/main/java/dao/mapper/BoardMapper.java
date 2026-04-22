@@ -36,6 +36,7 @@ public interface BoardMapper {
     @Select("SELECT  b.board_no AS boardNo,\n" +
             "        b.course_no AS courseNo,\n" +
             "        b.board_type AS boardType,\n" +
+            "        b.writer_no AS writerNo,\n" +
             "        b.title,\n" +
             "        b.content,\n" +
             "        u.name AS writerName,\n" +

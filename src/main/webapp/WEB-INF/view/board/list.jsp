@@ -209,12 +209,12 @@
   //   });
   // }
 
-  function editSelected() {
-    const selected = [...document.querySelectorAll('input[name="selectedBoard"]:checked')];
-    if (selected.length === 0) { alert('수정할 게시글을 선택해주세요.'); return; }
-    if (selected.length > 1)   { alert('게시글을 하나만 선택해주세요.'); return; }
-    location.href = '${pageContext.request.contextPath}/board/update?boardNo=' + selected[0].value;
-  }
+  <%--function editSelected() {--%>
+  <%--  const selected = [...document.querySelectorAll('input[name="selectedBoard"]:checked')];--%>
+  <%--  if (selected.length === 0) { alert('수정할 게시글을 선택해주세요.'); return; }--%>
+  <%--  if (selected.length > 1)   { alert('게시글을 하나만 선택해주세요.'); return; }--%>
+  <%--  location.href = '${pageContext.request.contextPath}/board/update?boardNo=' + selected[0].value;--%>
+  <%--}--%>
 </script>
 
 </body>

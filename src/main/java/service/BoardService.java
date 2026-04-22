@@ -1,8 +1,9 @@
 package service;
 
 import dao.BoardDao;
-import dto.Course;
 import dto.board.*;
+import dto.user.UserRole;
+import exception.PostAccessDeniedException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -21,12 +22,14 @@ public class BoardService {
     @Value("${page.block-size}")
     private int BLOCK_SIZE;
 
-    public void insertPost(PostCreate board, int writerNo) {
+    public void insertPost(PostCreate board, int writerNo, UserRole role) {
+        // 공지 게시판은 PROFESSOR, ADMIN만 작성 가능
+//        if ("NOTICE".equals(board.getBoardType())) {
+//            if (role != role.PROFESSOR && role.ADMIN) {
+//                throw new PostAccessDeniedException("공지 게시판 작성 권한이 없습니다.");
+//            }
+//        }
         boardDao.insertPost(board, writerNo);
-    }
-
-    public List<PostList> postList(Integer courseNo, String boardType) {
-        return boardDao.postList(courseNo, boardType);
     }
 
     public PostDetail postDetail(int boardNo) {
@@ -34,11 +37,19 @@ public class BoardService {
     }
 
 
-    public void updatePost(PostUpdate postUpdate) {
+    public void updatePost(PostUpdate postUpdate, int userNo) {
+        PostDetail post = boardDao.postDetail(postUpdate.getBoardNo());
+        if (post.getWriterNo() != userNo) {
+            throw new PostAccessDeniedException();
+        }
         boardDao.updatePost(postUpdate);
     }
 
-    public void deletePost(String boardNo) {
+    public void deletePost(String boardNo, int userNo) {
+        PostDetail post = boardDao.postDetail(Integer.parseInt(boardNo));
+        if (post.getWriterNo() != userNo) {
+            throw new PostAccessDeniedException();
+        }
         boardDao.deletePost(boardNo);
     }
 

@@ -14,6 +14,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.ModelAndView;
 import service.BoardService;
 
+import javax.mail.Session;
 import java.util.Map;
 
 @Controller
@@ -33,7 +34,7 @@ public class BoardController {
     public String write(PostCreate board, @RequestParam("uploadFile") MultipartFile uploadFile, @Login SessionUser sessionUser) {
         int writerNo = sessionUser.getUserNo();
         // TODO: 업로드 처리 해야함
-        boardService.insertPost(board, writerNo);
+        boardService.insertPost(board, writerNo, sessionUser.getRole());
         return "redirect:/board/list?boardType=" + board.getBoardType();
     }
 
@@ -74,14 +75,14 @@ public class BoardController {
     }
 
     @PostMapping("updatePost")
-    public String updatePost(PostUpdate postUpdate, String boardType) {
-        boardService.updatePost(postUpdate);
+    public String updatePost(PostUpdate postUpdate, String boardType, @Login SessionUser sessionUser) {
+        boardService.updatePost(postUpdate, sessionUser.getUserNo());
         return "redirect:/board/list?boardType=" + boardType;
     }
 
     @PostMapping("delete")
-    public String delete(String boardNo, String boardType) {
-        boardService.deletePost(boardNo);
+    public String delete(String boardNo, String boardType, @Login SessionUser sessionUser) {
+        boardService.deletePost(boardNo, sessionUser.getUserNo());
         return "redirect:/board/list?boardType=" + boardType;
     }
 }

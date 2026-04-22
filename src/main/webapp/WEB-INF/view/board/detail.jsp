@@ -362,9 +362,15 @@
     const input_writerNo = document.createElement("input");
     input_writerNo.type = "hidden"
     input_writerNo.name = "writerNo"
-    input_writerNo.value = ${postDetail.writerNo}
+    input_writerNo.value = ${postDetail.writerNo};
+    const input_boardType = document.createElement("input");
+    input_boardType.type = "hidden";
+    input_boardType.name = "boardType";
+    input_boardType.value = "${postDetail.boardType}";
+
     form.appendChild(input_writerNo);
     form.appendChild(input_boardNo);
+    form.appendChild(input_boardType);
     document.body.appendChild(form);
     form.submit();
   }

@@ -1,15 +1,13 @@
 package dao;
 
 import dao.mapper.BoardMapper;
-import dto.Board;
 import dto.Course;
-import dto.user.User;
-
-import java.util.List;
-
+import dto.board.*;
 import org.mybatis.spring.SqlSessionTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
+
+import java.util.List;
 
 @Repository
 public class BoardDao {
@@ -17,9 +15,16 @@ public class BoardDao {
     private SqlSessionTemplate template;
     private static final Class<BoardMapper> cls = BoardMapper.class;
 
+    public void insertPost(PostCreate board, int writerNo) {
+        template.getMapper(cls).InsertPost(board, writerNo);
+    }
 
-    public void insert(Board board) {
-        template.getMapper(cls).Insert(board);
+    public List<PostList> postList(Integer courseNo, String boardType) {
+        return template.getMapper(cls).postList(courseNo, boardType);
+    }
+
+    public PostDetail postDetail(int boardNo) {
+        return template.getMapper(cls).postDetail(boardNo);
     }
     
     public Course selectCourse(int no) {

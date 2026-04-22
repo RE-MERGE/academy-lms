@@ -1,25 +1,27 @@
 package controller;
 
 import config.NaverLoginConfig;
+import dao.UserDao;
 import dto.user.*;
+import dto.user.login.Login;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import service.NaverLoginService;
 import service.UserService;
 
 import javax.servlet.http.HttpSession;
+import javax.validation.Valid;
 import java.io.File;
 import java.io.IOException;
-import java.time.LocalDateTime;
+import java.net.http.HttpResponse;
+import java.time.LocalDate;
 import java.util.Map;
 import java.util.UUID;
 
@@ -29,6 +31,7 @@ import java.util.UUID;
 public class UserController {
 
     private final UserService userService;
+    private final UserDao userDao;
     private final NaverLoginConfig naverLoginConfig;
     private final NaverLoginService naverLoginService;
 
@@ -38,15 +41,52 @@ public class UserController {
         return "user/joinForm";
     }
 
-    @PostMapping("login")
-    public String login() {
+    @GetMapping("loginForm")
+    public String loginForm(Model model) {
+        model.addAttribute(UserConst.LOGIN_FORM, new LoginForm());
+        return "home/home";
+    }
 
-        //비교 로직
-        return "home/dashboard";
+    @GetMapping("logout")
+    public String logout(HttpSession session, Model model) {
+        session.invalidate();
+        model.addAttribute(UserConst.LOGIN_FORM, new LoginForm());
+        return "home/home";
+    }
+
+    @PostMapping("login")
+    public String login(@Valid LoginForm loginForm, BindingResult bindingResult,
+                        Model model, HttpSession session, @RequestParam(defaultValue = "/home/dashboard") String redirectURL) {
+
+        if (bindingResult.hasErrors()) {
+            return "home/home";
+        }
+
+        User dbUser = userDao.selectUser(loginForm.getUserId());
+
+        if (dbUser == null || loginForm.getPassword() == null ||
+                !loginForm.getPassword().equals(dbUser.getPassword())) {
+
+            bindingResult.reject( "error.loginFail");
+
+            return "home/home";
+        }
+
+        SessionUser sessionUser = createSessionUser(dbUser);
+        session.setAttribute(UserConst.SESSION_USER, sessionUser);
+
+
+        System.out.println("sessionUser = " + sessionUser);
+        System.out.println("session.getAttribute(UserConst.SESSION_USER) = " + session.getAttribute(UserConst.SESSION_USER));
+        return "redirect:/home/dashboard";
+//        return "redirect:" + redirectURL;
     }
 
     @GetMapping("myPage")
-    public String myPage() {
+    public String myPage(@Login SessionUser sessionUser, Model model) {
+
+        model.addAttribute(UserConst.SESSION_USER, sessionUser);
+
         return "user/myPage";
     }
 
@@ -59,7 +99,13 @@ public class UserController {
             return "home/findAccount";
         }
 
-        return "redirect:home/dashboard";
+        String findUserId = userDao.selectUserIdByEmail(findIdForm.getEmail());
+        String maskedId = findUserId.replaceAll("^(.{2}).*", "$1****");
+
+        model.addAttribute("findUserId", maskedId);
+        model.addAttribute("findPwForm", new FindPwForm()); // 폼 객체 유지를 위해 추가
+
+        return "home/findAccount";
     }
 
     @PostMapping("findPw")
@@ -70,7 +116,11 @@ public class UserController {
             model.addAttribute("activeTab", "pw");
             return "home/findAccount";
         }
-        return "redirect:home/dashboard";
+
+        //비밀번호 찾기 하고 있었음
+        String findPassword = userDao.selectUserPassword(findPwForm.getUserId(), findPwForm.getEmail(), findPwForm.getPhone());
+
+        return "redirect:/home/dashboard";
     }
 
     @GetMapping("naverLogin")
@@ -156,8 +206,8 @@ public class UserController {
         user.setPhone(userJoinForm.getPhone());
         user.setRole(UserRole.valueOf(userJoinForm.getRole()));
 
-        user.setCreatedAt(LocalDateTime.now());
-        user.setUpdatedAt(LocalDateTime.now());
+        user.setCreatedAt(LocalDate.now());
+        user.setUpdatedAt(LocalDate.now());
         user.setStatus(UserStatus.PEDING);
         user.setLock_count(0);
 
@@ -201,5 +251,17 @@ public class UserController {
         }
     }
 
+    private static SessionUser createSessionUser(User dbUser) {
+        SessionUser sessionUser = new SessionUser(
+                dbUser.getUserNo(),
+                dbUser.getUserCode(),
+                dbUser.getUserId(),
+                dbUser.getEmail(),
+                dbUser.getName(),
+                dbUser.getRole(),
+                dbUser.getProfileImg()
+        );
+        return sessionUser;
+    }
 
 }

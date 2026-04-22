@@ -1,84 +1,5 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
-<%--
-  ================================================================
-  re-merge LMS — 게시판 (board.jsp)
-  Java 로직(페이징 계산, 더미데이터)은 주석 처리
-  실제 DB 연동 시 Servlet/Controller에서 request attribute로 전달하세요.
-
-  [Servlet에서 넘겨줘야 할 attribute 목록]
-  - postList     : List<BoardDTO>  게시글 목록
-  - totalCount   : int             전체 게시글 수
-  - currentPage  : int             현재 페이지
-  - totalPages   : int             전체 페이지 수
-  - blockStart   : int             페이지 블럭 시작
-  - blockEnd     : int             페이지 블럭 끝
-  - prevBlock    : int             이전 블럭 페이지
-  - nextBlock    : int             다음 블럭 페이지
-  - keyword      : String          검색어
-  - searchType   : String          검색 타입
-  ================================================================
---%>
-
-<%--
-  ※ 아래 더미데이터 및 페이징 계산 로직은 Servlet으로 이전 예정
-  ※ Servlet에서 request.setAttribute("postList", list) 형태로 전달
-
-  <%@ page import="java.util.*" %>
-  <%
-    int pageSize   = 10;
-    int blockSize  = 5;
-    String pageStr    = request.getParameter("page");
-    String keyword    = request.getParameter("keyword");
-    String searchType = request.getParameter("searchType");
-    if (keyword == null)    keyword = "";
-    if (searchType == null) searchType = "title";
-
-    int currentPage = 1;
-    try { currentPage = Integer.parseInt(pageStr); } catch (Exception e) {}
-    if (currentPage < 1) currentPage = 1;
-
-    List<Map<String,Object>> allPosts = new ArrayList<>();
-    String[] boardTypes = {"공지", "자유", "질문", "스터디", "정보"};
-    String[] writers    = {"김민준", "이서연", "박지호", "최수아", "정태양",
-                           "한예린", "오도현", "신미래", "윤성찬", "임하늘"};
-    String[] titles = {
-      "Java Spring Boot 강의 오픈 안내", "LMS 사용 방법 질문드립니다", ...
-    };
-
-    Random rnd = new Random(42);
-    for (int i = titles.length; i >= 1; i--) {
-      Map<String,Object> post = new LinkedHashMap<>();
-      post.put("boardNo",   i);
-      post.put("boardType", boardTypes[rnd.nextInt(boardTypes.length)]);
-      post.put("title",     titles[titles.length - i]);
-      post.put("writerNo",  writers[rnd.nextInt(writers.length)]);
-      post.put("views",     rnd.nextInt(300) + 1);
-      post.put("createdAt", String.format("2025.%02d.%02d", rnd.nextInt(4)+1, rnd.nextInt(28)+1));
-      post.put("isNew",     i > (titles.length - 5));
-      post.put("isNotice",  i > (titles.length - 2));
-      allPosts.add(post);
-    }
-
-    // 검색 필터, 페이징 계산 ...
-    // int totalCount = filtered.size();
-    // int totalPages = ...
-    // int blockStart = ...
-    // int blockEnd   = ...
-    // int prevBlock  = blockStart - 1;
-    // int nextBlock  = blockEnd + 1;
-    // request.setAttribute("postList",   pagePosts);
-    // request.setAttribute("totalCount", totalCount);
-    // request.setAttribute("currentPage",currentPage);
-    // request.setAttribute("totalPages", totalPages);
-    // request.setAttribute("blockStart", blockStart);
-    // request.setAttribute("blockEnd",   blockEnd);
-    // request.setAttribute("prevBlock",  prevBlock);
-    // request.setAttribute("nextBlock",  nextBlock);
-    // request.setAttribute("keyword",    keyword);
-    // request.setAttribute("searchType", searchType);
-  %>
---%>
 
 <!DOCTYPE html>
 <html lang="ko">
@@ -90,16 +11,110 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="${pageContext.request.contextPath}/css/board.css">
+  <style>
+    /* ── 탭 ── */
+    .board-tabs {
+      display: flex;
+      gap: 0;
+      margin-bottom: 0;
+      border-bottom: none;
+    }
+
+    .board-tabs a {
+      padding: 10px 28px;
+      font-weight: 700;
+      font-size: 0.95rem;
+      color: var(--lms-text-sub);
+      background: #f0f2f5;
+      border: 1px solid var(--lms-border);
+      border-bottom: none;
+      border-radius: 8px 8px 0 0;
+      text-decoration: none;
+      transition: all 0.2s;
+      margin-right: 4px;
+    }
+
+    .board-tabs a:hover {
+      background: #e6ecff;
+      color: var(--lms-accent);
+    }
+
+    .board-tabs a.active {
+      background: #ffffff;
+      color: var(--lms-primary);
+      border-color: var(--lms-border);
+      border-bottom: 2px solid #ffffff;
+      margin-bottom: -1px;
+      z-index: 1;
+      position: relative;
+    }
+
+    /* ── 체크박스 컬럼 ── */
+    .td-check { width: 40px; text-align: center !important; }
+    .td-check input[type=checkbox] { cursor: pointer; width: 16px; height: 16px; accent-color: var(--lms-primary); }
+
+    /* ── 댓글수 ── */
+    .td-comment { width: 60px; }
+    .comment-count { color: var(--lms-accent); font-weight: 700; font-size: 0.9rem; }
+
+    /* ── 파일 아이콘 ── */
+    .file-icon-inline { font-size: 0.85rem; margin-left: 4px; }
+
+    /* ── 하단 버튼 영역 ── */
+    .board-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 1.2rem;
+    }
+
+    .board-footer-left { display: flex; gap: 8px; align-items: center; }
+    .board-footer-right { display: flex; gap: 8px; }
+
+    /* ── 검색 영역 ── */
+    .board-toolbar {
+      margin-bottom: 1rem;
+    }
+
+    /* ── 페이지네이션 ── */
+    .pagination-wrap {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 6px;
+      margin-top: 0;
+    }
+
+    .page-info {
+      font-size: 0.85rem;
+      color: var(--lms-text-sub);
+      margin: 0 8px;
+    }
+
+    /* ── 조회수 높을 때 ── */
+    .views-high { color: #e63946; font-weight: 700; }
+
+    /* ── 카테고리 태그 ── */
+    .category-tag {
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 700;
+    }
+    .cat-NOTICE { background: #fff1f0; color: #ff4d4f; border: 1px solid #ffccc7; }
+    .cat-FREE   { background: #e6f4ff; color: #1677ff; border: 1px solid #91caff; }
+    .cat-QNA    { background: #f6ffed; color: #52c41a; border: 1px solid #b7eb8f; }
+  </style>
 </head>
 <body>
 
-<canvas id="bg-canvas"></canvas>
-<div class="bg-mesh"></div>
-<!-- ── 본문 ── -->
 <main class="board-wrap">
-  <!-- 툴바 -->
+
+  <!-- 툴바: 검색 -->
   <div class="board-toolbar">
-    <form class="search-form" method="get" action="searchType">
+    <form class="search-form" method="get" action="">
+      <input type="hidden" name="boardType" value="${boardType}">
+      <input type="hidden" name="courseNo"  value="${courseNo}">
       <select name="searchType" class="search-select">
         <option value="title"  <c:if test="${searchType == 'title'}">selected</c:if>>제목</option>
         <option value="writer" <c:if test="${searchType == 'writer'}">selected</c:if>>작성자</option>
@@ -109,133 +124,142 @@
              placeholder="검색어를 입력하세요" value="${keyword}">
       <button type="submit" class="btn-search">검색</button>
     </form>
-    <button class="btn-write" onclick="location='${pageContext.request.contextPath}/board/write'">글쓰기</button>
   </div>
 
-  <!-- 검색 결과 안내 -->
-  <c:if test="${not empty keyword}">
-    <div class="search-notice">
-      <span>🔍</span>
-      "<strong>${keyword}</strong>" 검색 결과 — <strong>${totalCount}</strong>건
-      <a href="board.jsp">✕ 검색 초기화</a>
-    </div>
-  </c:if>
+  <!-- 탭 -->
+  <div class="board-tabs">
+    <a href="?boardType=NOTICE<c:if test='${not empty courseNo}'>&courseNo=${courseNo}</c:if>"
+       class="<c:if test='${boardType == \"NOTICE\"}'>active</c:if>">공지</a>
+<%--    <a href="?boardType=QNA<c:if test='${not empty courseNo}'>&courseNo=${courseNo}</c:if>"--%>
+<%--       class="<c:if test='${boardType == \"QNA\"}'>active</c:if>">Q &amp; A</a>--%>
+    <a href="?boardType=FREE<c:if test='${not empty courseNo}'>&courseNo=${courseNo}</c:if>"
+       class="<c:if test='${boardType == \"FREE\"}'>active</c:if>">자유게시판</a>
+  </div>
 
   <!-- 게시글 테이블 -->
   <div class="board-card">
     <table class="board-table">
       <thead>
-      <tr>
-        <th>번호</th>
-        <th>분류</th>
-        <th>제목</th>
-        <th>작성자</th>
-        <th>조회</th>
-        <th>작성일</th>
-      </tr>
+        <tr>
+          <th class="td-check">
+            <input type="checkbox" id="checkAll" onclick="toggleAll(this)">
+          </th>
+          <th>번호</th>
+          <th>이름</th>
+          <th>제목</th>
+          <th>작성일</th>
+          <th>조회수</th>
+          <th>댓글</th>
+        </tr>
       </thead>
       <tbody>
-      <c:choose>
-        <c:when test="${empty postList}">
-          <tr class="empty-row">
-            <td colspan="6">
-              <div class="empty-icon">📭</div>
-              <div class="empty-text">게시글이 없습니다.</div>
-            </td>
-          </tr>
-        </c:when>
-        <c:otherwise>
-          <c:forEach var="post" items="${postList}">
-            <tr class="${post.isNotice ? 'notice-row' : ''}"
-                onclick="alert('게시글 ${post.boardNo}번 상세 페이지로 이동합니다.')">
-              <td class="td-no">
-                <c:choose>
-                  <c:when test="${post.isNotice}">
-                    <span class="notice-badge">공지</span>
-                  </c:when>
-                  <c:otherwise>${post.boardNo}</c:otherwise>
-                </c:choose>
+        <c:choose>
+          <c:when test="${empty postList}">
+            <tr class="empty-row">
+              <td colspan="7">
+                <div class="empty-icon">📭</div>
+                <div class="empty-text">게시글이 없습니다.</div>
               </td>
-              <td>
-                <span class="category-tag cat-${post.boardType}">${post.boardType}</span>
-              </td>
-              <td class="td-title">
-                <div class="title-inner">
-                  <span class="title-text">${post.title}</span>
-                  <c:if test="${post.isNew}">
-                    <span class="badge-new">NEW</span>
-                  </c:if>
-                </div>
-              </td>
-              <td>${post.writerNo}</td>  <%-- 실제 연동 시 작성자 이름으로 JOIN --%>
-              <td class="td-views ${post.views > 200 ? 'views-high' : ''}">${post.views}</td>
-              <td>${post.createdAt}</td>
             </tr>
-          </c:forEach>
-        </c:otherwise>
-      </c:choose>
+          </c:when>
+          <c:otherwise>
+            <c:forEach var="post" items="${postList}">
+              <tr onclick="location='detail?boardNo=${post.boardNo}'">
+                <td class="td-check" onclick="event.stopPropagation()">
+                  <input type="checkbox" name="selectedBoard" value="${post.boardNo}">
+                </td>
+                <td class="td-no">
+                  <c:choose>
+                    <c:when test="${post.boardType == 'NOTICE'}">
+                      <span class="notice-badge">공지</span>
+                    </c:when>
+                    <c:otherwise>${post.boardNo}</c:otherwise>
+                  </c:choose>
+                </td>
+                <td>${post.writerName}</td>
+                <td class="td-title">
+                  <div class="title-inner">
+                    <span class="title-text">${post.title}</span>
+<%--                    <c:if test="${not empty post.fileUrl}">--%>
+<%--                      <span class="file-icon-inline">📎</span>--%>
+<%--                    </c:if>--%>
+                  </div>
+                </td>
+                <td>${post.createdAt}</td>
+                <td class="td-views <c:if test='${post.views > 200}'>views-high</c:if>">${post.views}</td>
+<%--                <td class="td-comment">--%>
+<%--                  <span class="comment-count">${post.commentCount}</span>--%>
+<%--                </td>--%>
+              </tr>
+            </c:forEach>
+          </c:otherwise>
+        </c:choose>
       </tbody>
     </table>
   </div>
 
-  <!-- ── 페이지네이션 ── -->
-  <nav class="pagination-wrap" aria-label="페이지 탐색">
+<%--  <!-- 하단: 전체선택 + 페이지네이션 + 버튼 -->--%>
+<%--  <div class="board-footer">--%>
+<%--    <!-- 왼쪽: 전체선택 라벨 -->--%>
+<%--    <div class="board-footer-left">--%>
+<%--      <label style="font-size:0.9rem; color:var(--lms-text-sub); cursor:pointer;">--%>
+<%--        <input type="checkbox" onclick="toggleAll(this)"> 전체선택--%>
+<%--      </label>--%>
+<%--    </div>--%>
 
-    <%-- 처음 --%>
-    <c:choose>
-      <c:when test="${currentPage > 1}">
-        <a class="page-btn arrow" href="board.jsp?page=1&keyword=${keyword}&searchType=${searchType}" title="처음">«</a>
-      </c:when>
-      <c:otherwise>
-        <span class="page-btn arrow disabled">«</span>
-      </c:otherwise>
-    </c:choose>
+<%--    <!-- 가운데: 페이지네이션 -->--%>
+<%--    <nav class="pagination-wrap">--%>
+<%--      <c:choose>--%>
+<%--        <c:when test="${currentPage > 1}">--%>
+<%--          <a class="page-btn arrow" href="?boardType=${boardType}&courseNo=${courseNo}&page=1&keyword=${keyword}&searchType=${searchType}">«</a>--%>
+<%--          <a class="page-btn arrow" href="?boardType=${boardType}&courseNo=${courseNo}&page=${prevBlock}&keyword=${keyword}&searchType=${searchType}">‹</a>--%>
+<%--        </c:when>--%>
+<%--        <c:otherwise>--%>
+<%--          <span class="page-btn arrow disabled">«</span>--%>
+<%--          <span class="page-btn arrow disabled">‹</span>--%>
+<%--        </c:otherwise>--%>
+<%--      </c:choose>--%>
 
-    <%-- 이전 블럭 --%>
-    <c:choose>
-      <c:when test="${prevBlock >= 1}">
-        <a class="page-btn arrow" href="board.jsp?page=${prevBlock}&keyword=${keyword}&searchType=${searchType}" title="이전">‹</a>
-      </c:when>
-      <c:otherwise>
-        <span class="page-btn arrow disabled">‹</span>
-      </c:otherwise>
-    </c:choose>
+<%--      <span class="page-info">${currentPage} / ${totalPages}</span>--%>
 
-    <%-- 번호 블럭 --%>
-    <c:forEach var="p" begin="${blockStart}" end="${blockEnd}">
-      <c:choose>
-        <c:when test="${p == currentPage}">
-          <span class="page-btn active">${p}</span>
-        </c:when>
-        <c:otherwise>
-          <a class="page-btn" href="board.jsp?page=${p}&keyword=${keyword}&searchType=${searchType}">${p}</a>
-        </c:otherwise>
-      </c:choose>
-    </c:forEach>
+<%--      <c:choose>--%>
+<%--        <c:when test="${currentPage < totalPages}">--%>
+<%--          <a class="page-btn arrow" href="?boardType=${boardType}&courseNo=${courseNo}&page=${nextBlock}&keyword=${keyword}&searchType=${searchType}">›</a>--%>
+<%--          <a class="page-btn arrow" href="?boardType=${boardType}&courseNo=${courseNo}&page=${totalPages}&keyword=${keyword}&searchType=${searchType}">»</a>--%>
+<%--        </c:when>--%>
+<%--        <c:otherwise>--%>
+<%--          <span class="page-btn arrow disabled">›</span>--%>
+<%--          <span class="page-btn arrow disabled">»</span>--%>
+<%--        </c:otherwise>--%>
+<%--      </c:choose>--%>
+<%--    </nav>--%>
 
-    <%-- 다음 블럭 --%>
-    <c:choose>
-      <c:when test="${nextBlock <= totalPages}">
-        <a class="page-btn arrow" href="board.jsp?page=${nextBlock}&keyword=${keyword}&searchType=${searchType}" title="다음">›</a>
-      </c:when>
-      <c:otherwise>
-        <span class="page-btn arrow disabled">›</span>
-      </c:otherwise>
-    </c:choose>
-
-    <%-- 마지막 --%>
-    <c:choose>
-      <c:when test="${currentPage < totalPages}">
-        <a class="page-btn arrow" href="board.jsp?page=${totalPages}&keyword=${keyword}&searchType=${searchType}" title="마지막">»</a>
-      </c:when>
-      <c:otherwise>
-        <span class="page-btn arrow disabled">»</span>
-      </c:otherwise>
-    </c:choose>
-
-  </nav>
+    <!-- 오른쪽: 수정/글쓰기 버튼 -->
+    <div class="board-footer-right">
+      <button class="btn-cancel" onclick="editSelected()">수정하기</button>
+      <button class="btn-write"  onclick="location='${pageContext.request.contextPath}/board/write?boardType=${boardType}&courseNo=${courseNo}'">글쓰기</button>
+    </div>
+  </div>
 
 </main>
+
+<script>
+  function toggleAll(source) {
+    const checkboxes = document.querySelectorAll('input[name="selectedBoard"]');
+    checkboxes.forEach(cb => cb.checked = source.checked);
+    // 전체선택 체크박스 두 개 동기화
+    document.querySelectorAll('input[type=checkbox]').forEach(cb => {
+      if (cb !== source && cb.id !== 'checkAll' && !cb.name) cb.checked = source.checked;
+    });
+  }
+
+  function editSelected() {
+    const selected = [...document.querySelectorAll('input[name="selectedBoard"]:checked')];
+    if (selected.length === 0) { alert('수정할 게시글을 선택해주세요.'); return; }
+    if (selected.length > 1)   { alert('게시글을 하나만 선택해주세요.'); return; }
+    location.href = '${pageContext.request.contextPath}/board/update?boardNo=' + selected[0].value;
+  }
+</script>
 
 </body>
 </html>

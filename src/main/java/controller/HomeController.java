@@ -15,7 +15,7 @@ public class HomeController {
 
     @GetMapping("home")
     public String home(Model model) {
-        model.addAttribute("loginForm", new LoginForm());
+        model.addAttribute(UserConst.LOGIN_FORM, new LoginForm());
         return "home/home";
     }
 
@@ -25,8 +25,10 @@ public class HomeController {
         model.addAttribute("findPwForm", new FindPwForm());
         return "home/findAccount";
     }
+
     @GetMapping("dashboard")
     public String dashboard(Model model) {
         return "home/dashboard";
     }
+
 }

@@ -84,7 +84,7 @@
       <!-- 학습 -->
       <span class="sidebar-section-label">학습</span>
 
-      <a href="${pageContext.request.contextPath}/board/subject" class="sidebar-item">
+      <a href="${pageContext.request.contextPath}/course/subject" class="sidebar-item">
         <img src="${pageContext.request.contextPath}/img/icon_courses.png" alt="전체과목 아이콘" width="50px" height="50px" >
         <span class="si-label">전체 과목</span>
       </a>
@@ -94,7 +94,7 @@
         <span class="si-label">수강신청</span>
       </a>
 
-      <a href="${pageContext.request.contextPath}/board/board" class="sidebar-item">
+      <a href="${pageContext.request.contextPath}/board/list" class="sidebar-item">
         <img src="${pageContext.request.contextPath}/img/icon_board.png" alt="게시판 아이콘" width="50px" height="50px" >
         <span class="si-label">게시판</span>
       </a>

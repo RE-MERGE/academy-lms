@@ -19,5 +19,6 @@ public class SessionUser implements Serializable {
     private String email;        // 이메일
     private String name;         // 이름 (화면 표시용: 'OOO님 환영합니다')
     private UserRole role;       // 권한 확인 (학생/교수/관리자 구분)
+    private UserStatus status;       // 상태, 이용 가능한지
     private String profileImg;   // 프로필 이미지 경로 (상단 바 표시용)
 }

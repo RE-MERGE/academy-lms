@@ -147,7 +147,7 @@ border-radius: 10px; font-size: 18px; font-weight: 600; color: #fff; cursor: poi
       <div class="card-sub">계속하려면 로그인하세요</div>
 
       <form:form id="loginForm" action="${pageContext.request.contextPath}/user/login" method="post" modelAttribute="loginForm">
-          <div class="field">
+            <input type="hidden" name="redirectURL" value="${pageContext.request.getParameter('redirectURL')}"/>          <div class="field">
               <label for="userId">아이디</label>
               <form:input path="userId" id="userId" placeholder="아이디를 입력하세요" autocomplete="username"/>
               <form:errors path="userId" cssClass="error-msg" element="p"/>
@@ -158,8 +158,7 @@ border-radius: 10px; font-size: 18px; font-weight: 600; color: #fff; cursor: poi
               <form:errors path="password" cssClass="error-msg" element="p"/>
           </div>
 
-          <%-- 서버 에러 메시지 --%>
-          <form:errors path="*" cssClass="error-msg" element="p"/>
+          <form:errors path="" cssClass="error-msg" element="p" />
 
           <div class="aux-row">
             <button type="button" class="aux-btn2" onclick="location.href='${pageContext.request.contextPath}/user/joinForm'">회원가입</button>

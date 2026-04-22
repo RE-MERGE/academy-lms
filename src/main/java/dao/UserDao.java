@@ -21,7 +21,6 @@ public class UserDao {
     private Map<String, Object> param = new HashMap<>();
     private Class<UserMapper> cls = UserMapper.class;
 
-
     public List<User> selectAllUsers() {
         return template.getMapper(cls).selectAllUsers();
     }
@@ -41,5 +40,9 @@ public class UserDao {
 
     public User selectUser(String userId) {
         return template.getMapper(cls).selectUser(userId);
+    }
+
+    public int getLastUserCode() {
+        return template.getMapper(cls).getLastUserCode();
     }
 }

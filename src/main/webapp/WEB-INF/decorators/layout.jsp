@@ -89,8 +89,8 @@
         <span class="si-label">전체 과목</span>
       </a>
 
-      <a href="${pageContext.request.contextPath}/user/enrollment" class="sidebar-item">
-        <img src="${pageContext.request.contextPath}/img/icon_enrollment.png" alt="수강신청 아이콘" width="50px" height="50px" >
+      <a href="${pageContext.request.contextPath}/enrollment/courseEnrollment" class="sidebar-item">
+      <img src="${pageContext.request.contextPath}/img/icon_enrollment.png" alt="수강신청 아이콘" width="50px" height="50px" >
         <span class="si-label">수강신청</span>
       </a>
 

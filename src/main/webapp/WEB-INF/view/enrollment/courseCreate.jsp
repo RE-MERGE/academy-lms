@@ -13,7 +13,7 @@
       flex-direction: column;
       max-width: 900px;
       margin: 0 auto;
-    }
+    } 
     .page-header { display: flex; align-items: center; margin-bottom: 1.6rem; }
     .page-title {
       font-family: 'DM Serif Display', serif;
@@ -199,6 +199,17 @@
 
       <div class="form-card">
 
+        <%-- 교수번호 (관리자 전용) --%>
+        <c:if test="${sessionUser.role == 'ADMIN'}">
+        <div class="form-row">
+          <div class="form-label">교수번호</div>
+          <div class="form-field">
+            <input type="number" class="form-input" id="professorNo" placeholder="교수번호를 입력하세요" style="max-width:200px;">
+            <div class="hint">관리자 전용 — 강의를 개설할 교수의 번호를 입력하세요</div>
+          </div>
+        </div>
+        </c:if>
+
         <%-- 개설 과목명 --%>
         <div class="form-row">
           <div class="form-label">개설 과목명</div>
@@ -262,8 +273,7 @@
               </select>
               <span class="inline-label">신청 교실</span>
               <select class="form-select" id="roomInfo" style="width:110px;" onchange="loadBlockedSlots()">
-                <option value="">선택</option>
-                <option value="101호">101호</option>
+                <option value="101호" selected>101호</option>
                 <option value="102호">102호</option>
                 <option value="103호">103호</option>
                 <option value="104호">104호</option>
@@ -284,7 +294,7 @@
             </div>
             <div class="tt-grid" id="ttGrid"></div>
             <div class="selected-summary" id="selectedSummary">선택된 시간이 없습니다.</div>
-            <div class="hint">교실을 먼저 선택하면 사용 중인 시간이 표시됩니다</div>
+            <div class="hint">교실을 변경하면 해당 교실의 사용 중인 시간이 표시됩니다</div>
           </div>
         </div>
 
@@ -483,8 +493,11 @@ function loadBlockedSlots() {
     (data || []).forEach(function(course) {
       (course.day_of_week || '').split(',').forEach(function(day) {
         day = day.trim();
+        var startStr = (course.start_time || '').substring(0, 5);
+        var endStr   = (course.end_time   || '').substring(0, 5);
         PERIODS.forEach(function(p, pIdx) {
-          if (course.start_time && course.start_time.substring(0,5) === p.start) {
+          /* start_time 이상 end_time 미만 교시를 전부 막음 */
+          if (p.start >= startStr && p.start < endStr) {
             blockedSlots.push({ day: day, periodIdx: pIdx });
           }
         });
@@ -532,17 +545,22 @@ function submitForm() {
   var startTime = PERIODS[pIdxList[0]].start + ':00';
   var endTime   = PERIODS[pIdxList[pIdxList.length-1]].end + ':00';
 
+  var professorNoEl = document.getElementById('professorNo');
+  var professorNo   = professorNoEl ? parseInt(professorNoEl.value) : 0;
+  if (professorNoEl && !professorNo) { alert('교수번호를 입력해주세요.'); return; }
+
   var payload = {
-    course_name:  courseName,
-    course_type:  courseType,
-    credits:      parseInt(credits),
-    semester:     semester,
-    room_info:    roomInfo,
-    day_of_week:  daySet.join(','),
-    start_time:   startTime,
-    end_time:     endTime,
-    max_students: 30,
-    status:       'PENDING'
+    course_name:   courseName,
+    course_type:   courseType,
+    credits:       parseInt(credits),
+    semester:      semester,
+    room_info:     roomInfo,
+    day_of_week:   daySet.join(','),
+    start_time:    startTime,
+    end_time:      endTime,
+    max_students:  30,
+    status:        'PENDING',
+    professor_no:  professorNo
   };
 
   fetch(CTX_PATH + '/enrollment/create', {
@@ -552,13 +570,13 @@ function submitForm() {
   })
   .then(function(r) { return r.json(); })
   .then(function(data) {
-    if (data.success) { alert('강의 개설 신청이 완료되었습니다.'); history.back(); }
+    if (data.success) { alert('강의 개설 신청이 완료되었습니다.'); location.href = CTX_PATH + '/enrollment/list'; }
     else { alert('오류: ' + (data.message || '신청에 실패했습니다.')); }
   })
   .catch(function() { alert('서버 오류가 발생했습니다.'); });
 }
 
-window.addEventListener('DOMContentLoaded', function() { renderGrid(); });
+window.addEventListener('DOMContentLoaded', function() { loadBlockedSlots(); });
 </script>
 </body>
 </html>

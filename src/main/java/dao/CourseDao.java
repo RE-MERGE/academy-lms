@@ -13,10 +13,16 @@ import dto.Course;
 @Repository
 public class CourseDao {
 	@Autowired
-    private SqlSessionTemplate template;
+  private SqlSessionTemplate template;
 	private Class<CourseMapper> cls = CourseMapper.class;
 	public List<Course> list() {
 		return template.getMapper(cls).list();
+	}
+	public int insertCourse(Course course) {
+		return template.getMapper(cls).insertCourse(course);
+	}
+	public List<Course> getBlockedCourses(String room, String semester) {
+		return template.getMapper(cls).getBlokcedCourse(room,semester);
 	}
 	public Course selectCourse(int no) {
     	Course param = new Course();
@@ -30,5 +36,17 @@ public class CourseDao {
     
     public List<Course> selectAllCourses() {
     	return template.getMapper(cls).getAllCourses();
+    }
+    
+    public List<Integer> getFavoriteCourseNos(int user_no) {
+        return template.getMapper(cls).getFavoriteCourseNos(user_no);
+    }
+
+    public void addFavorite(int user_no, int course_no) {
+        template.getMapper(cls).addFavorite(user_no, course_no);
+    }
+
+    public void removeFavorite(int user_no, int course_no) {
+        template.getMapper(cls).removeFavorite(user_no, course_no);
     }
 }

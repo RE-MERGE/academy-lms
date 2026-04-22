@@ -1,5 +1,6 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <!DOCTYPE html>
 <html lang="ko">
 
@@ -23,7 +24,7 @@
     <header class="lms-header">
 
       <!-- 로고 -->
-      <a href="${pageContext.request.contextPath}/dashBoard" class="lms-logo-wrap">
+      <a href="${pageContext.request.contextPath}/home/dashboard" class="lms-logo-wrap">
         <div class="lms-logo-text">
           <span class="lms-logo-main">re<span>·</span>merge</span>
           <span class="lms-logo-sub">Learning Management System</span>
@@ -84,17 +85,17 @@
       <!-- 학습 -->
       <span class="sidebar-section-label">학습</span>
 
-      <a href="${pageContext.request.contextPath}/board/subject" class="sidebar-item">
+      <a href="${pageContext.request.contextPath}/course/subject" class="sidebar-item"  id="course-menu">
         <img src="${pageContext.request.contextPath}/img/icon_courses.png" alt="전체과목 아이콘" width="50px" height="50px" >
         <span class="si-label">전체 과목</span>
       </a>
 
-      <a href="${pageContext.request.contextPath}/user/enrollment" class="sidebar-item">
-        <img src="${pageContext.request.contextPath}/img/icon_enrollment.png" alt="수강신청 아이콘" width="50px" height="50px" >
+      <a href="${pageContext.request.contextPath}/enrollment/courseEnrollment" class="sidebar-item">
+      <img src="${pageContext.request.contextPath}/img/icon_enrollment.png" alt="수강신청 아이콘" width="50px" height="50px" >
         <span class="si-label">수강신청</span>
       </a>
 
-      <a href="${pageContext.request.contextPath}/board/board" class="sidebar-item">
+      <a href="${pageContext.request.contextPath}/board/list" class="sidebar-item">
         <img src="${pageContext.request.contextPath}/img/icon_board.png" alt="게시판 아이콘" width="50px" height="50px" >
         <span class="si-label">게시판</span>
       </a>
@@ -110,6 +111,27 @@
       </a>
 
     </nav>
+<div class="flyout" id="course-flyout">
+	    <h3 class="flyout-title">전체 과목</h3>
+	    	<ul class="flyout-list">
+	        	<c:if test="${not empty courseList}">
+	        	<li class="flyout-list">&nbsp;과목</li>
+	            	<c:forEach var="course" items="${courseList}">
+		                <li class="flyout-item">
+        <a href="${pageContext.request.contextPath}/course/subject?no=${course.course_no}">
+            ${course.course_name}
+        </a>
+        <button class="fav-btn" onclick="toggleFavorite(event, this, ${course.course_no})">
+            <c:choose>
+                <c:when test="${fn:contains(favoriteNos, course.course_no)}">★</c:when>
+                <c:otherwise>☆</c:otherwise>
+            </c:choose>
+        </button>
+    </li>
+	            	</c:forEach>
+	        	</c:if>
+	   	 	</ul>
+		</div>
 
     <!-- ── 페이지 본문 ── -->
     <main class="main-content">
@@ -119,5 +141,56 @@
   </div>
 </div>
 
+<script type="text/javascript">
+document.addEventListener('DOMContentLoaded', function() {
+    const courseMenu = document.getElementById('course-menu');
+    const flyout = document.getElementById('course-flyout');
+    let hideTimer;
+
+    courseMenu.addEventListener('mouseenter', () => {
+        clearTimeout(hideTimer);
+        flyout.classList.add('active');
+    });
+
+    courseMenu.addEventListener('mouseleave', () => {
+        hideTimer = setTimeout(() => {
+            if (!flyout.matches(':hover')) flyout.classList.remove('active');
+        }, 1000);
+    });
+
+    flyout.addEventListener('mouseenter', () => {
+        clearTimeout(hideTimer);
+    });
+
+    flyout.addEventListener('mouseleave', () => {
+        hideTimer = setTimeout(() => {
+            flyout.classList.remove('active');
+        }, 100);
+    });
+});
+
+function toggleFavorite(event, btn, courseNo) {
+    event.preventDefault();
+    event.stopPropagation();
+    const isFav = btn.classList.contains('active');
+    const contextPath = '<%=request.getContextPath()%>';
+    const url = isFav
+        ? contextPath + '/course/remove'
+        : contextPath + '/course/add';
+
+    fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: 'course_no=' + courseNo
+    })
+    .then(res => res.text())
+    .then(result => {
+        if (result === 'ok') {
+            btn.classList.toggle('active');
+            btn.textContent = isFav ? '☆' : '★';
+        }
+    });
+}
+</script>
 </body>
 </html>

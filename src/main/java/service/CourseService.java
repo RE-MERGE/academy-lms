@@ -37,4 +37,15 @@ public class CourseService {
 		return coursedao.selectAllCourses();
 	}
 	
+	 public List<Integer> getFavoriteCourseNos(int user_no) {
+	        return coursedao.getFavoriteCourseNos(user_no);
+	    }
+
+	    public void addFavorite(int user_no, int course_no) {
+	        coursedao.addFavorite(user_no, course_no);
+	    }
+
+	    public void removeFavorite(int user_no, int course_no) {
+	        coursedao.removeFavorite(user_no, course_no);
+	    }
 }

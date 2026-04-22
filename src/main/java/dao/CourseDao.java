@@ -37,4 +37,16 @@ public class CourseDao {
     public List<Course> selectAllCourses() {
     	return template.getMapper(cls).getAllCourses();
     }
+    
+    public List<Integer> getFavoriteCourseNos(int user_no) {
+        return template.getMapper(cls).getFavoriteCourseNos(user_no);
+    }
+
+    public void addFavorite(int user_no, int course_no) {
+        template.getMapper(cls).addFavorite(user_no, course_no);
+    }
+
+    public void removeFavorite(int user_no, int course_no) {
+        template.getMapper(cls).removeFavorite(user_no, course_no);
+    }
 }

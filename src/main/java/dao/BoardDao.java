@@ -26,6 +26,9 @@ public class BoardDao {
     public PostDetail postDetail(int boardNo) {
         return template.getMapper(cls).postDetail(boardNo);
     }
-    
-    
+
+
+    public void updatePost(PostUpdate postUpdate) {
+        template.getMapper(cls).updatePost(postUpdate);
+    }
 }

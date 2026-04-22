@@ -14,10 +14,7 @@ import org.springframework.web.multipart.commons.CommonsMultipartResolver;
 import org.springframework.web.servlet.HandlerMapping;
 import org.springframework.web.servlet.LocaleResolver;
 import org.springframework.web.servlet.ViewResolver;
-import org.springframework.web.servlet.config.annotation.DefaultServletHandlerConfigurer;
-import org.springframework.web.servlet.config.annotation.EnableWebMvc;
-import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+import org.springframework.web.servlet.config.annotation.*;
 import org.springframework.web.servlet.handler.SimpleMappingExceptionResolver;
 import org.springframework.web.servlet.i18n.FixedLocaleResolver;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
@@ -150,5 +147,11 @@ public class MvcConfig implements WebMvcConfigurer {
         resolvers.add(new LoginUserArgumentResolver());
     }
 
+    @Override
+    public void addResourceHandlers(ResourceHandlerRegistry registry) {
 
+        registry.addResourceHandler("/upload/profiles/**")
+                .addResourceLocations("file:///C:/upload/profiles/");
+
+    }
 }

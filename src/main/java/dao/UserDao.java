@@ -2,6 +2,7 @@ package dao;
 
 import dao.mapper.UserMapper;
 import dto.user.User;
+import dto.user.UserEditForm;
 import org.mybatis.spring.SqlSessionTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
@@ -49,5 +50,17 @@ public class UserDao {
     //PW찾기에서 임시비밀번호로 변경하기 위한 메서드
     public void updatePassword(String userId, String tempPassword) {
         template.getMapper(cls).updatePassword(userId, tempPassword);
+    }
+
+    public void updateInfo(UserEditForm userEditForm) {
+//        param.clear();
+//        param.put("profileImg", userEditForm.getCurrentProfileImg());
+//        param.put("userId", userEditForm.getUserId());
+//        param.put("name", userEditForm.getName());
+//        param.put("email", userEditForm.getEmail());
+//        param.put("phone", userEditForm.getPhone());
+
+        template.getMapper(cls).updateInfo(userEditForm);
+//        template.getMapper(cls).updateInfo(param);
     }
 }

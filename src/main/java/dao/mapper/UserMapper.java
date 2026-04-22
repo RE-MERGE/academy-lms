@@ -1,12 +1,14 @@
 package dao.mapper;
 
 import dto.user.User;
+import dto.user.UserEditForm;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.Update;
 
 import java.util.List;
+import java.util.Map;
 
 public interface UserMapper {
 
@@ -44,4 +46,24 @@ public interface UserMapper {
 
     @Update("UPDATE USERS SET password = #{tempPassword} WHERE user_id = #{userId}")
     void updatePassword(@Param("userId") String userId, @Param("tempPassword") String tempPassword);
+
+    @Update("<script>" +
+            "UPDATE USERS " +
+            "<set>" +
+            "  name = #{name}, " +
+            "  email = #{email}, " +
+            "  phone = #{phone}, " +
+            "  <if test='password != null and password != \"\"'> " +
+            "    , password = #{password} " +
+            "  </if> " +
+            "  <if test='currentProfileImg != null and currentProfileImg != \"\"'> " +
+            "    , profile_img = #{currentProfileImg} " +
+            "  </if> " +
+            "  , updated_at = NOW() " +
+            "</set>" +
+            "WHERE user_id = #{userId}" +
+            "</script>")
+    void updateInfo(UserEditForm userEditForm);
+
+    void updateInfo(Map<String, Object> param);
 }

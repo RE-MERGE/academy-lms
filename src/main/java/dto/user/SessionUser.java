@@ -17,6 +17,7 @@ public class SessionUser implements Serializable {
     private int userCode;     // 학번/사번 (화면 표시용)
     private String userId;       // 아이디
     private String email;        // 이메일
+    private String phone;        // 연락처
     private String name;         // 이름 (화면 표시용: 'OOO님 환영합니다')
     private UserRole role;       // 권한 확인 (학생/교수/관리자 구분)
     private UserStatus status;       // 상태, 이용 가능한지

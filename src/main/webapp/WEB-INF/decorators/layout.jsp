@@ -112,13 +112,13 @@
 
     </nav>
 <div class="flyout" id="course-flyout">
-	    <h3 class="flyout-title">전체 과목</h3>
+	    <h3 class="flyout-title">${course.course_name}</h3>
 	    	<ul class="flyout-list">
 	        	<c:if test="${not empty courseList}">
 	        	<li class="flyout-list">&nbsp;과목</li>
 	            	<c:forEach var="course" items="${courseList}">
 		                <li class="flyout-item">
-        <a href="${pageContext.request.contextPath}/course/subject?no=${course.course_no}">
+        <a href="${pageContext.request.contextPath}/course/mainSubject?no=${course.course_no}">
             ${course.course_name}
         </a>
         <button class="fav-btn" onclick="toggleFavorite(event, this, ${course.course_no})">
@@ -191,6 +191,7 @@ function toggleFavorite(event, btn, courseNo) {
         }
     });
 }
+
 </script>
 </body>
 </html>

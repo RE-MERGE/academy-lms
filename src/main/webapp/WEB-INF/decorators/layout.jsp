@@ -84,7 +84,7 @@
       <!-- 학습 -->
       <span class="sidebar-section-label">학습</span>
 
-      <a href="${pageContext.request.contextPath}/board/subject" class="sidebar-item">
+      <a href="${pageContext.request.contextPath}/course/subject" class="sidebar-item"  id="course-menu">
         <img src="${pageContext.request.contextPath}/img/icon_courses.png" alt="전체과목 아이콘" width="50px" height="50px" >
         <span class="si-label">전체 과목</span>
       </a>
@@ -110,6 +110,20 @@
       </a>
 
     </nav>
+<div class="flyout" id="course-flyout">
+	    <h3 class="flyout-title">전체 과목</h3>
+	    	<ul class="flyout-list">
+	        	<c:if test="${not empty courseList}">
+	            	<c:forEach var="course" items="${courseList}">
+		                <li>
+		                    <a href="${pageContext.request.contextPath}/course/subject?no=${course.course_no}">
+		                        ${course.course_name}
+		                    </a>
+		                </li>
+	            	</c:forEach>
+	        	</c:if>
+	   	 	</ul>
+		</div>
 
     <!-- ── 페이지 본문 ── -->
     <main class="main-content">
@@ -119,5 +133,33 @@
   </div>
 </div>
 
+<script type="text/javascript">
+document.addEventListener('DOMContentLoaded', function() {
+    const courseMenu = document.getElementById('course-menu');
+    const flyout = document.getElementById('course-flyout');
+    let hideTimer;
+
+    courseMenu.addEventListener('mouseenter', () => {
+        clearTimeout(hideTimer);
+        flyout.classList.add('active');
+    });
+
+    courseMenu.addEventListener('mouseleave', () => {
+        hideTimer = setTimeout(() => {
+            if (!flyout.matches(':hover')) flyout.classList.remove('active');
+        }, 1000);
+    });
+
+    flyout.addEventListener('mouseenter', () => {
+        clearTimeout(hideTimer);
+    });
+
+    flyout.addEventListener('mouseleave', () => {
+        hideTimer = setTimeout(() => {
+            flyout.classList.remove('active');
+        }, 100);
+    });
+});
+</script>
 </body>
 </html>

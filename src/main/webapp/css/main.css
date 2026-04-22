@@ -342,22 +342,48 @@ html, body {
 }
 
 .flyout {
-  position: absolute;
-  left: calc(var(--sidebar-w) - 12px);
-  top: 0;
-  min-width: 175px;
-  background: var(--white);
-  border: 1px solid var(--gray-200);
-  border-radius: var(--radius-lg);
-  padding: .6rem .5rem;
-  box-shadow: var(--shadow-lg);
-  opacity: 0;
-  pointer-events: none;
-  transform: translateX(-6px);
-  transition: opacity .16s, transform .16s;
-  z-index: 300;
+	padding: 1.2rem 0 1.2rem 1rem;
+    position: fixed;
+    top: 61;
+    left: var(--sidebar-w);
+    width: 250px;
+    height: 100vh;
+    background: var(--white);
+    border-right: 1px solid var(--gray-200);
+    box-shadow: var(--shadow-sm);
+    z-index: 99;
+    overflow-y: auto;
+
+    opacity: 0;
+    pointer-events: none;
+    transform: translateX(-10px);
+    transition: opacity .2s ease, transform .2s ease;
 }
 
+.flyout.active {
+    opacity: 1 !important;
+    pointer-events: auto !important;
+    transform: translateX(0) !important;
+}
+.flyout-list {
+    list-style: none; /* 점 제거 */
+    padding: 0;
+    margin: 0;
+}
+.flyout-list li a {
+    display: block;
+    padding: .6rem 1.2rem;
+    font-size: .84rem;
+    font-weight: 500;
+    color: var(--gray-600);
+    text-decoration: none;
+    border-radius: var(--radius-md);
+    margin: .05rem .6rem;
+    transition: all .16s;
+    white-space: nowrap; /* 줄바꿈 방지 */
+    overflow: hidden;
+    text-overflow: ellipsis; /* 그래도 길면 ... 처리 */
+}
 .flyout-title {
   font-size: .66rem;
   font-weight: 700;
@@ -384,6 +410,52 @@ html, body {
 .flyout a:hover {
   background: var(--primary-pale);
   color: var(--primary);
+}
+
+.flyout-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 .6rem;
+}
+
+.flyout-item a {
+    flex: 1;
+    padding: .6rem .6rem;
+    font-size: .84rem;
+    font-weight: 500;
+    color: var(--gray-600);
+    text-decoration: none;
+    border-radius: var(--radius-md);
+    transition: all .16s;
+}
+
+.flyout-item a:hover {
+    background: var(--primary-pale);
+    color: var(--primary);
+}
+
+.fav-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1.1rem;
+    color: var(--gray-400);
+    padding: .3rem;
+    border-radius: 50%;
+    transition: all .16s;
+    line-height: 1;
+    flex-shrink: 0;
+}
+
+.fav-btn:hover {
+    color: #f5a623;
+    background: #fff8ee;
+    transform: scale(1.2);
+}
+
+.fav-btn.active {
+    color: #f5a623;
 }
 
 /* ================================================================

@@ -84,17 +84,17 @@
         <c:otherwise>
           <form:form action="${pageContext.request.contextPath}/user/findId" method="post" modelAttribute="findIdForm">
             <div class="field">
-              <label>이름</label>
+              <label><span class="field-icon">✦</span>이름</label>
               <form:input path="name" placeholder="실명을 입력하세요."/>
               <form:errors path="name" cssClass="error-msg" element="p"/>
             </div>
             <div class="field">
-              <label>이메일</label>
+              <label><span class="field-icon">✦</span>이메일</label>
               <form:input path="email" placeholder="이메일을 입력하세요."/>
               <form:errors path="email" cssClass="error-msg" element="p"/>
             </div>
             <div class="field">
-              <label>연락처</label>
+              <label><span class="field-icon">✦</span>연락처</label>
               <form:input path="phone" placeholder="연락처를 입력하세요."/>
               <form:errors path="phone" cssClass="error-msg" element="p"/>
             </div>

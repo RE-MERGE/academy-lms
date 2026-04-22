@@ -458,6 +458,50 @@ html, body {
     color: #f5a623;
 }
 
+.subject-sidebar {
+    width: 200px;
+    background: #fff;
+    border-right: 1px solid var(--gray-200);
+    padding: 1.5rem 0;
+    flex-shrink: 0;
+}
+
+.subject-sidebar-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--primary);
+    padding: 0 1.2rem 1rem;
+    border-bottom: 1px solid var(--gray-200);
+    margin-bottom: .5rem;
+}
+
+.subject-nav {
+    display: flex;
+    flex-direction: column;
+}
+
+.subject-nav-item {
+    padding: .65rem 1.2rem;
+    font-size: .84rem;
+    font-weight: 500;
+    color: var(--gray-600);
+    text-decoration: none;
+    transition: all .16s;
+}
+
+.subject-nav-item:hover,
+.subject-nav-item.active {
+    background: var(--primary-pale);
+    color: var(--primary);
+    font-weight: 700;
+}
+
+.subject-main {
+    flex: 1;
+    background: #f8faff;
+    padding: 2rem;
+    overflow-y: auto;
+}
 /* ================================================================
    메인 콘텐츠
    ================================================================ */

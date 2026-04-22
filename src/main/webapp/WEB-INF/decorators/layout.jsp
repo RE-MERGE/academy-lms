@@ -114,6 +114,7 @@
 	    <h3 class="flyout-title">전체 과목</h3>
 	    	<ul class="flyout-list">
 	        	<c:if test="${not empty courseList}">
+	        	<li class="flyout-list">&nbsp;과목</li>
 	            	<c:forEach var="course" items="${courseList}">
 		                <li>
 		                    <a href="${pageContext.request.contextPath}/course/subject?no=${course.course_no}">

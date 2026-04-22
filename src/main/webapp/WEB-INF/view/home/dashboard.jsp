@@ -383,7 +383,7 @@ body {
           <span class="qi-icon">📊</span>성적확인
         </button>
         <button class="quick-item">
-          <span class="qi-icon">✅</span>출석체크
+          <span class="qi-icon" onclick="openAttendance()">✅</span>출석체크
         </button>
       </div>
     </div>
@@ -548,6 +548,10 @@ body {
   document.querySelectorAll('.modal').forEach(m => {
     m.addEventListener('click', e => { if (e.target === m) m.classList.remove('open'); });
   });
+  
+  function openAttendance() {
+	    window.location.href = '<%=request.getContextPath()%>/course/subject';
+	}
 </script>
 
 </body>

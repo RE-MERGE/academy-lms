@@ -110,12 +110,16 @@
 
     </div>
 
-
-
     <!-- 비밀번호 찾기 탭 -->
     <div id="panel-pw" class="tab-panel ${activeTab == 'pw' ? 'active' : ''}">
       <form:form action="${pageContext.request.contextPath}/user/findPw"
                  method="post" modelAttribute="findPwForm">
+        <form:errors cssClass="error-msg global-error" element="p" />
+
+        <c:if test="${not empty message}">
+<%--          <p class="success-msg" style="color: blue; font-weight: bold; margin-bottom: 10px;">${message}</p>--%>
+        </c:if>
+
         <div class="field">
           <label><span class="field-icon">✦</span>아이디</label>
           <form:input path="userId" placeholder="아이디를 입력하세요."/>
@@ -161,6 +165,15 @@
     document.querySelectorAll('.error-msg').forEach(e => e.style.display = 'none');
     document.querySelectorAll('.field input').forEach(i => i.value = '');
   }
+
+  window.onload = function() {
+    var msg = "${message}"; // 컨트롤러에서 보낸 메시지
+
+    if (msg && msg.trim() !== "") {
+      alert(msg);
+      location.href = "${pageContext.request.contextPath}/home/home";
+    }
+  };
 </script>
 
 </body>

@@ -2,7 +2,9 @@ package dao.mapper;
 
 import dto.user.User;
 import org.apache.ibatis.annotations.Insert;
+import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
+import org.apache.ibatis.annotations.Update;
 
 import java.util.List;
 
@@ -28,9 +30,6 @@ public interface UserMapper {
             "#{lastLoginAt}, #{lock_count})")
     void join(User user);
 
-    @Select("SELECT password FROM USERS WHERE user_id=#{userId} AND email={email} AND phone={phone}")
-    String selectUserPassword(String userId, String email, String phone);
-
     @Select("SELECT " + "user_no AS userNo, " + "user_code AS userCode, " + "user_id AS userId, " + "password, " + "name, " + "email, " +
             "phone, " + "role, " +  "status, " + "profile_img AS profileImg, " + "last_login AS lastLoginAt, " + // DB는 last_login
             "created_at AS createdAt, " + "lock_count AS lock_count, " + // 객체 필드명이 snake_case면 그대로
@@ -40,4 +39,9 @@ public interface UserMapper {
     @Select("SELECT IFNULL(MAX(user_code), 0) FROM USERS")
     int getLastUserCode();
 
+    @Select("SELECT password FROM USERS WHERE user_id=#{userId} AND email=#{email} AND phone=#{phone}")
+    String selectUserPassword(@Param("userId") String userId, @Param("email") String email, @Param("phone") String phone);
+
+    @Update("UPDATE USERS SET password = #{tempPassword} WHERE user_id = #{userId}")
+    void updatePassword(@Param("userId") String userId, @Param("tempPassword") String tempPassword);
 }

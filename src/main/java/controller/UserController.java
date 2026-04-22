@@ -5,6 +5,8 @@ import dao.UserDao;
 import dto.user.*;
 import dto.user.login.Login;
 import lombok.RequiredArgsConstructor;
+import org.springframework.mail.MailSender;
+import org.springframework.mail.SimpleMailMessage;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -16,6 +18,8 @@ import service.UserService;
 
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
+import javax.validation.constraints.Email;
+import javax.validation.constraints.NotBlank;
 import java.io.File;
 import java.io.IOException;
 import java.time.LocalDate;
@@ -32,6 +36,7 @@ public class UserController {
     private final UserDao userDao;
     private final NaverLoginConfig naverLoginConfig;
     private final NaverLoginService naverLoginService;
+    private final MailSender mailSender;
 
     @GetMapping("joinForm")
     public String joinForm(Model model) {
@@ -56,6 +61,11 @@ public class UserController {
             return "user/joinForm";
         }
 
+        //이메일이 중복인 경우
+        if (dbUser != null && userJoinForm.getEmail().equals(dbUser.getEmail())) {
+            bindingResult.reject("{error.duplication.email}");
+            return "user/joinForm";
+        }
 
         //비밀번호 값이 틀리거나, 없는 경우
         if(userJoinForm.getPassword() == null || userJoinForm.getPasswordConfirm() == null ||
@@ -71,31 +81,6 @@ public class UserController {
         return "redirect:/home/home";
 
     }
-
-//    @PostMapping("join")
-//    public String join(@Validated UserJoinForm userJoinForm,
-//                       BindingResult bindingResult,
-//                       HttpSession session) {
-//
-//        //두 개의 비밀번호 일치 여부 확인
-//        validatePasswordMatch(userJoinForm, bindingResult);
-//
-//        if (bindingResult.hasErrors()) {
-//            return "user/joinForm";
-//        }
-//
-//        //DB에 저장할 user, DB에 저장(service 필요)
-//        User user = toUser(userJoinForm);
-//        userService.join(user);
-//
-//        //로그인에 저장할 user
-//        LoginUser loginUser = toLoginUser(user);
-//
-//        session.setAttribute(UserConst.LOGIN_USER, loginUser);
-//
-//        return "redirect:/home/login";
-//    }
-
 
     @GetMapping("loginForm")
     public String loginForm(Model model) {
@@ -128,9 +113,14 @@ public class UserController {
             return "home/home";
         }
 
+        //활동 가능한 상태의 아이디가 아니라면,
+        if(dbUser.getStatus() != UserStatus.ACTIVE) {
+            bindingResult.reject("error.status.notActive");
+            return "home/home";
+        }
+
         SessionUser sessionUser = createSessionUser(dbUser);
         session.setAttribute(UserConst.SESSION_USER, sessionUser);
-
         return "redirect:" + redirectURL;
     }
 
@@ -176,10 +166,44 @@ public class UserController {
             return "home/findAccount";
         }
 
-        //비밀번호 찾기 하고 있었음
         String findPassword = userDao.selectUserPassword(findPwForm.getUserId(), findPwForm.getEmail(), findPwForm.getPhone());
 
-        return "redirect:/home/dashboard";
+        if (findPassword == null || findPassword.trim().isEmpty()) {
+
+            bindingResult.reject("error.mismatch.info");
+            model.addAttribute("findIdForm", new FindIdForm());
+            model.addAttribute("activeTab", "pw");
+            return "home/findAccount";
+        }
+
+        String tempPassword = UUID.randomUUID().toString().substring(0, 8);
+
+        userDao.updatePassword(findPwForm.getUserId(), tempPassword);
+
+        try {
+            sentTempPasswordEmail(findPwForm.getEmail(), tempPassword);
+            model.addAttribute("message", "이메일로 임시 비밀번호를 발송했습니다.");
+        } catch (Exception e) {
+            e.printStackTrace();
+            model.addAttribute("message", "메일 발송에 실패했습니다. 관리자에게 문의하세요.");
+        }
+
+        model.addAttribute("findIdForm", new FindIdForm()); // 폼 객체 유지를 위해 추가
+        model.addAttribute("activeTab", "pw");
+        return "home/findAccount";
+    }
+
+    private void sentTempPasswordEmail(String email, String tempPassword) {
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setFrom("alswo818@naver.com");
+        message.setTo(email);
+        message.setSubject("[re-merge LMS] 임시 비밀번호 발급 ");
+        message.setText("안녕하세요, [re-merge LMS]입니다. \n" +
+                    "요청하신 임시 비밀번호는 [ " + tempPassword + "] 입니다.\n" +
+                    "로그인 후 반드시 비밀번호를 변경해주세요.");
+
+        mailSender.send(message);
+
     }
 
     @GetMapping("naverLogin")
@@ -242,14 +266,13 @@ public class UserController {
         user.setEmail(userJoinForm.getEmail());
         user.setPhone(userJoinForm.getPhone());
         user.setRole(UserRole.valueOf(userJoinForm.getRole()));
-
         user.setCreatedAt(LocalDateTime.now());
         user.setUpdatedAt(LocalDate.now());
         user.setStatus(UserStatus.PENDING);
         user.setLock_count(0);
 
         user.setProfileImg(saveProfileImage(userJoinForm.getProfileImg()));
-
+        System.out.println("user.getProfileImg() = " + user.getProfileImg());
         return user;
     }
 
@@ -266,7 +289,7 @@ public class UserController {
             String saveFileName = UUID.randomUUID().toString() + "_" + originalFilename;
 
             try {
-                file.transferTo(new File(UserConst.UPLOAD_PROFILES_IMG_PATH + saveFileName));
+                file.transferTo(new File(UserConst.UPLOAD_PROFILES_IMG_PATH, saveFileName));
                 return saveFileName;
             } catch (IOException e) {
                 e.printStackTrace();
@@ -296,6 +319,7 @@ public class UserController {
                 dbUser.getEmail(),
                 dbUser.getName(),
                 dbUser.getRole(),
+                dbUser.getStatus(),
                 dbUser.getProfileImg()
         );
         return sessionUser;
@@ -319,8 +343,8 @@ public class UserController {
     }
 
     private User createUser(UserJoinForm userJoinForm) {
-
         String profileImage = "";
+
         if (userJoinForm.getProfileImg() != null && !userJoinForm.getProfileImg().isEmpty()) {
             profileImage = saveProfileImage(userJoinForm.getProfileImg());
         }

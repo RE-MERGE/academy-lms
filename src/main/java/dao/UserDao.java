@@ -45,4 +45,9 @@ public class UserDao {
     public int getLastUserCode() {
         return template.getMapper(cls).getLastUserCode();
     }
+
+    //PW찾기에서 임시비밀번호로 변경하기 위한 메서드
+    public void updatePassword(String userId, String tempPassword) {
+        template.getMapper(cls).updatePassword(userId, tempPassword);
+    }
 }

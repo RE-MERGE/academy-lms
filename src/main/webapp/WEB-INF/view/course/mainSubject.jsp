@@ -19,9 +19,10 @@
     <aside class="subject-sidebar">
         <h2 class="subject-sidebar-title">${Course.course_name}</h2>
         <nav class="subject-nav">
-            <a href="#" class="subject-nav-item active">🏠 홈</a>
-            <a href="#" class="subject-nav-item">📊 성적</a>
-            <a href="#" class="subject-nav-item">💬 Q&A</a>
+        <br>
+            <a href="#" class="subject-nav-item active">🏠 홈</a><br><hr><br>
+            <a href="#" class="subject-nav-item">📊 성적</a><br><hr><br>
+            <a href="#" class="subject-nav-item">💬 Q&A</a><br><hr><br>
             <a href="#" class="subject-nav-item">👥 학생 리스트</a>
         </nav>
     </aside>

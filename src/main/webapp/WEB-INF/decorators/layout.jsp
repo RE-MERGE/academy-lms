@@ -115,18 +115,21 @@
 	    <h3 class="flyout-title">${course.course_name}</h3>
 	    	<ul class="flyout-list">
 	        	<c:if test="${not empty courseList}">
-	        	<li class="flyout-list">&nbsp;과목</li>
+	        	<!-- <li class="flyout-list">&nbsp;과목</li>-->
 	            	<c:forEach var="course" items="${courseList}">
 		                <li class="flyout-item">
         <a href="${pageContext.request.contextPath}/course/mainSubject?no=${course.course_no}">
             ${course.course_name}
         </a>
-        <button class="fav-btn" onclick="toggleFavorite(event, this, ${course.course_no})">
-            <c:choose>
-                <c:when test="${fn:contains(favoriteNos, course.course_no)}">★</c:when>
-                <c:otherwise>☆</c:otherwise>
-            </c:choose>
-        </button>
+        <c:set var="isFav" value="false"/>
+    <c:forEach var="fno" items="${favoriteNos}">
+        <c:if test="${fno == course.course_no}">
+            <c:set var="isFav" value="true"/>
+        </c:if>
+    </c:forEach>
+        <button class="fav-btn ${isFav ? 'active' : ''}" onclick="toggleFavorite(event, this, ${course.course_no})">
+        ${isFav ? '★' : '☆'}
+    </button>
     </li>
 	            	</c:forEach>
 	        	</c:if>

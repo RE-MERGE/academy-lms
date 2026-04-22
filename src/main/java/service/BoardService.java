@@ -64,6 +64,9 @@ public class BoardService {
     public PostDetail postDetail(int boardNo) {
         return boardDao.postDetail(boardNo);
     }
-    
-	
+
+
+    public void updatePost(PostUpdate postUpdate) {
+        boardDao.updatePost(postUpdate);
+    }
 }

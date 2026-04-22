@@ -52,8 +52,11 @@ public interface BoardMapper {
             "        WHERE board_no=#{value}")
     PostDetail postDetail(int boardNo);
 
-
-
-
+    @Update("UPDATE BOARD\n" +
+            "       SET title = #{title},\n" +
+            "           content = #{content},\n" +
+            "           created_at = NOW() \n" +
+            "     WHERE board_no = #{boardNo} ")
+    void updatePost(PostUpdate postUpdate);
 }
 

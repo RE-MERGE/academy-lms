@@ -65,17 +65,5 @@ public class BoardService {
         return boardDao.postDetail(boardNo);
     }
     
-
-	public Course selectCourse(int no) {
-		Course course = boardDao.selectCourse(no);
-    	return course;
-	}
-
-	public String selectProfessorName(int course_no) {
-	    return boardDao.selectProfessorName(course_no);
-	}
-
-	public List<Course> selectAllCourses() {
-		return boardDao.selectAllCourses();
-	}
+	
 }

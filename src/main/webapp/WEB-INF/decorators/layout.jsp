@@ -77,7 +77,7 @@
       <!-- 학습 -->
       <span class="sidebar-section-label">학습</span>
 
-      <a href="${pageContext.request.contextPath}/board/subject" class="sidebar-item">
+      <a href="${pageContext.request.contextPath}/course/subject" class="sidebar-item">
         <span class="si-icon">📚</span>
         <span class="si-label">전체 과목</span>
       </a>

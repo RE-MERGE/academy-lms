@@ -23,18 +23,6 @@ import dto.board.*;
         @Autowired
         BoardService boardService;
 
-        @GetMapping("subject")
-        public ModelAndView getSubject(@RequestParam(value="no", defaultValue="1") int no) {
-            ModelAndView mav = new ModelAndView();
-            Course courseDetail = boardService.selectCourse(no);
-            String profName = boardService.selectProfessorName(no);
-            List<Course> courseList = boardService.selectAllCourses(); // 이게 있어야 함
-            mav.addObject("Course", courseDetail);
-            mav.addObject("courseList", courseList); // 이게 있어야 함
-            mav.addObject("profName",profName);
-            mav.setViewName("board/subject");
-            return mav;
-        }
         @GetMapping("*")
         public void getBoard(Board board) {
         }

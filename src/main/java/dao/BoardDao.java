@@ -27,17 +27,5 @@ public class BoardDao {
         return template.getMapper(cls).postDetail(boardNo);
     }
     
-    public Course selectCourse(int no) {
-    	Course param = new Course();
-    	param.setCourse_no(no);
-    	return template.getMapper(cls).getCourse(param);
-    }
-
-    public String selectProfessorName(int course_no) {
-        return template.getMapper(cls).getProfessorName(course_no);
-    }
     
-    public List<Course> selectAllCourses() {
-    	return template.getMapper(cls).getAllCourses();
-    }
 }

@@ -82,7 +82,7 @@
         <span class="si-label">전체 과목</span>
       </a>
 
-      <a href="${pageContext.request.contextPath}/user/enrollment" class="sidebar-item">
+      <a href="${pageContext.request.contextPath}/enrollment/courseEnrollment" class="sidebar-item">
         <span class="si-icon">🎓</span>
         <span class="si-label">수강신청</span>
       </a>

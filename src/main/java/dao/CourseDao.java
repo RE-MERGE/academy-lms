@@ -18,4 +18,10 @@ public class CourseDao {
 	public List<Course> list() {
 		return template.getMapper(cls).list();
 	}
+	public int insertCourse(Course course) {
+		return template.getMapper(cls).insertCourse(course);
+	}
+	public List<Course> getBlockedCourses(String room, String semester) {
+		return template.getMapper(cls).getBlokcedCourse(room,semester);
+	}
 }

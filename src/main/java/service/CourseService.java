@@ -17,5 +17,14 @@ public class CourseService {
 		return coursedao.list();
 	}
 
+	public int insertCourse(Course course) {
+		return coursedao.insertCourse(course);
+		
+	}
+
+	public List<Course> getBlockedCourses(String room, String semester) {
+    return coursedao.getBlockedCourses(room, semester);
+}
+
 	
 }

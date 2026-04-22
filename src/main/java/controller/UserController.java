@@ -14,6 +14,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import service.NaverLoginService;
 import service.UserService;
 
@@ -243,7 +244,7 @@ public class UserController {
         return "redirect:/home/home";
     }
 
-    @GetMapping("editProfile")   // 개인정보 수정 기능X
+    @GetMapping("editProfile")
     public String editForm(Model model, UserEditForm userEditForm, @Login SessionUser sessionUser) {
 
         model.addAttribute("userEditForm", new UserEditForm(
@@ -345,6 +346,35 @@ public class UserController {
         session.setAttribute(UserConst.SESSION_USER, new SessionUser(updatePwUser));
 
         return "redirect:/user/myPage";
+
+    }
+
+    @PostMapping("withdraw")
+    public String withdraw(@RequestParam("password") String password, @Login SessionUser sessionUser, HttpSession session,
+                           RedirectAttributes rttr) {
+
+
+        if (sessionUser == null) {
+            return "redirect:/home/home";
+        }
+
+        try {
+            boolean isDeleted = userService.withdraw(sessionUser.getUserId(), password);
+
+            if (!isDeleted) {
+                rttr.addFlashAttribute("error", "pw");
+                return "redirect:/user/editProfile";
+            }
+
+            session.invalidate();
+            rttr.addFlashAttribute("msg", "탈퇴가 정상처리 됐습니다. 그동안 이용해주셔서 감사합니다.");
+            return "redirect:/home/home";
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            rttr.addFlashAttribute("error", "system");
+            return "redirect:/user/editProfile";
+        }
 
     }
 
@@ -478,9 +508,9 @@ public class UserController {
         model.addAttribute("userList", new ArrayList<>());
         model.addAttribute("currentPage", 1);
         return "user/adminUserList";
-    }  
-  
-    
+    }
+
+
     @GetMapping("adminCourseList") // 빈껍데기 컨트롤러 기능X
     public String adminCourseList(@RequestParam(defaultValue = "1") int page, Model model) {
         model.addAttribute("courseList", new ArrayList<>());
@@ -491,7 +521,7 @@ public class UserController {
 
 
 
-    
+
     @GetMapping("gradeManage")
     public String gradeManage(@RequestParam(defaultValue = "1") int page, Model model) {
         model.addAttribute("studentList", new ArrayList<>());
@@ -499,5 +529,5 @@ public class UserController {
         model.addAttribute("totalPages", 1);
         return "user/gradeManage";
     }
-    
+
 }

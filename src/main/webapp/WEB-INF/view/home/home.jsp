@@ -187,6 +187,12 @@ border-radius: 10px; font-size: 18px; font-weight: 600; color: #fff; cursor: poi
       this.submit();
     }
   });
+
+  const msg = "${msg}";
+      if (msg) {
+          alert(msg);
+      }
+
 </script>
 </body>
 </html>

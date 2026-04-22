@@ -20,6 +20,7 @@ import org.springframework.web.servlet.i18n.FixedLocaleResolver;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 import org.springframework.web.servlet.view.InternalResourceViewResolver;
 
+import javax.servlet.ServletRegistration;
 import java.util.List;
 import java.util.Locale;
 import java.util.Properties;
@@ -45,10 +46,10 @@ public class MvcConfig implements WebMvcConfigurer {
         return vr;
     }
 
-    @Override
-    public void configureDefaultServletHandling(DefaultServletHandlerConfigurer configurer) {
-        configurer.enable();
-    }
+//    @Override
+//    public void configureDefaultServletHandling(DefaultServletHandlerConfigurer configurer) {
+//        configurer.enable();
+//    }
 
     @Bean
     public MultipartResolver multipartResolver() {
@@ -150,8 +151,15 @@ public class MvcConfig implements WebMvcConfigurer {
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
 
+        String uploadPath = "C:/upload/profiles/";
+
         registry.addResourceHandler("/upload/profiles/**")
-                .addResourceLocations("file:///C:/upload/profiles/");
+                .addResourceLocations(uploadPath);
+
+        registry.addResourceHandler("/css/**").addResourceLocations("/css/");
+        registry.addResourceHandler("/js/**").addResourceLocations("/js/");
+        registry.addResourceHandler("/img/**").addResourceLocations("/img/");
 
     }
+
 }

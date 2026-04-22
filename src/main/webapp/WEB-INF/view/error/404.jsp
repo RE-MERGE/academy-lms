@@ -297,11 +297,12 @@
     </div>
 
     <!-- 텍스트 -->
-    <h1 class="error-title">페이지를 찾을 수 없습니다</h1>
+    <h1 class="error-title">
+        <spring:message code="error.page.notFound.title" default="페이지를 찾을 수 없습니다" />
+    </h1>
     <p class="error-desc">
-        요청하신 페이지가 존재하지 않거나<br>
-        이동되었을 수 있습니다.<br>
-        주소를 다시 확인해 주세요.
+        <spring:message code="error.page.notFound.content" default="요청하신 페이지가 존재하지 않거나 이동되었을 수 있습니다." />
+        <br>주소를 다시 확인해 주세요.
     </p>
 
     <!-- 버튼 -->

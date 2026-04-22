@@ -2,10 +2,12 @@ package dao.mapper;
 
 import dto.user.User;
 import dto.user.UserEditForm;
+import dto.user.UserStatus;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.Update;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
 import java.util.Map;
@@ -58,4 +60,10 @@ public interface UserMapper {
     @Update("UPDATE USERS " +
             "SET profile_img = #{profileImg} " +
             "WHERE user_id = #{userId}")
-    void updateProfileImg(@Param("userId") String userId, @Param("profileImg") String profileImg);}
+    void updateProfileImg(@Param("userId") String userId, @Param("profileImg") String profileImg);
+
+    @Update("UPDATE USERS SET status=#{status} WHERE user_id=#{userId}")
+    void updateStatus(@Param("userId") String userId, @Param("status") UserStatus userStatus);
+
+
+}

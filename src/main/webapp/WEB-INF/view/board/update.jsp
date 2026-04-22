@@ -101,7 +101,7 @@
   </div>
 
   <!-- 수정 폼 -->
-  <form method="post" action="${pageContext.request.contextPath}/board/update"
+  <form method="post" action="updatePost"
         enctype="multipart/form-data">
 
     <input type="hidden" name="boardNo" value="${post.boardNo}">

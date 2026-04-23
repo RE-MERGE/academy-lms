@@ -110,6 +110,23 @@
         <span class="si-label">마이페이지</span>
       </a>
 
+	<c:if test="${sessionScope.sessionUser.role == 'ADMIN'}">
+  		<div class="sidebar-divider"></div>
+ 	 	<span class="sidebar-section-label">관리자</span>
+  	<a href="${pageContext.request.contextPath}/admin/userList" class="sidebar-item">
+    	<img src="${pageContext.request.contextPath}/img/icon_Member Management.png" alt="회원관리 아이콘" width="50px" height="50px">
+    	<span class="si-label">전체회원관리</span>
+  	</a>
+  <a href="${pageContext.request.contextPath}/admin/courseList" class="sidebar-item">
+    <img src="${pageContext.request.contextPath}/img/icon_Course Management.png" alt="수업관리 아이콘" width="50px" height="50px">
+    <span class="si-label">전체수업관리</span>
+  </a>
+	</c:if>
+	
+	
+ 
+	
+
     </nav>
 <div class="flyout" id="course-flyout">
 	    <h3 class="flyout-title">${course.course_name}</h3>

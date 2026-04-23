@@ -8,36 +8,131 @@
     <title>마이페이지</title>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/css/myPage.css">
+    <style>
+        /* 테이블 기본 레이아웃 고정 */
+        .grade-table {
+            width: 100%;
+            table-layout: fixed; /* 컬럼 너비를 고정하여 어긋남 방지 */
+            border-collapse: collapse;
+            margin-bottom: 30px;
+        }
+
+        /* 모든 셀의 중앙 정렬 및 패딩 설정 */
+        .grade-table th,
+        .grade-table td {
+            text-align: center;      /* 가로 중앙 정렬 */
+            vertical-align: middle;  /* 세로 중앙 정렬 */
+            padding: 15px 10px;
+            border-bottom: 1px solid #eee;
+        }
+
+        /* 헤더 배경 및 텍스트 설정 */
+        .grade-table thead tr {
+            color: #ffffff;
+        }
+
+        /* 열 너비 비율 설정 (합계 100%) */
+        .grade-table th:nth-child(1), .grade-table td:nth-child(1) { width: 25%; text-align: center; } /* 과목명 */
+        .grade-table th:nth-child(2), .grade-table td:nth-child(2) { width: 25%; text-align: center;} /* 수강인원/구분 */
+        .grade-table th:nth-child(3), .grade-table td:nth-child(3) { width: 25%; text-align: center; } /* 평균점수/시험유형 */
+        .grade-table th:nth-child(4), .grade-table td:nth-child(4) { width: 25%; text-align: center;} /* 최고-최저/점수 */
+
+        /* 숫자 데이터 강조 (선택 사항) */
+        .grade-table td {
+            font-variant-numeric: tabular-nums; /* 숫자의 폭을 일정하게 맞춰 정렬 유지 */
+        }
+
+        /* --- 시간표 CSS --- */
+        .timetable {
+            margin: auto;
+            width: 90%;
+            display: table;
+            table-layout: fixed; /* 가로 너비 고정 */
+            border-collapse: collapse;
+            background: #ffffff;
+            border: 1px solid #ddd;
+            box-sizing: border-box;
+        }
+
+        .timetable-header,
+        .timetable-row {
+            display: table-row;
+        }
+
+        .timetable-header > div,
+        .timetable-time,
+        .timetable-cell {
+            display: table-cell;
+            border: 1px solid #eee;
+            vertical-align: middle;
+            text-align: center;
+            height: 85px;
+            box-sizing: border-box;
+        }
+
+        .timetable-header > div {
+            background-color: #2c3e50;
+            color: #ffffff;
+            height: 45px;
+            font-weight: 700;
+        }
+
+        .timetable-header > div:first-child,
+        .timetable-time {
+            width: 10% !important;
+            background-color: #f8f9fa;
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .timetable-header > div:not(:first-child),
+        .timetable-cell {
+            width: 18% !important;
+        }
+
+        .timetable-subject {
+            margin: 4px;
+            padding: 10px 5px;
+            border-radius: 6px;
+            font-size: 12px;
+            line-height: 1.5;
+            font-weight: 500;
+            height: calc(100% - 8px);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            box-sizing: border-box;
+        }
+
+        .subject-amber { background-color: #fff4e0; color: #d4a017; border-left: 4px solid #d4a017; }
+        .subject-blue { background-color: #e3f2fd; color: #1976d2; border-left: 4px solid #1976d2; }
+        .subject-purple { background-color: #f3e5f5; color: #7b1fa2; border-left: 4px solid #7b1fa2; }
+        .subject-green { background-color: #e8f5e9; color: #388e3c; border-left: 4px solid #388e3c; }
+        .subject-rose { background-color: #ffebee; color: #c2185b; border-left: 4px solid #c2185b; }
+    </style>
 </head>
 <body>
-
 <div class="mypage-wrap">
-
     <h2 class="mypage-title">마이페이지</h2>
 
-    <!-- ── 프로필 카드 ── -->
     <div class="profile-card">
+        <div class="profile-img-wrap">
+            <c:choose>
+                <c:when test="${not empty sessionUser.profileImg}">
+                    <img src="${pageContext.request.contextPath}/upload/profiles/${sessionUser.profileImg}" alt="프로필 이미지" class="profile-img"/>
+                </c:when>
+                <c:otherwise>
+                    <img src="${pageContext.request.contextPath}/img/default-profile3.png" alt="프로필 이미지" class="profile-img"/>
+                </c:otherwise>
+            </c:choose>
+            <span class="profile-status">재학중</span>
+        </div>
 
-        <!-- 프로필 이미지 -->
-       <div class="profile-img-wrap">
-    <c:choose>
-        <c:when test="${not empty sessionUser.profileImg}">
-            <img src="${pageContext.request.contextPath}/upload/profiles/${sessionUser.profileImg}"
-                 alt="프로필 이미지" class="profile-img"/>
-        </c:when>
-        <c:otherwise>
-            <img src="${pageContext.request.contextPath}/img/default-profile3.png"
-                 alt="프로필 이미지" class="profile-img"/>
-        </c:otherwise>
-    	</c:choose>
-   	 	<span class="profile-status">재학중</span>
-		</div>
-
-        <!-- 프로필 정보 -->
         <div class="profile-info">
             <p class="profile-name">${sessionUser.name}</p>
-            <p class="profile-dept">컴퓨터공학과 · 3학년</p>
-
+            <c:if test="${sessionUser.role == 'STUDENT'}">
+                <p class="profile-dept">에너지공학과</p>
+            </c:if>
             <table class="profile-table">
                 <tr>
                     <th>학번</th>
@@ -64,143 +159,202 @@
             </table>
         </div>
 
-        <!-- 액션 버튼 -->
         <div class="profile-actions">
-            <a href="${pageContext.request.contextPath}/user/editProfile" class="btn-action btn-action-primary">
-                회원정보 수정
-            </a>
-            <a href="${pageContext.request.contextPath}/user/updatePwForm" class="btn-action btn-action-outline">
-                비밀번호 변경
-            </a>
+            <a href="${pageContext.request.contextPath}/user/editProfile" class="btn-action btn-action-primary">회원정보 수정</a>
+            <a href="${pageContext.request.contextPath}/user/updatePwForm" class="btn-action btn-action-outline">비밀번호 변경</a>
         </div>
-
     </div>
 
-    <!-- ── 탭 메뉴 ── -->
     <div class="mypage-tabs">
-        <button class="mypage-tab active" onclick="switchTab('courses')">수강 중인 과목</button>
-        <button class="mypage-tab" onclick="switchTab('grades')">성적 조회</button>
+        <button class="mypage-tab active" onclick="switchTab('courses')">
+            ${sessionUser.role == 'PROFESSOR' ? '강의 중인 과목' : '수강 중인 과목'}
+        </button>
+
+        <c:choose>
+            <c:when test="${sessionUser.role == 'PROFESSOR'}">
+                <button class="mypage-tab" onclick="switchTab('stats')">강의 통계</button>
+            </c:when>
+            <c:otherwise>
+                <button class="mypage-tab" onclick="switchTab('grades')">성적 조회</button>
+            </c:otherwise>
+        </c:choose>
+
         <button class="mypage-tab" onclick="switchTab('timetable')">시간표</button>
     </div>
 
-    <!-- ── 수강 중인 과목 탭 ── -->
+    <%-- 수강/강의 과목 탭 --%>
     <div id="tab-courses" class="tab-panel active">
         <div class="section-title">
-            수강 중인 과목
-            <span>2026학년도 1학기</span> </div>
+            <c:choose>
+                <c:when test="${sessionUser.role == 'STUDENT'}">수강중인 과목</c:when>
+                <c:when test="${sessionUser.role == 'PROFESSOR'}">강의중인 과목</c:when>
+                <c:when test="${sessionUser.role == 'ADMIN'}">수강중인 전체 과목</c:when>
+                <c:otherwise>강의 과목</c:otherwise>
+            </c:choose>
+            <span>${semester} 학기</span>
+        </div>
 
         <div class="course-grid">
             <c:choose>
                 <c:when test="${not empty courseList}">
                     <c:forEach var="course" items="${courseList}">
                         <div class="course-card">
-                            <c:set var="badgeClass" value="badge-blue" />
-                            <c:if test="${course_type eq '전공선택'}"><c:set var="badgeClass" value="badge-green" /></c:if>
-                            <c:if test="${course_type eq '교양필수'}"><c:set var="badgeClass" value="badge-amber" /></c:if>
-                            <c:if test="${course_type eq '선택과목'}"><c:set var="badgeClass" value="badge-red" /></c:if>
+                            <c:choose>
+                                <c:when test="${course.course_type eq 'MAJOR_REQUIRED'}">
+                                    <c:set var="badgeText" value="전공필수" />
+                                    <c:set var="badgeClass" value="badge-red" />
+                                </c:when>
+                                <c:when test="${course.course_type eq 'MAJOR_ELECTIVE'}">
+                                    <c:set var="badgeText" value="전공선택" />
+                                    <c:set var="badgeClass" value="badge-green" />
+                                </c:when>
+                                <c:when test="${course.course_type eq 'GENERAL_REQUIRED'}">
+                                    <c:set var="badgeText" value="일반필수" />
+                                    <c:set var="badgeClass" value="badge-yellow" />
+                                </c:when>
+                                <c:otherwise>
+                                    <c:set var="badgeText" value="일반선택" />
+                                    <c:set var="badgeClass" value="badge-blue" />
+                                </c:otherwise>
+                            </c:choose>
 
-                            <span class="course-badge ${badgeClass}">${course_type}</span>
+                            <span class="course-badge ${badgeClass}">${badgeText}</span>
                             <p class="course-name">${course.course_name}</p>
-                            <p class="course-prof">${course.professor_no} 교수 · ${course.start_time}</p>
 
-<%--                            <div class="course-progress-label">--%>
-<%--                                <span>출석률</span>--%>
-<%--                                <span>${course.attendanceRate}%</span>--%>
-<%--                            </div>--%>
-<%--                            <div class="course-progress-bar">--%>
-<%--                                <div class="course-progress-fill" style="width: ${course.attendanceRate}%"></div>--%>
-<%--                            </div>--%>
+                            <div class="course-info-detail">
+                                <c:choose>
+                                    <c:when test="${sessionUser.role == 'PROFESSOR' || sessionUser.role == 'ADMIN'}">
+                                        <p class="course-prof">강의실: ${course.room_info}</p>
+                                    </c:when>
+                                    <c:otherwise>
+                                        <p class="course-prof">담당 교수: ${course.professor_name}</p>
+                                    </c:otherwise>
+                                </c:choose>
+                                <p class="course-time">
+                                    <i class="far fa-clock"></i> ${course.start_time} ~ ${course.end_time}
+                                </p>
+                            </div>
                         </div>
                     </c:forEach>
                 </c:when>
                 <c:otherwise>
-                    <div class="no-data">수강 중인 과목이 없습니다.</div>
+                    <div class="no-data">
+                        <c:choose>
+                            <c:when test="${sessionUser.role == 'PROFESSOR'}">이번 학기에 담당하는 강의가 없습니다.</c:when>
+                            <c:otherwise>현재 수강 중인 과목이 없습니다.</c:otherwise>
+                        </c:choose>
+                    </div>
                 </c:otherwise>
             </c:choose>
         </div>
     </div>
 
-    <!-- ── 성적 조회 탭 ── -->
-    <div id="tab-grades" class="tab-panel">
-
-        <div class="grade-summary">
-            <div class="grade-summary-card">
-                <p class="grade-summary-label">평균 학점</p>
-                <p class="grade-summary-value">3.8</p>
-            </div>
-            <div class="grade-summary-card">
-                <p class="grade-summary-label">취득 학점</p>
-                <p class="grade-summary-value">85</p>
-            </div>
-            <div class="grade-summary-card">
-                <p class="grade-summary-label">이번 학기</p>
-                <p class="grade-summary-value">15</p>
-            </div>
-            <div class="grade-summary-card">
-                <p class="grade-summary-label">전공 학점</p>
-                <p class="grade-summary-value">52</p>
-            </div>
+    <%-- 강의 통계 탭 (교수전용) --%>
+    <c:if test="${sessionUser.role == 'PROFESSOR'}">
+        <div id="tab-stats" class="tab-panel">
+            <div class="section-title">담당 강의 성적 통계 <span>${semester} 학기</span></div>
+            <table class="grade-table">
+                <thead>
+                <tr>
+                    <th>과목명</th>
+                    <th>수강인원</th>
+                    <th>평균 점수</th>
+                    <th>최고 / 최저</th>
+                </tr>
+                </thead>
+                <tbody>
+                <c:choose>
+                    <c:when test="${not empty myGradeList}">
+                        <c:forEach var="stat" items="${myGradeList}">
+                            <tr>
+                                <td>${stat.courseName}</td>
+                                <td>${stat.total_students}명</td>
+                                <td style="font-weight: 700;">${stat.avg_score}점</td>
+                                <td>
+                                    <span style="color: #e74c3c; font-weight: bold;">${stat.max_score}</span> /
+                                    <span style="color: #3498db; font-weight: bold;">${stat.min_score}</span>
+                                </td>
+                            </tr>
+                        </c:forEach>
+                    </c:when>
+                    <c:otherwise>
+                        <tr><td colspan="4" style="padding: 50px 0; color: #999;">통계 데이터가 없습니다.</td></tr>
+                    </c:otherwise>
+                </c:choose>
+                </tbody>
+            </table>
         </div>
+    </c:if>
 
-        <br>
-
+    <%-- 성적 조회 탭 --%>
+    <div id="tab-grades" class="tab-panel">
+        <div class="section-title">
+            <c:choose>
+                <c:when test="${sessionUser.role == 'PROFESSOR'}">담당 강의 성적 내역</c:when>
+                <c:otherwise>나의 성적 내역</c:otherwise>
+            </c:choose>
+        </div>
         <table class="grade-table">
             <thead>
             <tr>
                 <th>과목명</th>
-                <th>구분</th>
-                <th>학점</th>
-                <th>중간</th>
-                <th>기말</th>
-                <th>성적</th>
+                <c:choose>
+                    <c:when test="${sessionUser.role == 'PROFESSOR'}">
+                        <th>수강인원</th>
+                        <th>평균 점수</th>
+                        <th>최고 / 최저</th>
+                    </c:when>
+                    <c:otherwise>
+                        <th>구분</th>
+                        <th>시험유형</th>
+                        <th>점수</th>
+                    </c:otherwise>
+                </c:choose>
             </tr>
             </thead>
             <tbody>
-            <tr>
-                <td>운영체제</td>
-                <td>전공필수</td>
-                <td>3</td>
-                <td>88</td>
-                <td>92</td>
-                <td><span class="grade-badge grade-a">A+</span></td>
-            </tr>
-            <tr>
-                <td>데이터베이스</td>
-                <td>전공선택</td>
-                <td>3</td>
-                <td>82</td>
-                <td>85</td>
-                <td><span class="grade-badge grade-a">A0</span></td>
-            </tr>
-            <tr>
-                <td>공학수학</td>
-                <td>교양필수</td>
-                <td>3</td>
-                <td>71</td>
-                <td>74</td>
-                <td><span class="grade-badge grade-b">B+</span></td>
-            </tr>
-            <tr>
-                <td>소프트웨어공학</td>
-                <td>전공필수</td>
-                <td>3</td>
-                <td>90</td>
-                <td>94</td>
-                <td><span class="grade-badge grade-a">A+</span></td>
-            </tr>
-            <tr>
-                <td>컴퓨터네트워크</td>
-                <td>전공선택</td>
-                <td>3</td>
-                <td>78</td>
-                <td>80</td>
-                <td><span class="grade-badge grade-b">B+</span></td>
-            </tr>
+            <c:choose>
+                <c:when test="${not empty myGradeList}">
+                    <c:forEach var="grade" items="${myGradeList}">
+                        <tr>
+                            <td>${grade.courseName}</td>
+                            <c:choose>
+                                <c:when test="${sessionUser.role == 'PROFESSOR'}">
+                                    <td>${grade.total_students}명</td>
+                                    <td style="font-weight: 700;">${grade.avg_score}점</td>
+                                    <td>
+                                        <span style="color: #e74c3c; font-weight: bold;">${grade.max_score}</span> /
+                                        <span style="color: #3498db; font-weight: bold;">${grade.min_score}</span>
+                                    </td>
+                                </c:when>
+                                <c:otherwise>
+                                    <td>
+                                        <c:set var="gBadgeClass" value="badge-gray" />
+                                        <c:set var="gBadgeText" value="${grade.courseType}" />
+                                        <c:if test="${grade.courseType eq 'MAJOR_REQUIRED'}"><c:set var="gBadgeClass" value="badge-red" /><c:set var="gBadgeText" value="전공필수" /></c:if>
+                                        <c:if test="${grade.courseType eq 'MAJOR_ELECTIVE'}"><c:set var="gBadgeClass" value="badge-green" /><c:set var="gBadgeText" value="전공선택" /></c:if>
+                                        <span class="grade-badge ${gBadgeClass}">${gBadgeText}</span>
+                                    </td>
+                                    <td>
+                                            <span class="type-badge ${grade.examType eq 'MIDTERM' ? 'badge-indigo' : 'badge-purple'}">
+                                                    ${grade.examType eq 'MIDTERM' ? '중간고사' : '기말고사'}
+                                            </span>
+                                    </td>
+                                    <td style="font-weight: 700;">${grade.score}</td>
+                                </c:otherwise>
+                            </c:choose>
+                        </tr>
+                    </c:forEach>
+                </c:when>
+                <c:otherwise>
+                    <tr><td colspan="4" style="padding: 50px 0; color: #999;">조회된 내역이 없습니다.</td></tr>
+                </c:otherwise>
+            </c:choose>
             </tbody>
         </table>
     </div>
 
-    <!-- ── 시간표 탭 ── -->
+    <%-- 시간표 탭 --%>
     <div id="tab-timetable" class="tab-panel">
         <div class="timetable">
             <div class="timetable-header">
@@ -211,66 +365,40 @@
                 <div>목</div>
                 <div>금</div>
             </div>
-
             <div class="timetable-row">
                 <div class="timetable-time">09:00</div>
-                <div class="timetable-cell">
-                    <div class="timetable-subject subject-amber">공학수학<br>공학관 101</div>
-                </div>
+                <div class="timetable-cell"><div class="timetable-subject subject-amber">공학수학<br>공학관 101</div></div>
                 <div class="timetable-cell"></div>
-                <div class="timetable-cell">
-                    <div class="timetable-subject subject-amber">공학수학<br>공학관 101</div>
-                </div>
+                <div class="timetable-cell"><div class="timetable-subject subject-amber">공학수학<br>공학관 101</div></div>
                 <div class="timetable-cell"></div>
-                <div class="timetable-cell">
-                    <div class="timetable-subject subject-amber">공학수학<br>공학관 101</div>
-                </div>
+                <div class="timetable-cell"><div class="timetable-subject subject-amber">공학수학<br>공학관 101</div></div>
             </div>
-
             <div class="timetable-row">
                 <div class="timetable-time">10:00</div>
-                <div class="timetable-cell">
-                    <div class="timetable-subject subject-blue">운영체제<br>IT관 203</div>
-                </div>
-                <div class="timetable-cell">
-                    <div class="timetable-subject subject-purple">소프트웨어공학<br>공학관 305</div>
-                </div>
-                <div class="timetable-cell">
-                    <div class="timetable-subject subject-blue">운영체제<br>IT관 203</div>
-                </div>
-                <div class="timetable-cell">
-                    <div class="timetable-subject subject-purple">소프트웨어공학<br>공학관 305</div>
-                </div>
+                <div class="timetable-cell"><div class="timetable-subject subject-blue">운영체제<br>IT관 203</div></div>
+                <div class="timetable-cell"><div class="timetable-subject subject-purple">소프트웨어공학<br>공학관 305</div></div>
+                <div class="timetable-cell"><div class="timetable-subject subject-blue">운영체제<br>IT관 203</div></div>
+                <div class="timetable-cell"><div class="timetable-subject subject-purple">소프트웨어공학<br>공학관 305</div></div>
                 <div class="timetable-cell"></div>
             </div>
-
             <div class="timetable-row">
                 <div class="timetable-time">13:00</div>
                 <div class="timetable-cell"></div>
-                <div class="timetable-cell">
-                    <div class="timetable-subject subject-green">데이터베이스<br>IT관 401</div>
-                </div>
+                <div class="timetable-cell"><div class="timetable-subject subject-green">데이터베이스<br>IT관 401</div></div>
                 <div class="timetable-cell"></div>
-                <div class="timetable-cell">
-                    <div class="timetable-subject subject-green">데이터베이스<br>IT관 401</div>
-                </div>
+                <div class="timetable-cell"><div class="timetable-subject subject-green">데이터베이스<br>IT관 401</div></div>
                 <div class="timetable-cell"></div>
             </div>
-
             <div class="timetable-row">
                 <div class="timetable-time">14:00</div>
                 <div class="timetable-cell"></div>
                 <div class="timetable-cell"></div>
                 <div class="timetable-cell"></div>
                 <div class="timetable-cell"></div>
-                <div class="timetable-cell">
-                    <div class="timetable-subject subject-rose">컴퓨터네트워크<br>IT관 202</div>
-                </div>
+                <div class="timetable-cell"><div class="timetable-subject subject-rose">컴퓨터네트워크<br>IT관 202</div></div>
             </div>
-
         </div>
     </div>
-
 </div>
 
 <script>
@@ -279,9 +407,8 @@
         document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
 
         document.getElementById('tab-' + tab).classList.add('active');
-        event.target.classList.add('active');
+        event.currentTarget.classList.add('active');
     }
 </script>
-
 </body>
 </html>

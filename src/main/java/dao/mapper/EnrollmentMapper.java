@@ -1,11 +1,15 @@
 package dao.mapper;
 
+import dto.user.grade.MyGrade;
+import dto.user.grade.MyProfessorGrade;
 import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 
 import dto.Enrollment;
+
+import java.util.List;
 
 
 public interface EnrollmentMapper {
@@ -31,4 +35,33 @@ public interface EnrollmentMapper {
 	@Delete("DELETE FROM ENROLLMENT WHERE student_no = #{userNo} AND course_no = #{courseNo}")
 	void cancel(@Param("userNo") int userNo, @Param("courseNo") Integer courseNo);
 
+
+    @Select("SELECT " +
+            "    c.course_name AS courseName, " +
+            "    c.course_type AS courseType," +
+            "    g.score AS score," +
+            "    g.type AS examType " +
+            "FROM ENROLLMENT e " +
+            "JOIN COURSE c ON e.course_no = c.course_no " +
+            "JOIN GRADE g ON e.enrollment_no = g.enrollment_no " +
+            "WHERE e.student_no = #{userNo}")
+    List<MyGrade> getStudentMyGradeList(int userNo);
+
+
+	@Select("SELECT " +
+			"    c.course_no, " +
+			"    c.course_name AS courseName, " +
+			"    c.course_type, " +
+			"    COUNT(DISTINCT e.student_no) AS total_students, " +
+			"    IFNULL(ROUND(AVG(g.score), 1), 0) AS avg_score, " +
+			"    IFNULL(MAX(g.score), 0) AS max_score, " +
+			"    IFNULL(MIN(g.score), 0) AS min_score " +
+			"FROM COURSE c " +
+			"LEFT JOIN ENROLLMENT e ON c.course_no = e.course_no " +
+			"LEFT JOIN GRADE g ON e.enrollment_no = g.enrollment_no " + // GRADE 테이블 조인 추가
+			"WHERE c.professor_no = #{userNo} " +
+			"  AND c.semester = #{semester} " +
+			"GROUP BY c.course_no, c.course_name, c.course_type " +
+			"ORDER BY avg_score DESC")
+	List<MyProfessorGrade> getProfessorMyGradeList(@Param("userNo") int userNo, @Param("semester") String semester);
 }

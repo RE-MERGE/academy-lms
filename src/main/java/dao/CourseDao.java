@@ -62,8 +62,8 @@ public class CourseDao {
 	public List<Course> getMyCourse(int userNo, String semester) {
 		return template.getMapper(cls).getMyCourse(userNo,semester);
 	}
-	public List<Map<String, Object>> getMyenrollment(int userNo, String semester) {
-		return template.getMapper(cls).getMyEnrollment(userNo,semester);
+	public List<Map<String, Object>> getEnrollment(int userNo, String semester) {
+		return template.getMapper(cls).getEnrollment(userNo,semester);
 	}
 	public Course findByCourseNo(Integer courseNo) {
 		return template.getMapper(cls).find(courseNo);

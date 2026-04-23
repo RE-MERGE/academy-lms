@@ -39,8 +39,6 @@ public interface CourseMapper {
     @Delete("DELETE FROM FAVORITE WHERE user_no = #{user_no} AND course_no = #{course_no}")
     void removeFavorite(@Param("user_no") int user_no, @Param("course_no") int course_no);
 
-    @Select("SELECT * FROM COURSE WHERE semester = #{value}")
-    public List<Course> getlist(String semester);
     @Select("<script>" +
     	    "SELECT c.*, u.name AS professor_name FROM COURSE c " +
     	    "JOIN USERS u ON u.user_no = c.professor_no " +
@@ -51,6 +49,7 @@ public interface CourseMapper {
     	    "<if test='status != null and status != \"\"'> AND c.status = #{status}</if>" +
     	    " LIMIT #{size} OFFSET #{offset}"+
     	    "</script>")
+
 	public List<Map<String, Object>> getlist(@Param("semester") String semester,
             @Param("type") String type,
             @Param("credits") String credits,
@@ -77,10 +76,6 @@ public interface CourseMapper {
 
     @Select("SELECT* FROM COURSE WHERE course_no IN (SELECT course_no FROM ENROLLMENT WHERE student_no = #{userNo}) AND semester = #{semester}")
     public List<Course> getMyEnrollment(@Param("userNo") int userNo,@Param("semester") String semester);
-
-    @Select("SELECT * FROM COURSE WHERE course_no = #{value}")
-    public Course find(Integer courseNo);
-
 
     @Select("""
     SELECT 
@@ -113,7 +108,7 @@ public interface CourseMapper {
             "JOIN USERS u ON u.user_no = c.professor_no " +
             "WHERE c.course_no IN (SELECT course_no FROM ENROLLMENT WHERE student_no = #{userNo}) " +
             "AND c.semester = #{semester}")
-	public List<Map<String, Object>> getMyEnrollment(@Param("userNo") int userNo,@Param("semester") String semester);
+	public List<Map<String, Object>> getEnrollment(@Param("userNo") int userNo,@Param("semester") String semester);
 
     @Select("SELECT * FROM COURSE WHERE course_no = #{value}")
 	public Course find(Integer courseNo);

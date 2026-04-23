@@ -16,7 +16,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import dto.Course;
-import dto.Enrollment;
 import dto.user.SessionUser;
 import dto.user.UserRole;
 import dto.user.login.Login;
@@ -113,7 +112,7 @@ public class EnrollmentController {
 	@ResponseBody
 	public Map<String, Object> getMyEnrollments(@Login SessionUser sessionUser, @RequestParam(defaultValue = "") String semester) {
 	    Map<String, Object> result = new HashMap<>();
-	    List<Map<String, Object>> list = courseService.getMyEnrollments(sessionUser.getUserNo(),semester);
+	    List<Map<String, Object>> list = courseService.getEnrollments(sessionUser.getUserNo(),semester);
 	    result.put("courses", list);
 	    return result;
 	}

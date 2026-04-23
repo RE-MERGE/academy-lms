@@ -1,5 +1,6 @@
-package config;
+package handler;
 
+import exception.PostAccessDeniedException;
 import org.springframework.http.HttpStatus;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -7,6 +8,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.servlet.NoHandlerFoundException;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @ControllerAdvice
 public class GlobalExceptionHandler {
@@ -26,5 +28,11 @@ public class GlobalExceptionHandler {
     public String handleAllException(Exception ex, Model model) {
         model.addAttribute("errorMessage", "error.page.serverError");
         return "error/500";
+    }
+
+    @ExceptionHandler(PostAccessDeniedException.class)
+    public String handlePostAccessDenied(RedirectAttributes redirectAttributes) {
+        redirectAttributes.addFlashAttribute("errorMsg", "해당 게시글에 대한 권한이 없습니다.");
+        return "redirect:/board/list";
     }
 }

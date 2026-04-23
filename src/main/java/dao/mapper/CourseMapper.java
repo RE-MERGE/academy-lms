@@ -7,6 +7,7 @@ import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
+import org.apache.ibatis.annotations.Update;
 
 import dto.Course;
 
@@ -40,6 +41,21 @@ public interface CourseMapper {
 
     @Select("SELECT * FROM COURSE WHERE semester = #{value}")
     public List<Course> getlist(String semester);
+    @Select("<script>" +
+    	    "SELECT c.*, u.name AS professor_name FROM COURSE c " +
+    	    "JOIN USERS u ON u.user_no = c.professor_no " +
+    	    "WHERE c.semester = #{semester} " +
+    	    "<if test='type != null and type != \"\"'> AND c.course_type = #{type}</if>" +
+    	    "<if test='credits != null and credits != \"\"'> AND c.credits = #{credits}</if>" +
+    	    "<if test='keyword != null and keyword != \"\"'> AND (c.course_name LIKE CONCAT('%', #{keyword}, '%') OR u.name LIKE CONCAT('%', #{keyword}, '%'))</if>" +
+    	    "<if test='status != null and status != \"\"'> AND c.status = #{status}</if>" +
+    	    " LIMIT #{size} OFFSET #{offset}"+
+    	    "</script>")
+	public List<Map<String, Object>> getlist(@Param("semester") String semester,
+            @Param("type") String type,
+            @Param("credits") String credits,
+            @Param("keyword") String keyword,
+            @Param("status") String status, @Param("offset") int offset, @Param("size") int size);
 
     @Select("SELECT " +
             "    c.*, " +
@@ -93,4 +109,31 @@ public interface CourseMapper {
     WHERE c.semester = #{semester}
 """)
     List<Map<String, Object>> getListWithProfessorName(String semester);
+    @Select("SELECT c.*, u.name AS professor_name FROM COURSE c " +
+            "JOIN USERS u ON u.user_no = c.professor_no " +
+            "WHERE c.course_no IN (SELECT course_no FROM ENROLLMENT WHERE student_no = #{userNo}) " +
+            "AND c.semester = #{semester}")
+	public List<Map<String, Object>> getMyEnrollment(@Param("userNo") int userNo,@Param("semester") String semester);
+
+    @Select("SELECT * FROM COURSE WHERE course_no = #{value}")
+	public Course find(Integer courseNo);
+
+    @Update("UPDATE COURSE SET counts = counts+1 WHERE course_no = #{value}")
+	public void addCounts(Integer courseNo);
+
+    @Update("UPDATE COURSE SET counts = counts-1 where course_no = #{value}")
+	public void minusCounts(Integer courseNo);
+
+    @Select("<script>" +
+    	    "SELECT COUNT(*) FROM COURSE c " +
+    	    "JOIN USERS u ON u.user_no = c.professor_no " +
+    	    "WHERE c.semester = #{semester} " +
+    	    "<if test='type != null and type != \"\"'> AND c.course_type = #{type}</if>" +
+    	    "<if test='credits != null and credits != \"\"'> AND c.credits = #{credits}</if>" +
+    	    "<if test='keyword != null and keyword != \"\"'> AND (c.course_name LIKE CONCAT('%', #{keyword}, '%') OR u.name LIKE CONCAT('%', #{keyword}, '%'))</if>" +
+    	    "<if test='status != null and status != \"\"'> AND c.status = #{status}</if>" +
+    	    "</script>")
+    	int getCount(@Param("semester") String semester, @Param("type") String type,
+    	             @Param("credits") String credits, @Param("keyword") String keyword,
+    	             @Param("status") String status);
 }

@@ -22,7 +22,7 @@ public class EnrollmentService {
 	    Course course = courseDao.findByCourseNo(courseNo);
 	    if (course == null)
 	        throw new IllegalStateException("존재하지 않는 강의입니다.");
-	    if (enrollmentDao.count(courseNo) >= course.getMax_students())
+	    if (course.getCounts() >= course.getMax_students())
 	        throw new IllegalStateException("정원이 초과된 강의입니다.");
 
 	    if (enrollmentDao.hasTimeConflict(userNo, courseNo) > 0)
@@ -33,10 +33,12 @@ public class EnrollmentService {
 	    enrollment.setStudent_no(userNo);
 	    enrollment.setStatus("APPLIED");
 	    enrollmentDao.insert(enrollment); 
+	    courseDao.addCounts(courseNo);
 	}
 
 	public void cancel(int userNo, Integer courseNo) {
 		enrollmentDao.cancel(userNo,courseNo);
+		courseDao.minusCounts(courseNo);
 		
 	}
 }

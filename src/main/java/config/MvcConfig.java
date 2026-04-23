@@ -151,7 +151,7 @@ public class MvcConfig implements WebMvcConfigurer {
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
 
-        String uploadPath = "C:/upload/profiles/";
+        String uploadPath = "file:///C:/upload/profiles/";
 
         registry.addResourceHandler("/upload/profiles/**")
                 .addResourceLocations(uploadPath);

@@ -87,76 +87,36 @@
     <div id="tab-courses" class="tab-panel active">
         <div class="section-title">
             수강 중인 과목
-            <span>2026학년도 1학기</span>
-        </div>
+            <span>2026학년도 1학기</span> </div>
 
         <div class="course-grid">
+            <c:choose>
+                <c:when test="${not empty courseList}">
+                    <c:forEach var="course" items="${courseList}">
+                        <div class="course-card">
+                            <c:set var="badgeClass" value="badge-blue" />
+                            <c:if test="${course_type eq '전공선택'}"><c:set var="badgeClass" value="badge-green" /></c:if>
+                            <c:if test="${course_type eq '교양필수'}"><c:set var="badgeClass" value="badge-amber" /></c:if>
+                            <c:if test="${course_type eq '선택과목'}"><c:set var="badgeClass" value="badge-red" /></c:if>
 
-            <div class="course-card">
-                <span class="course-badge badge-blue">전공필수</span>
-                <p class="course-name">운영체제</p>
-                <p class="course-prof">김철수 교수 · 월수 10:00</p>
-                <div class="course-progress-label">
-                    <span>출석률</span>
-                    <span>92%</span>
-                </div>
-                <div class="course-progress-bar">
-                    <div class="course-progress-fill" style="width: 92%"></div>
-                </div>
-            </div>
+                            <span class="course-badge ${badgeClass}">${course_type}</span>
+                            <p class="course-name">${course.course_name}</p>
+                            <p class="course-prof">${course.professor_no} 교수 · ${course.start_time}</p>
 
-            <div class="course-card">
-                <span class="course-badge badge-green">전공선택</span>
-                <p class="course-name">데이터베이스</p>
-                <p class="course-prof">이영희 교수 · 화목 13:00</p>
-                <div class="course-progress-label">
-                    <span>출석률</span>
-                    <span>88%</span>
-                </div>
-                <div class="course-progress-bar">
-                    <div class="course-progress-fill" style="width: 88%"></div>
-                </div>
-            </div>
-
-            <div class="course-card">
-                <span class="course-badge badge-amber">교양필수</span>
-                <p class="course-name">공학수학</p>
-                <p class="course-prof">박민준 교수 · 월수금 09:00</p>
-                <div class="course-progress-label">
-                    <span>출석률</span>
-                    <span>75%</span>
-                </div>
-                <div class="course-progress-bar">
-                    <div class="course-progress-fill" style="width: 75%"></div>
-                </div>
-            </div>
-
-            <div class="course-card">
-                <span class="course-badge badge-blue">전공필수</span>
-                <p class="course-name">소프트웨어공학</p>
-                <p class="course-prof">최지원 교수 · 화목 10:30</p>
-                <div class="course-progress-label">
-                    <span>출석률</span>
-                    <span>96%</span>
-                </div>
-                <div class="course-progress-bar">
-                    <div class="course-progress-fill" style="width: 96%"></div>
-                </div>
-            </div>
-
-            <div class="course-card">
-                <span class="course-badge badge-red">전공선택</span>
-                <p class="course-name">컴퓨터네트워크</p>
-                <p class="course-prof">정수현 교수 · 금 14:00</p>
-                <div class="course-progress-label">
-                    <span>출석률</span>
-                    <span>83%</span>
-                </div>
-                <div class="course-progress-bar">
-                    <div class="course-progress-fill" style="width: 83%"></div>
-                </div>
-            </div>
-
+<%--                            <div class="course-progress-label">--%>
+<%--                                <span>출석률</span>--%>
+<%--                                <span>${course.attendanceRate}%</span>--%>
+<%--                            </div>--%>
+<%--                            <div class="course-progress-bar">--%>
+<%--                                <div class="course-progress-fill" style="width: ${course.attendanceRate}%"></div>--%>
+<%--                            </div>--%>
+                        </div>
+                    </c:forEach>
+                </c:when>
+                <c:otherwise>
+                    <div class="no-data">수강 중인 과목이 없습니다.</div>
+                </c:otherwise>
+            </c:choose>
         </div>
     </div>
 

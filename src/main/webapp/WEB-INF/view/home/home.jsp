@@ -110,7 +110,7 @@ width: 100%;
 padding: 18px; 
 background: #2563eb; 
 border: none; 
-border-radius: 10px; font-size: 18px; font-weight: 600; color: #fff; cursor: pointer; margin-bottom: 20px; transition: all 0.15s; box-shadow: 0 4px 16px rgba(37,99,235,0.35); }
+border-radius: 10px; font-size: 18px; font-weight: 600; color: #fff; cursor: pointer; margin-bottom: 2px; transition: all 0.15s; box-shadow: 0 4px 16px rgba(37,99,235,0.35); }
 
 .btn-login:hover { background: #1d4ed8; box-shadow: 0 6px 24px rgba(37,99,235,0.5); }
 
@@ -160,12 +160,14 @@ border-radius: 10px; font-size: 18px; font-weight: 600; color: #fff; cursor: poi
 
           <form:errors path="" cssClass="error-msg" element="p" />
 
+ <button type="submit" class="btn-login">로그인</button>
+
           <div class="aux-row">
             <button type="button" class="aux-btn2" onclick="location.href='${pageContext.request.contextPath}/user/joinForm'">회원가입</button>
             <button type="button" class="aux-btn" onclick="location.href='${pageContext.request.contextPath}/home/findAccount'">아이디 / 비밀번호 찾기</button>
           </div>
 
-          <button type="submit" class="btn-login">로그인</button>
+     
       </form:form>
 
       <div class="or-row">또는</div>

@@ -5,6 +5,7 @@ import dao.CourseDao;
 import dao.EnrollmentDao;
 import dao.UserDao;
 import dto.user.*;
+import dto.user.grade.AdminAllStudentGrade;
 import dto.user.grade.MyGrade;
 import dto.user.grade.MyProfessorGrade;
 import dto.user.login.Login;
@@ -154,8 +155,10 @@ public class UserController {
             model.addAttribute("myGradeList", professorMyGradeList);
         } else if (UserRole.ADMIN == (sessionUser.getRole())) {
             courseList = courseDao.getListWithProfessorName(semester);
+            List<AdminAllStudentGrade> allStudentGrades = enrollmentDao.getAllStudentGrades();
 
             model.addAttribute("courseList", courseList);
+            model.addAttribute("myGradeList", allStudentGrades);
         }
 
         model.addAttribute("semester", semester);

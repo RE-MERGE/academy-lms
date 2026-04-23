@@ -1,5 +1,6 @@
 package dao;
 
+import dto.user.grade.AdminAllStudentGrade;
 import dto.user.grade.MyGrade;
 import dto.user.grade.MyProfessorGrade;
 import org.mybatis.spring.SqlSessionTemplate;
@@ -10,6 +11,7 @@ import dao.mapper.EnrollmentMapper;
 import dto.Enrollment;
 
 import java.util.List;
+import java.util.Map;
 
 @Repository
 public class EnrollmentDao {
@@ -41,5 +43,10 @@ public class EnrollmentDao {
 
     public List<MyProfessorGrade> getProfessorMyGradeList(int userNo, String semester) {
         return template.getMapper(cls).getProfessorMyGradeList(userNo, semester);
+    }
+
+    public List<AdminAllStudentGrade> getAllStudentGrades() {
+		 return template.getMapper(cls).getAllStudentGrades();
+
     }
 }

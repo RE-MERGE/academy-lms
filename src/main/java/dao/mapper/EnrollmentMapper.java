@@ -1,5 +1,6 @@
 package dao.mapper;
 
+import dto.user.grade.AdminAllStudentGrade;
 import dto.user.grade.MyGrade;
 import dto.user.grade.MyProfessorGrade;
 import org.apache.ibatis.annotations.Delete;
@@ -10,6 +11,7 @@ import org.apache.ibatis.annotations.Select;
 import dto.Enrollment;
 
 import java.util.List;
+import java.util.Map;
 
 
 public interface EnrollmentMapper {
@@ -64,4 +66,21 @@ public interface EnrollmentMapper {
 			"GROUP BY c.course_no, c.course_name, c.course_type " +
 			"ORDER BY avg_score DESC")
 	List<MyProfessorGrade> getProfessorMyGradeList(@Param("userNo") int userNo, @Param("semester") String semester);
+
+	@Select("""
+    SELECT 
+        c.course_name AS courseName,
+        COUNT(DISTINCT e.enrollment_no) AS total_students,
+        ROUND(AVG(g.score), 1) AS avg_score,
+        MAX(g.score) AS max_score,
+        MIN(g.score) AS min_score
+    FROM COURSE c
+    LEFT JOIN ENROLLMENT e ON c.course_no = e.course_no
+    LEFT JOIN GRADE g ON e.enrollment_no = g.enrollment_no  -- 성적 테이블 조인
+    GROUP BY c.course_no, c.course_name
+    ORDER BY c.course_name ASC
+""")
+	List<AdminAllStudentGrade> getAllStudentGrades();
+
+
 }

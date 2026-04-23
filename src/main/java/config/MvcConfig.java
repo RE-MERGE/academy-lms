@@ -1,5 +1,6 @@
 package config;
 
+import interceptor.AdminCheckInterceptor;
 import interceptor.LoginCheckInterceptor;
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.*;
@@ -117,6 +118,11 @@ public class MvcConfig implements WebMvcConfigurer {
                         "/user/naverLogin",
                         "/user/naverCallback"
                 );
+
+        //관리자 전용 권한 체크
+        registry.addInterceptor(new AdminCheckInterceptor())
+                .order(2)
+                .addPathPatterns("/admin/**");
     }
 
     @Bean

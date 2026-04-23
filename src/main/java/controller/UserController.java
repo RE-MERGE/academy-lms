@@ -10,6 +10,7 @@ import dto.user.grade.MyGrade;
 import dto.user.grade.MyProfessorGrade;
 import dto.user.login.Login;
 import dto.user.login.UpdatePwForm;
+import dto.user.mypage.MyPageData;
 import lombok.RequiredArgsConstructor;
 import org.springframework.mail.MailSender;
 import org.springframework.mail.SimpleMailMessage;
@@ -41,8 +42,6 @@ public class UserController {
 
     private final UserService userService;
     private final UserDao userDao;
-    private final CourseDao courseDao;
-    private final EnrollmentDao enrollmentDao;
     private final NaverLoginConfig naverLoginConfig;
     private final NaverLoginService naverLoginService;
     private final MailSender mailSender;
@@ -138,38 +137,15 @@ public class UserController {
 
         String semester = getSemester();
 
-        int userNo = sessionUser.getUserNo();
-        List<Map<String, Object>> courseList;
+        MyPageData data = userService.getMyPageData(sessionUser, semester);
 
-        if (UserRole.STUDENT == (sessionUser.getRole())) {
-            courseList = courseDao.getStudentMyCourseMap(userNo, semester);
-            List<MyGrade> studentMyGradeList = enrollmentDao.getStudentMyGradeList(userNo);
-
-            model.addAttribute("myGradeList", studentMyGradeList);
-            model.addAttribute("courseList", courseList);
-
-        } else if (UserRole.PROFESSOR == (sessionUser.getRole())) {
-            courseList = courseDao.getProfessorMyCourseMap(userNo, semester);
-            List<MyProfessorGrade> professorMyGradeList = enrollmentDao.getProfessorMyGradeList(userNo, semester);
-
-            model.addAttribute("courseList", courseList);
-            model.addAttribute("myGradeList", professorMyGradeList);
-
-        } else if (UserRole.ADMIN == (sessionUser.getRole())) {
-            courseList = courseDao.getListWithProfessorName(semester);
-            List<AdminAllStudentGrade> allStudentGrades = enrollmentDao.getAllStudentGrades();
-
-            model.addAttribute("courseList", courseList);
-            model.addAttribute("myGradeList", allStudentGrades);
-        }
-
+        model.addAttribute("courseList", data.getCourseList());
+        model.addAttribute("myGradeList", data.getGradeList());
         model.addAttribute("semester", semester);
         model.addAttribute(UserConst.SESSION_USER, sessionUser);
 
         return "user/myPage";
     }
-
-
 
 
     @PostMapping("findId")

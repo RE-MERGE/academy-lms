@@ -86,12 +86,23 @@
                     <p class="find-sub">변경할 정보를 입력하고 저장하세요.</p>
                 </div>
 
-                <div class="profile-upload-container">
-                    <img id="preview" src="${pageContext.request.contextPath}/upload/profiles/${userEditForm.currentProfileImg}" class="profile-preview">
-                    <label for="profile-input" class="camera-icon-label" title="사진 변경">
-                        <i class="fa-solid fa-camera"></i>
-                    </label>
-                </div>
+<div class="profile-upload-container">
+    <c:choose>
+        <%-- 프로필 이미지가 있는 경우 --%>
+        <c:when test="${not empty userEditForm.currentProfileImg and userEditForm.currentProfileImg != 'default-profile.png'}">
+            <img id="preview" src="${pageContext.request.contextPath}/upload/profiles/${userEditForm.currentProfileImg}" class="profile-preview">
+        </c:when>
+
+        <%-- 프로필 이미지가 없는 경우 (기본 이미지) --%>
+        <c:otherwise>
+            <img id="preview" src="${pageContext.request.contextPath}/img/default-profile.png" class="profile-preview">
+        </c:otherwise>
+    </c:choose>
+
+    <label for="profile-input" class="camera-icon-label" title="사진 변경">
+        <i class="fa-solid fa-camera"></i>
+    </label>
+</div>
 
                 <%-- [중요] 프로필 수정 폼 시작 --%>
                 <form:form action="${pageContext.request.contextPath}/user/editProfile" method="post" enctype="multipart/form-data" modelAttribute="userEditForm">

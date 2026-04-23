@@ -2,10 +2,12 @@ package dao.mapper;
 
 import dto.user.User;
 import dto.user.UserEditForm;
+import dto.user.UserStatus;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.Update;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
 import java.util.Map;
@@ -47,23 +49,21 @@ public interface UserMapper {
     @Update("UPDATE USERS SET password = #{tempPassword} WHERE user_id = #{userId}")
     void updatePassword(@Param("userId") String userId, @Param("tempPassword") String tempPassword);
 
-    @Update("<script>" +
-            "UPDATE USERS " +
-            "<set>" +
+    @Update("UPDATE USERS " +
+            "SET " +
             "  name = #{name}, " +
             "  email = #{email}, " +
-            "  phone = #{phone}, " +
-            "  <if test='password != null and password != \"\"'> " +
-            "    , password = #{password} " +
-            "  </if> " +
-            "  <if test='currentProfileImg != null and currentProfileImg != \"\"'> " +
-            "    , profile_img = #{currentProfileImg} " +
-            "  </if> " +
-            "  , updated_at = NOW() " +
-            "</set>" +
-            "WHERE user_id = #{userId}" +
-            "</script>")
+            "  phone = #{phone} " +
+            "WHERE user_id = #{userId}")
     void updateInfo(UserEditForm userEditForm);
 
-    void updateInfo(Map<String, Object> param);
+    @Update("UPDATE USERS " +
+            "SET profile_img = #{profileImg} " +
+            "WHERE user_id = #{userId}")
+    void updateProfileImg(@Param("userId") String userId, @Param("profileImg") String profileImg);
+
+    @Update("UPDATE USERS SET status=#{status} WHERE user_id=#{userId}")
+    void updateStatus(@Param("userId") String userId, @Param("status") UserStatus userStatus);
+
+
 }

@@ -1,10 +1,15 @@
 package controller;
 
 import config.NaverLoginConfig;
+import dao.CourseDao;
+import dao.EnrollmentDao;
 import dao.UserDao;
+import dto.Course;
 import dto.user.*;
 import dto.user.login.Login;
+import dto.user.login.UpdatePwForm;
 import lombok.RequiredArgsConstructor;
+import org.mariadb.jdbc.plugin.codec.LocalDateCodec;
 import org.springframework.mail.MailSender;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.stereotype.Controller;
@@ -13,19 +18,18 @@ import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import service.NaverLoginService;
 import service.UserService;
 
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
-import javax.validation.constraints.Email;
-import javax.validation.constraints.NotBlank;
 import java.io.File;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.Month;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -37,6 +41,7 @@ public class UserController {
 
     private final UserService userService;
     private final UserDao userDao;
+    private final EnrollmentDao enrollmentDao;
     private final NaverLoginConfig naverLoginConfig;
     private final NaverLoginService naverLoginService;
     private final MailSender mailSender;
@@ -130,9 +135,34 @@ public class UserController {
     @GetMapping("myPage")
     public String myPage(@Login SessionUser sessionUser, Model model) {
 
+        String semester = getSemester();
+//        int courseNo = enrollmentDao.getCourse(sessionUser.getUserId());
+
+//        List<Course> courseList = courseDao.getMyCourse(sessionUser.getUserNo(), semester);
+
+//        System.out.println("courseList = " + courseList);
+
         model.addAttribute(UserConst.SESSION_USER, sessionUser);
+//        model.addAttribute("courseList", courseList);
 
         return "user/myPage";
+    }
+
+
+    private String getSemester() {
+
+        String year = String.valueOf(LocalDate.now().getYear());
+        int month = LocalDate.now().getMonthValue();
+
+        String semester = "-";
+
+        if (month <= 6) {
+            month = 1;
+        } else {
+            month = 2;
+        }
+
+        return year += semester += String.valueOf(month);
     }
 
     @PostMapping("findId")
@@ -246,7 +276,7 @@ public class UserController {
         return "redirect:/home/home";
     }
 
-    @GetMapping("editProfile")   // 개인정보 수정 기능X
+    @GetMapping("editProfile")
     public String editForm(Model model, UserEditForm userEditForm, @Login SessionUser sessionUser) {
 
         model.addAttribute("userEditForm", new UserEditForm(
@@ -262,7 +292,7 @@ public class UserController {
     }
 
     @PostMapping("editProfile")
-    public String editForm(@Validated UserEditForm userEditForm, BindingResult bindingResult, @Login SessionUser sessionUser) {
+    public String editForm(@Validated UserEditForm userEditForm, BindingResult bindingResult, HttpSession session, @Login SessionUser sessionUser) {
 
         if (bindingResult.hasErrors()) {
             return "user/editProfile";
@@ -270,26 +300,118 @@ public class UserController {
 
         User dbUser = userDao.selectUser(sessionUser.getUserId());
 
+        if (dbUser == null) {
+            return "rediredct:/home/home";
+        }
+
         if (!userEditForm.getPassword().equals(dbUser.getPassword())) {
-            bindingResult.rejectValue("password", "${error.mismatch.password}");
+            bindingResult.rejectValue("password", "error.mismatch.password");
             return "user/editProfile";
         }
 
         if (userEditForm.getProfileImg() != null && !userEditForm.getProfileImg().isEmpty()) {
             String newProfileImgName = saveProfileImage(userEditForm.getProfileImg());
             userEditForm.setCurrentProfileImg(newProfileImgName);
+            userDao.updateProfileImg(userEditForm.getUserId(), userEditForm.getCurrentProfileImg());
         }
 
         userDao.updateInfo(userEditForm);
 
-        System.out.println("===================================");
-        System.out.println("userEditForm = " + userEditForm);
-        System.out.println("===================================");
+        SessionUser updatedUser = new SessionUser(
+                sessionUser.getUserNo(),
+                sessionUser.getUserCode(),
+                sessionUser.getUserId(),
+                userEditForm.getEmail(),
+                userEditForm.getPhone(),
+                userEditForm.getName(),
+                sessionUser.getRole(),
+                sessionUser.getStatus(),
+                userEditForm.getCurrentProfileImg()
+        );
+
+        session.setAttribute(UserConst.SESSION_USER, updatedUser);
 
         return "redirect:/user/myPage";
     }
 
+    @GetMapping("updatePwForm")
+    public String updatePwForm(Model model, @Login SessionUser sessionUser) {
+
+        UpdatePwForm updatePwForm = new UpdatePwForm();
+        updatePwForm.setUserId(sessionUser.getUserId());
+
+        model.addAttribute("updatePwForm", updatePwForm);
+        return "user/updatePwForm";
+    }
+
+    @PostMapping("updatePassword")
+    public String changePassword(@Validated UpdatePwForm updatePwForm, BindingResult bindingResult, HttpSession session, Model model) {
+
+        if (bindingResult.hasErrors()) {
+            return "user/updatePwForm";
+        }
+
+        User dbUser = userDao.selectUser(updatePwForm.getUserId());
+
+        //입력한 비밀번호와 현재 비밀번호가 일치하지 않으면
+        if (!updatePwForm.getCurrentPassword().equals(dbUser.getPassword())) {
+            bindingResult.rejectValue("currentPassword", "error.mismatch.password");
+            return "user/updatePwForm";
+        }
+
+        //변경하려는 비밀번호와, 확인 비밀번호값이 다르다면
+        if (!updatePwForm.getNewPassword().equals(updatePwForm.getNewPasswordConfirm())) {
+            bindingResult.rejectValue("newPassword", "error.mismatch.password");
+            bindingResult.rejectValue("newPasswordConfirm", "error.mismatch.password");
+            return "user/updatePwForm";
+        }
+
+        //변경하고자 하는 비밃번호가 기존에 사용하던 비밀번호라면
+        if (dbUser.getPassword().equals(updatePwForm.getNewPassword())) {
+            bindingResult.rejectValue("currentPassword", "error.duplication.password");
+            return "user/updatePwForm";
+        }
+
+        userDao.updatePassword(updatePwForm.getUserId(), updatePwForm.getNewPassword());
+        User updatePwUser = userDao.selectUser(updatePwForm.getUserId());
+
+        session.setAttribute(UserConst.SESSION_USER, new SessionUser(updatePwUser));
+
+        return "redirect:/user/myPage";
+
+    }
+
+    @PostMapping("withdraw")
+    public String withdraw(@RequestParam("password") String password, @Login SessionUser sessionUser, HttpSession session,
+                           RedirectAttributes rttr) {
+
+
+        if (sessionUser == null) {
+            return "redirect:/home/home";
+        }
+
+        try {
+            boolean isDeleted = userService.withdraw(sessionUser.getUserId(), password);
+
+            if (!isDeleted) {
+                rttr.addFlashAttribute("error", "pw");
+                return "redirect:/user/editProfile";
+            }
+
+            session.invalidate();
+            rttr.addFlashAttribute("msg", "탈퇴가 정상처리 됐습니다. 그동안 이용해주셔서 감사합니다.");
+            return "redirect:/home/home";
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            rttr.addFlashAttribute("error", "system");
+            return "redirect:/user/editProfile";
+        }
+
+    }
+
     private static LoginUser toLoginUser(User user) {
+
         LoginUser loginUser = new LoginUser(
                 user.getUserNo(),
                 user.getUserId(),
@@ -418,9 +540,9 @@ public class UserController {
         model.addAttribute("userList", new ArrayList<>());
         model.addAttribute("currentPage", 1);
         return "user/adminUserList";
-    }  
-  
-    
+    }
+
+
     @GetMapping("adminCourseList") // 빈껍데기 컨트롤러 기능X
     public String adminCourseList(@RequestParam(defaultValue = "1") int page, Model model) {
         model.addAttribute("courseList", new ArrayList<>());
@@ -429,18 +551,15 @@ public class UserController {
         return "user/adminCourseList";
     }
 
-    
-    @GetMapping("/changePassword") // 개인정보 비번수정 기능X
-    public String changePasswordForm() {
-        return "user/changePassword";
-    }
-    
-    @GetMapping("/gradeManage")
+
+
+
+    @GetMapping("gradeManage")
     public String gradeManage(@RequestParam(defaultValue = "1") int page, Model model) {
         model.addAttribute("studentList", new ArrayList<>());
         model.addAttribute("currentPage", page);
         model.addAttribute("totalPages", 1);
         return "user/gradeManage";
     }
-    
+
 }

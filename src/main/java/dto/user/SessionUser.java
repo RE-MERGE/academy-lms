@@ -22,4 +22,16 @@ public class SessionUser implements Serializable {
     private UserRole role;       // 권한 확인 (학생/교수/관리자 구분)
     private UserStatus status;       // 상태, 이용 가능한지
     private String profileImg;   // 프로필 이미지 경로 (상단 바 표시용)
+
+    public SessionUser(User user) {
+        this.userNo = user.getUserNo();
+        this.userCode = user.getUserCode();
+        this.userId = user.getUserId();
+        this.email = user.getEmail();
+        this.phone = user.getPhone();
+        this.name = user.getName();
+        this.role = user.getRole();
+        this.status = user.getStatus();
+        this.profileImg = user.getProfileImg();
+    }
 }

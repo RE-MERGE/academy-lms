@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import dto.Course;
 import dto.Enrollment;
 import dto.user.SessionUser;
+import dto.user.UserRole;
 import dto.user.login.Login;
 import service.CourseService;
 import service.EnrollmentService;
@@ -73,7 +74,6 @@ public class EnrollmentController {
 	public String course1(@Login SessionUser sessionUser,Model model) {
 		model.addAttribute("user", sessionUser);
 		model.addAttribute("currentSemester","2026-1");
-		System.out.println(sessionUser);
 		return "enrollment/courseEnrollment";
 	}
 	
@@ -86,15 +86,25 @@ public class EnrollmentController {
 	    @RequestParam(defaultValue = "") String credits,
 	    @RequestParam(defaultValue = "") String keyword,
 	    @RequestParam(defaultValue = "") String status,
-	    @RequestParam(defaultValue = "") String semester
+	    @RequestParam(defaultValue = "") String semester,
+	    @Login SessionUser sessionUser
 	) {
 	    // DB에서 조회 후
 	    Map<String, Object> result = new HashMap<>();
-	    List<Course> courseList = courseService.getlist(semester);
+	    int offset = (page - 1) * size;
+	    String effectiveStatus = status;
+	    if (UserRole.STUDENT == sessionUser.getRole()) {
+	        effectiveStatus = "APPROVED";
+	        System.err.println("status="+effectiveStatus);
+	    }
+	    System.err.println("status="+effectiveStatus);
+	    List<Map<String, Object>> courseList = courseService.getlist(semester, type, credits, keyword, effectiveStatus, offset,size);
+	    int totalCount = courseService.getCount(semester, type, credits, keyword, effectiveStatus);
 	    result.put("courses", courseList);
+	    
 	    result.put("totalCount", courseList.size());
 	    
-	    result.put("totalPages", 1);
+	    result.put("totalPages", (int) Math.ceil((double) totalCount / size));
 	    return result;
 	}
 	
@@ -103,7 +113,7 @@ public class EnrollmentController {
 	@ResponseBody
 	public Map<String, Object> getMyEnrollments(@Login SessionUser sessionUser, @RequestParam(defaultValue = "") String semester) {
 	    Map<String, Object> result = new HashMap<>();
-	    List<Course> list = courseService.getMyEnrollments(sessionUser.getUserNo(),semester);
+	    List<Map<String, Object>> list = courseService.getMyEnrollments(sessionUser.getUserNo(),semester);
 	    result.put("courses", list);
 	    return result;
 	}

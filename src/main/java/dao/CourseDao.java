@@ -49,4 +49,13 @@ public class CourseDao {
     public void removeFavorite(int user_no, int course_no) {
         template.getMapper(cls).removeFavorite(user_no, course_no);
     }
+	public List<Course> getlist(String semester) {
+		return template.getMapper(cls).getlist(semester);
+	}
+	public List<Course> getMyCourse(int userNo, String semester) {
+		return template.getMapper(cls).getMyCourse(userNo,semester);
+	}
+	public List<Course> getMyenrollment(int userNo, String semester) {
+		return template.getMapper(cls).getMyEnrollment(userNo,semester);
+	}
 }

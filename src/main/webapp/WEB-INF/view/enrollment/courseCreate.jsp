@@ -570,7 +570,7 @@ function submitForm() {
   })
   .then(function(r) { return r.json(); })
   .then(function(data) {
-    if (data.success) { alert('강의 개설 신청이 완료되었습니다.'); location.href = CTX_PATH + '/enrollment/list'; }
+    if (data.success) { alert('강의 개설 신청이 완료되었습니다.'); location.href = CTX_PATH + '/enrollment/courseEnrollment'; }
     else { alert('오류: ' + (data.message || '신청에 실패했습니다.')); }
   })
   .catch(function() { alert('서버 오류가 발생했습니다.'); });

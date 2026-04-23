@@ -48,4 +48,16 @@ public class CourseService {
 	    public void removeFavorite(int user_no, int course_no) {
 	        coursedao.removeFavorite(user_no, course_no);
 	    }
+
+		public List<Course> getlist(String semester) {
+			return coursedao.getlist(semester);
+		}
+
+		public List<Course> getMyCourses(int userNo, String semester) {
+			return coursedao.getMyCourse(userNo,semester);
+		}
+
+		public List<Course> getMyEnrollments(int userNo, String semester) {
+			return coursedao.getMyenrollment(userNo,semester);
+		}
 }

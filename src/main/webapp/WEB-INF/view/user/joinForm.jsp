@@ -306,7 +306,7 @@
 
                 <!-- 프로필 업로드 -->
                 <div class="profile-upload-container">
-                    <img id="preview" src="${pageContext.request.contextPath}/img/default-profile3.png" class="profile-preview" alt="미리보기">
+                    <img id="preview" src="${pageContext.request.contextPath}/img/default-profile.png" class="profile-preview" alt="미리보기">
                     <label for="profile-input" class="camera-icon-label">
                         <i class="fa-solid fa-camera"></i>
                     </label>

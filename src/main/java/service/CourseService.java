@@ -58,8 +58,8 @@ public class CourseService {
 			return coursedao.getMyCourse(userNo,semester);
 		}
 
-		public List<Map<String, Object>> getMyEnrollments(int userNo, String semester) {
-			return coursedao.getMyenrollment(userNo,semester);
+		public List<Map<String, Object>> getEnrollments(int userNo, String semester) {
+			return coursedao.getEnrollment(userNo,semester);
 		}
 
 		public int getCount(String semester, String type, String credits, String keyword, String status) {

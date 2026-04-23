@@ -1158,8 +1158,8 @@ function renderMineTable() {
     tbody.innerHTML = `<tr><td colspan="\${colspan}">
       <div class="empty-state">
         <div class="empty-icon">📋</div>
-        <div class="empty-text">\${USER_ROLE === 'PROFESSOR' ? '담당 강의가 없습니다' : '신청한 수강이 없습니다'}</div>
-        <div class="empty-sub">\${USER_ROLE === 'PROFESSOR' ? '배정된 강의가 표시됩니다' : '전체 강의 탭에서 수강신청을 해보세요'}</div>
+        <div class="empty-text">\${USER_ROLE == 'PROFESSOR' ? '담당 강의가 없습니다' : '신청한 수강이 없습니다'}</div>
+        <div class="empty-sub">\${USER_ROLE == 'PROFESSOR' ? '배정된 강의가 표시됩니다' : '전체 강의 탭에서 수강신청을 해보세요'}</div>
       </div></td></tr>`;
     return;
   }
@@ -1247,8 +1247,7 @@ function applyEnroll(courseNo) {
   .then(data => {
     if (data.success) {
       showToast('✅ 수강신청이 완료되었습니다.', 'green');
-      loadMyCourses();
-      loadAllCourses();
+      loadMyCourses().finally(() => loadAllCourses());
     } else {
       showToast('❌ ' + (data.message || '신청에 실패했습니다.'), 'red');
     }
@@ -1267,8 +1266,7 @@ function cancelEnroll(courseNo) {
   .then(data => {
     if (data.success) {
       showToast('🗑 수강신청이 취소되었습니다.', 'yellow');
-      loadMyCourses();
-      loadAllCourses();
+      loadMyCourses().finally(() => loadAllCourses());
     } else {
       showToast('❌ ' + (data.message || '취소에 실패했습니다.'), 'red');
     }

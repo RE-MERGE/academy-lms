@@ -45,4 +45,7 @@ public interface CourseMapper {
 
     @Select("SELECT* FROM COURSE WHERE course_no IN (SELECT course_no FROM ENROLLMENT WHERE student_no = #{userNo}) AND semester = #{semester}")
 	public List<Course> getMyEnrollment(@Param("userNo") int userNo,@Param("semester") String semester);
+
+    @Select("SELECT * FROM COURSE WHERE course_no = #{value}")
+	public Course find(Integer courseNo);
 }

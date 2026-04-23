@@ -16,14 +16,13 @@ public class EnrollmentService {
 	private CourseDao courseDao;
 
 	public void apply(int userNo, Integer courseNo) {
-		// TODO Auto-generated method stub
-		/*if (enrollmentDao.existsByStudentAndCourse(userNo, courseNo) > 0)
+		if (enrollmentDao.existsByStudentAndCourse(userNo, courseNo) > 0)
 	        throw new IllegalStateException("이미 신청한 강의입니다.");
 
 	    Course course = courseDao.findByCourseNo(courseNo);
 	    if (course == null)
 	        throw new IllegalStateException("존재하지 않는 강의입니다.");
-	    if (course.getMax_students() >= course.getMaxStudents())
+	    if (enrollmentDao.count(courseNo) >= course.getMax_students())
 	        throw new IllegalStateException("정원이 초과된 강의입니다.");
 
 	    if (enrollmentDao.hasTimeConflict(userNo, courseNo) > 0)
@@ -33,11 +32,11 @@ public class EnrollmentService {
 	    enrollment.setCourse_no(courseNo);
 	    enrollment.setStudent_no(userNo);
 	    enrollment.setStatus("APPLIED");
-	    enrollmentDao.insert(enrollment); */
+	    enrollmentDao.insert(enrollment); 
 	}
 
-	public void cancel(int userNo, Integer integer) {
-		// TODO Auto-generated method stub
+	public void cancel(int userNo, Integer courseNo) {
+		enrollmentDao.cancel(userNo,courseNo);
 		
 	}
 }

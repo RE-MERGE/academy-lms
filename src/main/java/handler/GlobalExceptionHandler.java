@@ -17,7 +17,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(NoHandlerFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public String handle404(NoHandlerFoundException ex, Model model) {
-
+        ex.printStackTrace();
         model.addAttribute("errorMessage", "error.page.notFound");
         return "error/404";
 
@@ -25,7 +25,9 @@ public class GlobalExceptionHandler {
 
     @RequestMapping("/error500")
     @ExceptionHandler(Exception.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public String handleAllException(Exception ex, Model model) {
+        ex.printStackTrace();
         model.addAttribute("errorMessage", "error.page.serverError");
         return "error/500";
     }

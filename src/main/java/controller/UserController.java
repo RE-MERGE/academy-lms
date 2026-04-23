@@ -144,6 +144,7 @@ public class UserController {
         if (UserRole.STUDENT == (sessionUser.getRole())) {
             courseList = courseDao.getStudentMyCourseMap(userNo, semester);
             List<MyGrade> studentMyGradeList = enrollmentDao.getStudentMyGradeList(userNo);
+
             model.addAttribute("myGradeList", studentMyGradeList);
             model.addAttribute("courseList", courseList);
 
@@ -153,6 +154,7 @@ public class UserController {
 
             model.addAttribute("courseList", courseList);
             model.addAttribute("myGradeList", professorMyGradeList);
+
         } else if (UserRole.ADMIN == (sessionUser.getRole())) {
             courseList = courseDao.getListWithProfessorName(semester);
             List<AdminAllStudentGrade> allStudentGrades = enrollmentDao.getAllStudentGrades();

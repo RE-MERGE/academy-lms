@@ -167,8 +167,7 @@
 
     <div class="mypage-tabs">
         <button class="mypage-tab active" onclick="switchTab('courses')">
-            ${sessionUser.role == 'PROFESSOR' ? '강의 중인 과목' : '수강 중인 과목'}
-        </button>
+        ${sessionUser.role == 'ADMIN' ? '전체 개설 과목' : (sessionUser.role == 'PROFESSOR' ? '강의 중인 과목' : '수강 중인 과목')}        </button>
 
         <c:choose>
             <c:when test="${sessionUser.role == 'PROFESSOR'}">
@@ -286,11 +285,12 @@
         </div>
     </c:if>
 
-    <%-- 성적 조회 탭 --%>
+    <%-- 성적 조회 탭 (학생 / 관리자용 통합) --%>
     <div id="tab-grades" class="tab-panel">
         <div class="section-title">
             <c:choose>
                 <c:when test="${sessionUser.role == 'PROFESSOR'}">담당 강의 성적 내역</c:when>
+                <c:when test="${sessionUser.role == 'ADMIN'}">전체 과목 성적 통계</c:when>
                 <c:otherwise>나의 성적 내역</c:otherwise>
             </c:choose>
         </div>
@@ -299,11 +299,20 @@
             <tr>
                 <th>과목명</th>
                 <c:choose>
+                    <%-- 관리자 헤더: 중간/기말 평균을 각각 표시 --%>
+                    <c:when test="${sessionUser.role == 'ADMIN'}">
+                        <th>수강인원</th>
+                        <th>중간 평균</th>
+                        <th>기말 평균</th>
+                        <th>최고 / 최저</th>
+                    </c:when>
+                    <%-- 교수 헤더 --%>
                     <c:when test="${sessionUser.role == 'PROFESSOR'}">
                         <th>수강인원</th>
                         <th>평균 점수</th>
                         <th>최고 / 최저</th>
                     </c:when>
+                    <%-- 학생 헤더 --%>
                     <c:otherwise>
                         <th>구분</th>
                         <th>시험유형</th>
@@ -317,8 +326,23 @@
                 <c:when test="${not empty myGradeList}">
                     <c:forEach var="grade" items="${myGradeList}">
                         <tr>
-                            <td>${grade.courseName}</td>
+                            <td>
+                                ${grade.courseName}
+                                <c:if test="${sessionUser.role == 'ADMIN'}">
+                                    <br><small style="color: #888;">(${grade.courseType})</small>
+                                </c:if>
+                            </td>
                             <c:choose>
+                                <c:when test="${sessionUser.role == 'ADMIN'}">
+                                    <td>${grade.total_students}명</td>
+                                    <td style="font-weight: 700; color: #4e73df;">${grade.mid_avg}점</td>
+                                    <td style="font-weight: 700; color: #1cc88a;">${grade.final_avg}점</td>
+                                    <td>
+                                        <span style="color: #e74c3c; font-weight: bold;">${grade.max_score}</span> /
+                                        <span style="color: #3498db; font-weight: bold;">${grade.min_score}</span>
+                                    </td>
+                                </c:when>
+                                <%-- 교수 데이터 --%>
                                 <c:when test="${sessionUser.role == 'PROFESSOR'}">
                                     <td>${grade.total_students}명</td>
                                     <td style="font-weight: 700;">${grade.avg_score}점</td>
@@ -327,6 +351,7 @@
                                         <span style="color: #3498db; font-weight: bold;">${grade.min_score}</span>
                                     </td>
                                 </c:when>
+                                <%-- 학생 데이터 --%>
                                 <c:otherwise>
                                     <td>
                                         <c:set var="gBadgeClass" value="badge-gray" />
@@ -336,9 +361,9 @@
                                         <span class="grade-badge ${gBadgeClass}">${gBadgeText}</span>
                                     </td>
                                     <td>
-                                            <span class="type-badge ${grade.examType eq 'MIDTERM' ? 'badge-indigo' : 'badge-purple'}">
-                                                    ${grade.examType eq 'MIDTERM' ? '중간고사' : '기말고사'}
-                                            </span>
+                                        <span class="type-badge ${grade.examType eq 'MIDTERM' ? 'badge-indigo' : 'badge-purple'}">
+                                            ${grade.examType eq 'MIDTERM' ? '중간고사' : '기말고사'}
+                                        </span>
                                     </td>
                                     <td style="font-weight: 700;">${grade.score}</td>
                                 </c:otherwise>
@@ -347,7 +372,8 @@
                     </c:forEach>
                 </c:when>
                 <c:otherwise>
-                    <tr><td colspan="4" style="padding: 50px 0; color: #999;">조회된 내역이 없습니다.</td></tr>
+                    <%-- 관리자일 경우 5열이므로 colspan="5" 처리 --%>
+                    <tr><td colspan="${sessionUser.role == 'ADMIN' ? 5 : 4}" style="padding: 50px 0; color: #999;">조회된 내역이 없습니다.</td></tr>
                 </c:otherwise>
             </c:choose>
             </tbody>

@@ -1,6 +1,7 @@
 package service;
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -49,15 +50,20 @@ public class CourseService {
 	        coursedao.removeFavorite(user_no, course_no);
 	    }
 
-		public List<Course> getlist(String semester) {
-			return coursedao.getlist(semester);
+		public List<Map<String, Object>> getlist(String semester, String type, String credits, String keyword, String status, int offset, int size) {
+			return coursedao.getlist(semester, type, credits, keyword, status, offset, size);
 		}
 
 		public List<Course> getMyCourses(int userNo, String semester) {
 			return coursedao.getMyCourse(userNo,semester);
 		}
 
-		public List<Course> getMyEnrollments(int userNo, String semester) {
+		public List<Map<String, Object>> getMyEnrollments(int userNo, String semester) {
 			return coursedao.getMyenrollment(userNo,semester);
+		}
+
+		public int getCount(String semester, String type, String credits, String keyword, String status) {
+			
+			return coursedao.getCount(semester,type, credits, keyword,status);
 		}
 }

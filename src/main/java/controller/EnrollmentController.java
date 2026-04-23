@@ -16,43 +16,22 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import dto.Course;
+import dto.Enrollment;
 import dto.user.SessionUser;
 import dto.user.login.Login;
 import service.CourseService;
+import service.EnrollmentService;
+
 
 @Controller
 @RequestMapping("enrollment")
 public class EnrollmentController {
 	@Autowired
 	private CourseService courseService;
-	// 기존 - JSP 페이지 로드용 (그대로 유지)
-	@GetMapping("courseEnrollment")
-	public String course(@Login SessionUser sessionUser,Model model) {
-		model.addAttribute("sessionUser", sessionUser);
-	    return "enrollment/courseEnrollment";
-	}
-
+	@Autowired
+	private EnrollmentService enrollmentService;
 	
-	// 추가 - AJAX JSON 응답용
-	@GetMapping("list")
-	@ResponseBody
-	public Map<String, Object> courseList(
-	        @RequestParam(defaultValue = "1")  int page,
-	        @RequestParam(defaultValue = "10") int size,
-	        @RequestParam(defaultValue = "") String dept,
-	        @RequestParam(defaultValue = "") String type,
-	        @RequestParam(defaultValue = "") String credits,
-	        @RequestParam(defaultValue = "") String keyword) {
-
-	    List<Course> list = courseService.list(); // 나중에 필터 파라미터 넘기면 됨
-
-	    Map<String, Object> result = new HashMap<>();
-	    result.put("courses", list);
-	    System.out.println("course count: " + list.size()); 
-	    result.put("totalCount", list.size());
-	    result.put("totalPages", (int) Math.ceil((double) list.size() / size));
-	    return result;
-	}
+	
 	
 	@GetMapping("courseCreate")
 	public String courseCreate(Model model) {
@@ -89,6 +68,96 @@ public class EnrollmentController {
 	@ResponseBody
 	public List<Course> blocked(@RequestParam String room, @RequestParam String semester) {
 	    return courseService.getBlockedCourses(room, semester);
+	}
+	@GetMapping("courseEnrollment")
+	public String course1(@Login SessionUser sessionUser,Model model) {
+		model.addAttribute("user", sessionUser);
+		model.addAttribute("currentSemester","2026-1");
+		System.out.println(sessionUser);
+		return "enrollment/courseEnrollment";
+	}
+	
+	@GetMapping("courselist")
+	@ResponseBody
+	public Map<String, Object> getEnrollmentList(
+	    @RequestParam(defaultValue = "1") int page,
+	    @RequestParam(defaultValue = "10") int size,
+	    @RequestParam(defaultValue = "") String type,
+	    @RequestParam(defaultValue = "") String credits,
+	    @RequestParam(defaultValue = "") String keyword,
+	    @RequestParam(defaultValue = "") String status,
+	    @RequestParam(defaultValue = "") String semester
+	) {
+	    // DB에서 조회 후
+	    Map<String, Object> result = new HashMap<>();
+	    List<Course> courseList = courseService.getlist(semester);
+	    result.put("courses", courseList);
+	    result.put("totalCount", courseList.size());
+	    
+	    result.put("totalPages", 1);
+	    return result;
+	}
+	
+	// STUDENT: 내 수강목록
+	@GetMapping("mine")
+	@ResponseBody
+	public Map<String, Object> getMyEnrollments(@Login SessionUser sessionUser, @RequestParam(defaultValue = "") String semester) {
+	    Map<String, Object> result = new HashMap<>();
+	    List<Course> list = courseService.getMyEnrollments(sessionUser.getUserNo(),semester);
+	    result.put("courses", list);
+	    return result;
+	}
+
+	// PROFESSOR: 내 담당 강의
+	@GetMapping("my-courses")
+	@ResponseBody
+	public Map<String, Object> getMyCourses(@Login SessionUser sessionUser, @RequestParam(defaultValue = "") String semester) {
+	    Map<String, Object> result = new HashMap<>();
+	    List<Course> list = courseService.getMyCourses(sessionUser.getUserNo(),semester);
+	    result.put("courses", list);
+	    return result;
+	}
+	
+	@PostMapping("apply")
+	@ResponseBody
+	public Map<String, Object> applyEnrollment(
+	        @Login SessionUser sessionUser,
+	        @RequestBody Map<String, Integer> body) {
+
+	    Map<String, Object> result = new HashMap<>();
+	    try {
+	        enrollmentService.apply(sessionUser.getUserNo(), body.get("courseNo"));
+	        result.put("success", true);
+	        result.put("message", "수강신청이 완료되었습니다.");
+	    } catch (IllegalStateException e) {
+	        result.put("success", false);
+	        result.put("message", e.getMessage());
+	    } catch (Exception e) {
+	        result.put("success", false);
+	        result.put("message", "수강신청 중 오류가 발생했습니다.");
+	    }
+	    return result;
+	}
+
+	@PostMapping("cancel")
+	@ResponseBody
+	public Map<String, Object> cancelEnrollment(
+	        @Login SessionUser sessionUser,
+	        @RequestBody Map<String, Integer> body) {
+
+	    Map<String, Object> result = new HashMap<>();
+	    try {
+	        enrollmentService.cancel(sessionUser.getUserNo(), body.get("courseNo"));
+	        result.put("success", true);
+	        result.put("message", "수강신청이 취소되었습니다.");
+	    } catch (IllegalStateException e) {
+	        result.put("success", false);
+	        result.put("message", e.getMessage());
+	    } catch (Exception e) {
+	        result.put("success", false);
+	        result.put("message", "취소 중 오류가 발생했습니다.");
+	    }
+	    return result;
 	}
 	
 	

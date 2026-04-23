@@ -1,6 +1,38 @@
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" isELIgnored="false" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<%--
+  courseEnrollment.jsp
+  ─────────────────────────────────────────────────────────────
+  컨트롤러에서 model에 담아야 할 속성:
+    user              : User 객체 (role, name, userNo 필드 포함: STUDENT | PROFESSOR | ADMIN)
+    ${currentSemester}: 현재 학기 문자열 (예: "2025년 2학기")
+
+  AJAX 엔드포인트:
+    GET  /enrollment/list          → 전체 강의 목록 (page, size, type, credits, keyword, status)
+    GET  /enrollment/mine          → 내 수강 목록 (STUDENT)
+    GET  /enrollment/my-courses    → 내 담당 강의 목록 (PROFESSOR)
+    POST /enrollment/apply         → 수강 신청 (STUDENT) → Enrollment INSERT (status=APPLIED)
+    POST /enrollment/cancel        → 수강 취소 (STUDENT) → Enrollment DELETE
+    POST /admin/course/delete      → 강의 삭제 (ADMIN)   body: { courseNos:[..] }
+    POST /admin/course/status      → 상태 변경 (ADMIN)   body: { courseNos:[..], status }
+    POST /course/create            → 강의 개설 (PROFESSOR/ADMIN)
+                                     body: { courseName, courseType, credits, dayOfWeek,
+                                             startTime, endTime, roomInfo, maxStudents,
+                                             professorNo, description }
+                                     PROFESSOR 개설 → Course.status = PENDING
+                                     ADMIN 개설    → Course.status = ACTIVE
+    GET  /admin/professor/list     → 교수 목록 (ADMIN 강의개설 모달용)
+                                     응답: { professors:[{ professorNo, name },...] }
+
+  Enrollment 흐름:
+    수강신청 버튼 클릭
+      → hasTimeConflict() 시간 충돌 검사 (충돌 시 요청 차단)
+      → POST /enrollment/apply  body: { courseNo }
+      → 서버: Enrollment INSERT (studentNo=세션, courseNo, status='APPLIED', enrolledAt=NOW)
+      → 응답: { success, message }
+      → 성공 시 myCourses / allCourses 재로드
+--%>
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -10,11 +42,10 @@
   <link rel="stylesheet" href="${pageContext.request.contextPath}/css/main.css">
   <style>
     /* ====================================================
-       수강신청 페이지 전용 스타일
+       공통 스타일
        ==================================================== */
     .enroll-page { display: flex; flex-direction: column; height: 100%; }
 
-    /* 페이지 헤더 */
     .page-header {
       display: flex;
       align-items: center;
@@ -48,8 +79,19 @@
       border-radius: 999px;
       letter-spacing: .04em;
     }
+    .role-chip {
+      font-size: .68rem;
+      font-weight: 700;
+      padding: .2rem .6rem;
+      border-radius: 999px;
+      letter-spacing: .05em;
+      margin-left: .4rem;
+    }
+    .role-chip.student  { background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; }
+    .role-chip.professor{ background: #f0fdf4; color: #15803d; border: 1px solid #bbf7d0; }
+    .role-chip.admin    { background: #fff7ed; color: #b45309; border: 1px solid #fde68a; }
 
-    /* 학점 요약 배너 */
+    /* 학점 요약 배너 (STUDENT only) */
     .credit-summary {
       display: flex;
       gap: .8rem;
@@ -69,17 +111,12 @@
       color: var(--gray-600);
       box-shadow: var(--shadow-sm);
     }
-    .credit-chip .val {
-      font-family: 'DM Serif Display', serif;
-      font-size: 1.1rem;
-      color: var(--gray-900);
-      line-height: 1;
-    }
+    .credit-chip .val { font-family: 'DM Serif Display', serif; font-size: 1.1rem; color: var(--gray-900); line-height: 1; }
     .credit-chip .val.primary { color: var(--primary); }
     .credit-chip .val.warn    { color: #ca8a04; }
     .credit-chip-icon { font-size: .95rem; }
 
-    /* 탭 내비게이션 */
+    /* 탭 네비게이션 */
     .tab-nav {
       display: flex;
       gap: .3rem;
@@ -105,11 +142,7 @@
       border-radius: var(--radius-sm) var(--radius-sm) 0 0;
     }
     .tab-btn:hover { color: var(--primary); background: var(--primary-pale); }
-    .tab-btn.active {
-      color: var(--primary);
-      border-bottom-color: var(--primary);
-      background: var(--primary-pale);
-    }
+    .tab-btn.active { color: var(--primary); border-bottom-color: var(--primary); background: var(--primary-pale); }
     .tab-count {
       font-size: .64rem;
       font-weight: 700;
@@ -125,7 +158,7 @@
     .tab-panel { display: none; flex: 1; overflow: hidden; flex-direction: column; }
     .tab-panel.active { display: flex; }
 
-    /* ── 필터 바 (전체강의 탭) ── */
+    /* 필터 바 */
     .filter-bar {
       display: flex;
       gap: .6rem;
@@ -134,13 +167,7 @@
       flex-wrap: wrap;
       flex-shrink: 0;
     }
-    .filter-label {
-      font-size: .75rem;
-      font-weight: 700;
-      color: var(--gray-500);
-      letter-spacing: .04em;
-      white-space: nowrap;
-    }
+    .filter-label { font-size: .75rem; font-weight: 700; color: var(--gray-500); letter-spacing: .04em; white-space: nowrap; }
     .filter-select {
       padding: .42rem .85rem;
       border: 1.5px solid var(--gray-200);
@@ -159,11 +186,7 @@
       background-position: right .65rem center;
       padding-right: 2rem;
     }
-    .filter-select:focus {
-      outline: none;
-      border-color: var(--primary-light);
-      box-shadow: 0 0 0 3px rgba(59,130,246,.12);
-    }
+    .filter-select:focus { outline: none; border-color: var(--primary-light); box-shadow: 0 0 0 3px rgba(59,130,246,.12); }
     .filter-search-wrap {
       display: flex;
       align-items: center;
@@ -175,10 +198,7 @@
       transition: border-color .16s;
       margin-left: auto;
     }
-    .filter-search-wrap:focus-within {
-      border-color: var(--primary-light);
-      box-shadow: 0 0 0 3px rgba(59,130,246,.12);
-    }
+    .filter-search-wrap:focus-within { border-color: var(--primary-light); box-shadow: 0 0 0 3px rgba(59,130,246,.12); }
     .filter-search-wrap input {
       border: none;
       outline: none;
@@ -204,7 +224,7 @@
     }
     .btn-filter-reset:hover { background: var(--gray-200); color: var(--gray-700); }
 
-    /* ── 테이블 래퍼 ── */
+    /* 테이블 래퍼 */
     .table-wrap {
       background: var(--white);
       border: 1px solid var(--gray-200);
@@ -219,7 +239,7 @@
     .table-scroll::-webkit-scrollbar { width: 4px; }
     .table-scroll::-webkit-scrollbar-thumb { background: var(--gray-200); border-radius: 999px; }
 
-    /* 신청/취소 버튼 */
+    /* 버튼들 */
     .btn-enroll {
       padding: .3rem .75rem;
       border: none;
@@ -231,41 +251,52 @@
       transition: all .15s;
       white-space: nowrap;
     }
-    .btn-enroll.apply {
-      background: var(--primary);
-      color: var(--white);
-      box-shadow: 0 2px 6px rgba(29,78,216,.2);
-    }
+    .btn-enroll.apply  { background: var(--primary); color: var(--white); box-shadow: 0 2px 6px rgba(29,78,216,.2); }
     .btn-enroll.apply:hover { background: var(--primary-mid); transform: translateY(-1px); }
-    .btn-enroll.cancel {
-      background: #fff1f2;
-      color: #b91c1c;
-      border: 1px solid #fecdd3;
-    }
+    .btn-enroll.cancel { background: #fff1f2; color: #b91c1c; border: 1px solid #fecdd3; }
     .btn-enroll.cancel:hover { background: #fee2e2; }
-    .btn-enroll.full {
-      background: var(--gray-100);
-      color: var(--gray-400);
-      cursor: not-allowed;
-      border: 1px solid var(--gray-200);
-    }
+    .btn-enroll.full   { background: var(--gray-100); color: var(--gray-400); cursor: not-allowed; border: 1px solid var(--gray-200); }
+    .btn-enroll.conflict { background: #fff7ed; color: #b45309; border: 1px solid #fde68a; cursor: not-allowed; }
 
-    /* PDF 첨부 아이콘 */
-    .pdf-link {
-      display: inline-flex;
-      align-items: center;
-      gap: .25rem;
-      font-size: .72rem;
-      color: var(--primary);
-      text-decoration: none;
-      background: var(--primary-pale);
-      padding: .2rem .5rem;
+    /* ADMIN 액션 버튼 */
+    .btn-action {
+      padding: .32rem .7rem;
       border-radius: var(--radius-sm);
-      border: 1px solid var(--primary-tint);
+      font-family: 'Pretendard', 'Noto Sans KR', sans-serif;
+      font-size: .75rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all .15s;
       white-space: nowrap;
-      transition: all .14s;
+      border: 1.5px solid transparent;
     }
-    .pdf-link:hover { background: var(--primary-tint); }
+    .btn-action.delete  { background: #fff1f2; color: #b91c1c; border-color: #fecdd3; }
+    .btn-action.delete:hover  { background: #fee2e2; }
+    .btn-action.status  { background: var(--primary-pale); color: var(--primary); border-color: var(--primary-tint); }
+    .btn-action.status:hover  { background: var(--primary-tint); }
+    .btn-action:disabled { opacity: .45; cursor: not-allowed; }
+
+    /* 체크박스 */
+    .row-check { width: 16px; height: 16px; cursor: pointer; accent-color: var(--primary); }
+    .check-header-wrap { display: flex; align-items: center; gap: .4rem; }
+
+    /* ADMIN 일괄 액션 바 */
+    .bulk-action-bar {
+      display: flex;
+      align-items: center;
+      gap: .6rem;
+      padding: .55rem 1rem;
+      background: var(--gray-50);
+      border-bottom: 1px solid var(--gray-200);
+      flex-shrink: 0;
+    }
+    .bulk-selected-count {
+      font-size: .78rem;
+      font-weight: 600;
+      color: var(--gray-600);
+      margin-right: .4rem;
+    }
+    .bulk-selected-count span { color: var(--primary); }
 
     /* 강의 유형 배지 */
     .type-badge {
@@ -276,213 +307,286 @@
       border-radius: var(--radius-sm);
       white-space: nowrap;
       letter-spacing: .02em;
-    }
+    } 
     .type-major-req  { background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; }
     .type-major-elec { background: #f0fdf4; color: #15803d; border: 1px solid #bbf7d0; }
     .type-gen-req    { background: #fffbeb; color: #a16207; border: 1px solid #fde68a; }
     .type-gen-elec   { background: #fdf4ff; color: #7e22ce; border: 1px solid #e9d5ff; }
     .type-free       { background: var(--gray-100); color: var(--gray-600); border: 1px solid var(--gray-200); }
 
-    /* 정원 게이지 */
-    .capacity-bar {
-      display: flex;
+    /* 상태 배지 */
+    .badge {
+      display: inline-flex;
       align-items: center;
-      gap: .4rem;
-      font-size: .75rem;
-      color: var(--gray-600);
-    }
-    .cap-track {
-      flex: 1;
-      height: 4px;
-      background: var(--gray-100);
+      font-size: .65rem;
+      font-weight: 700;
+      padding: .18rem .5rem;
       border-radius: 999px;
-      overflow: hidden;
-      min-width: 50px;
+      white-space: nowrap;
+      letter-spacing: .02em;
     }
-    .cap-fill {
-      height: 100%;
-      border-radius: 999px;
-      background: linear-gradient(90deg, var(--primary-light), var(--primary));
-      transition: width .3s;
-    }
+    .badge-blue   { background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; }
+    .badge-green  { background: #f0fdf4; color: #15803d; border: 1px solid #bbf7d0; }
+    .badge-yellow { background: #fffbeb; color: #a16207; border: 1px solid #fde68a; }
+    .badge-gray   { background: var(--gray-100); color: var(--gray-500); border: 1px solid var(--gray-200); }
+    .badge-red    { background: #fff1f2; color: #b91c1c; border: 1px solid #fecdd3; }
+    .badge-orange { background: #fff7ed; color: #b45309; border: 1px solid #fed7aa; }
+
+    /* 정원 게이지 */
+    .capacity-bar { display: flex; align-items: center; gap: .4rem; font-size: .75rem; color: var(--gray-600); }
+    .cap-track { flex: 1; height: 4px; background: var(--gray-100); border-radius: 999px; overflow: hidden; min-width: 50px; }
+    .cap-fill { height: 100%; border-radius: 999px; background: linear-gradient(90deg, var(--primary-light), var(--primary)); transition: width .3s; }
     .cap-fill.warn { background: linear-gradient(90deg, #f59e0b, #ca8a04); }
     .cap-fill.full { background: linear-gradient(90deg, #ef4444, #dc2626); }
 
     /* 페이지네이션 */
-    .pagination {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: .3rem;
-      padding: .8rem 1rem;
-      border-top: 1px solid var(--gray-100);
-      flex-shrink: 0;
-    }
+    .pagination { display: flex; align-items: center; justify-content: center; gap: .3rem; padding: .8rem 1rem; border-top: 1px solid var(--gray-100); flex-shrink: 0; }
     .page-btn {
       width: 30px; height: 30px;
       display: flex; align-items: center; justify-content: center;
       border: 1px solid var(--gray-200);
       border-radius: var(--radius-sm);
       background: var(--white);
-      font-size: .78rem;
-      font-weight: 600;
+      font-size: .78rem; font-weight: 600;
       color: var(--gray-600);
       cursor: pointer;
       transition: all .15s;
       font-family: 'Pretendard', 'Noto Sans KR', sans-serif;
     }
-    .page-btn:hover { background: var(--primary-pale); border-color: var(--primary-tint); color: var(--primary); }
+    .page-btn:hover  { background: var(--primary-pale); border-color: var(--primary-tint); color: var(--primary); }
     .page-btn.active { background: var(--primary); border-color: var(--primary); color: var(--white); }
     .page-btn:disabled { opacity: .4; cursor: not-allowed; }
 
-    /* ── 시간표 탭 ── */
-    .timetable-wrap {
-      background: var(--white);
-      border: 1px solid var(--gray-200);
-      border-radius: var(--radius-lg);
-      box-shadow: var(--shadow-sm);
-      overflow: hidden;
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-    }
-    .timetable-header {
-      display: grid;
-      grid-template-columns: 60px repeat(5, 1fr);
-      background: var(--gray-50);
-      border-bottom: 2px solid var(--gray-200);
-    }
-    .tt-head-cell {
-      padding: .65rem .5rem;
-      text-align: center;
-      font-size: .72rem;
-      font-weight: 700;
-      letter-spacing: .06em;
-      color: var(--gray-500);
-      text-transform: uppercase;
-    }
-    .timetable-body {
-      flex: 1;
-      overflow-y: auto;
-      position: relative;
-    }
+    /* 시간표 */
+    .timetable-wrap { background: var(--white); border: 1px solid var(--gray-200); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); overflow: hidden; flex: 1; display: flex; flex-direction: column; }
+    .timetable-header { display: grid; grid-template-columns: 60px repeat(5, 1fr); background: var(--gray-50); border-bottom: 2px solid var(--gray-200); }
+    .tt-head-cell { padding: .65rem .5rem; text-align: center; font-size: .72rem; font-weight: 700; letter-spacing: .06em; color: var(--gray-500); }
+    .timetable-body { flex: 1; overflow-y: auto; position: relative; }
     .timetable-body::-webkit-scrollbar { width: 4px; }
     .timetable-body::-webkit-scrollbar-thumb { background: var(--gray-200); border-radius: 999px; }
-    .tt-row {
-      display: grid;
-      grid-template-columns: 60px repeat(5, 1fr);
-      border-bottom: 1px solid var(--gray-100);
-      min-height: 50px;
-    }
+    .tt-row { display: grid; grid-template-columns: 60px repeat(5, 1fr); border-bottom: 1px solid var(--gray-100); min-height: 50px; }
     .tt-row:last-child { border-bottom: none; }
-    .tt-time-cell {
-      display: flex;
-      align-items: flex-start;
-      justify-content: center;
-      padding: .55rem .3rem;
-      font-size: .68rem;
-      font-weight: 600;
-      color: var(--gray-400);
-      background: var(--gray-50);
-      border-right: 1px solid var(--gray-200);
-      letter-spacing: -.01em;
-    }
-    .tt-cell {
-      border-right: 1px solid var(--gray-100);
-      padding: .3rem;
-      position: relative;
-    }
+    .tt-time-cell { display: flex; align-items: flex-start; justify-content: center; padding: .55rem .3rem; font-size: .68rem; font-weight: 600; color: var(--gray-400); background: var(--gray-50); border-right: 1px solid var(--gray-200); }
+    .tt-cell { border-right: 1px solid var(--gray-100); padding: .3rem; position: relative; }
     .tt-cell:last-child { border-right: none; }
-    .tt-course-block {
-      height: 100%;
-      background: var(--primary-pale);
-      border: 1.5px solid var(--primary-tint);
-      border-left: 3.5px solid var(--primary);
-      border-radius: var(--radius-sm);
-      padding: .3rem .45rem;
-      font-size: .7rem;
-      font-weight: 600;
-      color: var(--primary-dark);
-      line-height: 1.35;
-      cursor: default;
-    }
-    .tt-course-block .tt-room {
-      font-size: .62rem;
-      font-weight: 500;
-      color: var(--primary-light);
-      margin-top: .15rem;
-    }
+    .tt-course-block { height: 100%; background: var(--primary-pale); border: 1.5px solid var(--primary-tint); border-left: 3.5px solid var(--primary); border-radius: var(--radius-sm); padding: .3rem .45rem; font-size: .7rem; font-weight: 600; color: var(--primary-dark); line-height: 1.35; cursor: default; }
+    .tt-course-block .tt-room { font-size: .62rem; font-weight: 500; color: var(--primary-light); margin-top: .15rem; }
+    .tt-course-block .tt-status { font-size: .58rem; font-weight: 700; margin-top: .15rem; }
 
     /* 빈 상태 */
-    .empty-state {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 3rem;
-      color: var(--gray-400);
-      gap: .75rem;
-    }
+    .empty-state { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 3rem; color: var(--gray-400); gap: .75rem; }
     .empty-icon { font-size: 2.5rem; }
     .empty-text { font-size: .88rem; font-weight: 500; }
-    .empty-sub { font-size: .78rem; color: var(--gray-300); }
+    .empty-sub  { font-size: .78rem; color: var(--gray-300); }
 
     /* 로딩 오버레이 */
-    .loading-overlay {
+    .loading-overlay { display: none; position: absolute; inset: 0; background: rgba(255,255,255,.7); backdrop-filter: blur(2px); align-items: center; justify-content: center; z-index: 10; border-radius: var(--radius-lg); }
+    .loading-overlay.active { display: flex; }
+    .spinner { width: 28px; height: 28px; border: 3px solid var(--primary-tint); border-top-color: var(--primary); border-radius: 50%; animation: spin .65s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    @keyframes fadeUp { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
+
+    /* PDF 링크 */
+    .pdf-link { display: inline-flex; align-items: center; gap: .25rem; font-size: .72rem; color: var(--primary); text-decoration: none; background: var(--primary-pale); padding: .2rem .5rem; border-radius: var(--radius-sm); border: 1px solid var(--primary-tint); white-space: nowrap; transition: all .14s; }
+    .pdf-link:hover { background: var(--primary-tint); }
+
+    /* 모달 */
+    .curriculum-modal .modal-content { width: 540px; }
+    .curriculum-iframe { width: 100%; height: 420px; border: 1px solid var(--gray-200); border-radius: var(--radius-md); margin-top: .8rem; }
+
+    /* 상태 변경 모달 */
+    .status-modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.35); z-index:1000; align-items:center; justify-content:center; }
+    .status-modal-overlay.active { display:flex; }
+    .status-modal { background:var(--white); border-radius:var(--radius-lg); padding:1.6rem; width:340px; box-shadow:0 8px 32px rgba(0,0,0,.15); }
+    .status-modal h3 { font-family:'DM Serif Display',serif; font-size:1.1rem; margin-bottom:1rem; color:var(--gray-900); }
+    .status-option-group { display:flex; flex-direction:column; gap:.5rem; margin-bottom:1.2rem; }
+    .status-option { display:flex; align-items:center; gap:.55rem; padding:.6rem .8rem; border:1.5px solid var(--gray-200); border-radius:var(--radius-md); cursor:pointer; transition:all .15s; }
+    .status-option:hover { border-color:var(--primary-tint); background:var(--primary-pale); }
+    .status-option input[type=radio] { accent-color:var(--primary); }
+    .status-option label { font-size:.84rem; font-weight:600; cursor:pointer; }
+    .status-modal-actions { display:flex; justify-content:flex-end; gap:.6rem; }
+    .btn-sm { padding:.38rem .9rem; font-size:.8rem; font-weight:600; border-radius:var(--radius-sm); cursor:pointer; border:none; font-family:'Pretendard','Noto Sans KR',sans-serif; }
+    .btn-sm.primary { background:var(--primary); color:var(--white); }
+    .btn-sm.gray    { background:var(--gray-100); color:var(--gray-600); border:1px solid var(--gray-200); }
+
+    /* ── 강의 개설 모달 ── */
+    .create-modal-overlay {
       display: none;
-      position: absolute;
+      position: fixed;
       inset: 0;
-      background: rgba(255,255,255,.7);
-      backdrop-filter: blur(2px);
+      background: rgba(0,0,0,.4);
+      z-index: 1100;
       align-items: center;
       justify-content: center;
-      z-index: 10;
+    }
+    .create-modal-overlay.active { display: flex; }
+    .create-modal {
+      background: var(--white);
       border-radius: var(--radius-lg);
+      width: 560px;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 12px 40px rgba(0,0,0,.18);
+      display: flex;
+      flex-direction: column;
     }
-    .loading-overlay.active { display: flex; }
-    .spinner {
+    .create-modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1.2rem 1.6rem;
+      border-bottom: 1.5px solid var(--gray-100);
+      flex-shrink: 0;
+    }
+    .create-modal-header h3 {
+      font-family: 'DM Serif Display', serif;
+      font-size: 1.15rem;
+      color: var(--gray-900);
+      margin: 0;
+    }
+    .create-modal-close {
       width: 28px; height: 28px;
-      border: 3px solid var(--primary-tint);
-      border-top-color: var(--primary);
+      display: flex; align-items: center; justify-content: center;
+      border: none; background: var(--gray-100);
       border-radius: 50%;
-      animation: spin .65s linear infinite;
+      cursor: pointer;
+      font-size: .9rem;
+      color: var(--gray-500);
+      transition: background .15s;
     }
-    @keyframes spin { to { transform: rotate(360deg); } }
-
-    /* 모달 커리큘럼 */
-    .curriculum-modal .modal-content { width: 540px; }
-    .curriculum-iframe {
-      width: 100%;
-      height: 420px;
-      border: 1px solid var(--gray-200);
+    .create-modal-close:hover { background: var(--gray-200); }
+    .create-modal-body { padding: 1.4rem 1.6rem; display: flex; flex-direction: column; gap: 1rem; }
+    .form-row { display: flex; gap: .8rem; }
+    .form-row .form-group { flex: 1; }
+    .form-group { display: flex; flex-direction: column; gap: .32rem; }
+    .form-label {
+      font-size: .75rem;
+      font-weight: 700;
+      color: var(--gray-600);
+      letter-spacing: .03em;
+    }
+    .form-label .req { color: #ef4444; margin-left: .15rem; }
+    .form-input, .form-select-field, .form-textarea {
+      padding: .48rem .75rem;
+      border: 1.5px solid var(--gray-200);
       border-radius: var(--radius-md);
-      margin-top: .8rem;
+      font-family: 'Pretendard', 'Noto Sans KR', sans-serif;
+      font-size: .84rem;
+      color: var(--gray-800);
+      background: var(--white);
+      transition: border-color .15s, box-shadow .15s;
+      width: 100%;
+      box-sizing: border-box;
     }
+    .form-input:focus, .form-select-field:focus, .form-textarea:focus {
+      outline: none;
+      border-color: var(--primary-light);
+      box-shadow: 0 0 0 3px rgba(59,130,246,.1);
+    }
+    .form-input::placeholder { color: var(--gray-300); }
+    .form-select-field {
+      appearance: none;
+      -webkit-appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%239ca3af' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right .65rem center;
+      padding-right: 2rem;
+      cursor: pointer;
+    }
+    .form-textarea { resize: vertical; min-height: 72px; line-height: 1.5; }
+    .day-checkbox-group {
+      display: flex;
+      gap: .4rem;
+      flex-wrap: wrap;
+    }
+    .day-cb-label {
+      display: flex;
+      align-items: center;
+      gap: .28rem;
+      padding: .32rem .7rem;
+      border: 1.5px solid var(--gray-200);
+      border-radius: var(--radius-sm);
+      font-size: .8rem;
+      font-weight: 600;
+      color: var(--gray-600);
+      cursor: pointer;
+      transition: all .14s;
+      user-select: none;
+    }
+    .day-cb-label:has(input:checked) {
+      background: var(--primary-pale);
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+    .day-cb-label input { accent-color: var(--primary); }
+    .form-hint { font-size: .72rem; color: var(--gray-400); margin-top: .1rem; }
+    .form-error { font-size: .72rem; color: #b91c1c; margin-top: .1rem; display: none; }
+    .form-input.error, .form-select-field.error { border-color: #fca5a5; }
+    .create-modal-footer {
+      padding: .9rem 1.6rem;
+      border-top: 1px solid var(--gray-100);
+      display: flex;
+      justify-content: flex-end;
+      gap: .6rem;
+      flex-shrink: 0;
+    }
+    /* 강의 개설 버튼 (헤더 우측) */
+    .btn-create-course {
+      display: flex;
+      align-items: center;
+      gap: .4rem;
+      padding: .45rem 1rem;
+      background: var(--primary);
+      color: var(--white);
+      border: none;
+      border-radius: var(--radius-md);
+      font-family: 'Pretendard', 'Noto Sans KR', sans-serif;
+      font-size: .82rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all .15s;
+      box-shadow: 0 2px 8px rgba(29,78,216,.2);
+    }
+    .btn-create-course:hover { background: var(--primary-mid); transform: translateY(-1px); }
   </style>
 </head>
 <body>
 <div class="layout-root">
+  <main class="main-content" style="position:relative; overflow-y:auto;">
+    <div class="enroll-page">
 
-    <%-- ====== 메인 콘텐츠 ====== --%>
-    <main class="main-content" style="position:relative; overflow-y:auto;">
-      <div class="enroll-page">
-
-        <%-- 페이지 헤더 --%>
-        <div class="page-header">
-          <div class="page-title">
-            <div class="page-title-icon">📋</div>
-            수강신청
+      <%-- ====== 페이지 헤더 ====== --%>
+      <div class="page-header">
+        <div class="page-title">
+          <div class="page-title-icon">
+            <c:choose>
+              <c:when test="${user.role == 'ADMIN'}">&#x1F6E1;</c:when>
+              <c:when test="${user.role == 'PROFESSOR'}">&#x1F6E1;</c:when>
+              <c:otherwise>&#x1F6E1;</c:otherwise>
+            </c:choose>
           </div>
-          <span class="semester-chip">2025년 2학기</span>
+          <c:choose>
+            <c:when test="${user.role == 'ADMIN'}">강의 관리</c:when>
+            <c:when test="${user.role == 'PROFESSOR'}">강의 현황</c:when>
+            <c:otherwise>수강신청</c:otherwise>
+          </c:choose>
+          <span class="role-chip ${user.role == 'ADMIN' ? 'admin' : user.role == 'PROFESSOR' ? 'professor' : 'student'}">
+            ${user.role == 'ADMIN' ? 'ADMIN' : user.role == 'PROFESSOR' ? 'PROFESSOR' : 'STUDENT'}
+          </span>
         </div>
+        <div style="display:flex; align-items:center; gap:.7rem;">
+          <%-- 강의 개설 버튼: PROFESSOR / ADMIN 에게만 표시 --%>
+          <c:if test="${user.role == 'PROFESSOR' || user.role == 'ADMIN'}">
+            <button class="btn-create-course" onclick="openCreateModal()">
+              ＋ 강의 개설
+            </button>
+          </c:if>
+          <span class="semester-chip">${currentSemester}</span>
+        </div>
+      </div>
 
-        <%--
-          [학점 요약 배너]
-          - enrolledCredits : JS updateCreditSummary()가 동적으로 채움
-          - enrolledCount   : 신청 과목 수
-          - 최대 18학점 하드코딩 → 실제 운영 시 서버에서 학생별 최대 학점을 내려줘야 함
-        --%>
+      <%-- ====== STUDENT: 학점 요약 배너 ====== --%>
+      <c:if test="${user.role == 'STUDENT'}">
         <div class="credit-summary">
           <div class="credit-chip">
             <span class="credit-chip-icon">🎓</span>
@@ -494,113 +598,147 @@
           </div>
           <div class="credit-chip">
             <span class="credit-chip-icon">⏰</span>
-            <%-- TODO: 수강신청 기간도 서버에서 내려받아 동적으로 표시 권장 --%>
             신청 기간 <span class="val warn">2025.08.20 ~ 2025.08.26</span>
           </div>
         </div>
+      </c:if>
 
-        <%--
-          [탭 네비게이션]
-          탭 3종: 전체 강의 / 신청한 수강 / 시간표
-          - data-tab 속성으로 JS가 패널 ID를 매핑 (panel-{data-tab})
-          - countAll / countMine : AJAX 응답 후 JS가 업데이트
-        --%>
-        <div class="tab-nav">
-          <button class="tab-btn active" data-tab="all">
-            📖 전체 강의 <span class="tab-count" id="countAll">0</span>
-          </button>
-          <button class="tab-btn" data-tab="mine">
-            ✅ 신청한 수강 <span class="tab-count" id="countMine">0</span>
-          </button>
-          <button class="tab-btn" data-tab="timetable">
-            🗓 시간표
-          </button>
-        </div>
+      <%-- ====== 탭 네비게이션 ====== --%>
+      <div class="tab-nav">
+        <c:choose>
+          <%-- STUDENT 탭: 전체강의 / 내 수강목록 / 시간표 --%>
+          <c:when test="${user.role == 'STUDENT'}">
+            <button class="tab-btn active" data-tab="all">
+              📖 전체 강의 <span class="tab-count" id="countAll">0</span>
+            </button>
+            <button class="tab-btn" data-tab="mine">
+              ✅ 내 수강목록 <span class="tab-count" id="countMine">0</span>
+            </button>
+            <button class="tab-btn" data-tab="timetable">
+              🗓 내 시간표
+            </button>
+          </c:when>
 
-        <%-- ===== 탭 1 : 전체 강의 ===== --%>
-        <div class="tab-panel active" id="panel-all">
-          <%--
-            [필터 바]
-            - filterDept    : 학과 필터 (현재 하드코딩 — 실제 운영 시 서버/AJAX로 목록 동적 생성 권장)
-            - filterType    : 강의 유형 필터 (MAJOR_REQUIRED 등 enum 값)
-            - filterCredits : 학점 필터 (1/2/3학점)
-            - searchKeyword : 강의명·교수명 키워드 검색 (debounce 350ms 적용)
-            - 필터 변경 시마다 loadAllCourses() 호출 → 1페이지로 리셋됨
-          --%>
-          <div class="filter-bar">
-            <span class="filter-label">🔍 필터</span>
-            <select class="filter-select" id="filterType" onchange="loadAllCourses()">
-              <option value="">전체 유형</option>
-              <option value="MAJOR_REQUIRED">전공필수</option>
-              <option value="MAJOR_ELECTIVE">전공선택</option>
-              <option value="GENERAL_REQUIRED">교양필수</option>
-              <option value="GENERAL_ELECTIVE">교양선택</option>
-              <option value="FREE_ELECTIVE">일반선택</option>
+          <%-- PROFESSOR 탭: 전체강의 / 내 강의(status 포함) / 내 강의 시간표(active만) --%>
+          <c:when test="${user.role == 'PROFESSOR'}">
+            <button class="tab-btn active" data-tab="all">
+              📖 전체 강의 <span class="tab-count" id="countAll">0</span>
+            </button>
+            <button class="tab-btn" data-tab="mine">
+              🏫 내 강의 <span class="tab-count" id="countMine">0</span>
+            </button>
+            <button class="tab-btn" data-tab="timetable">
+              🗓 내 강의 시간표
+            </button>
+          </c:when>
+
+          <%-- ADMIN 탭: 전체 강의 목록(상태 필터) --%>
+          <c:when test="${user.role == 'ADMIN'}">
+            <button class="tab-btn active" data-tab="all">
+              📋 전체 강의 목록 <span class="tab-count" id="countAll">0</span>
+            </button>
+          </c:when>
+        </c:choose>
+      </div>
+
+      <%-- ================================================================
+           탭 1: 전체 강의 목록 (공통 — 역할별 마지막 컬럼 다름)
+           ================================================================ --%>
+      <div class="tab-panel active" id="panel-all">
+        <div class="filter-bar">
+          <span class="filter-label">🔍 필터</span>
+          <select class="filter-select" id="filterType" onchange="loadAllCourses(1)">
+            <option value="">전체 유형</option>
+            <option value="MAJOR_REQUIRED">전공필수</option>
+            <option value="MAJOR_ELECTIVE">전공선택</option>
+            <option value="GENERAL_REQUIRED">교양필수</option>
+            <option value="GENERAL_ELECTIVE">교양선택</option>
+            <option value="FREE_ELECTIVE">일반선택</option>
+          </select>
+          <select class="filter-select" id="filterCredits" onchange="loadAllCourses(1)">
+            <option value="">전체 학점</option>
+            <option value="1">1학점</option>
+            <option value="2">2학점</option>
+            <option value="3">3학점</option>
+          </select>
+
+          <%-- ADMIN 전용: 상태 필터 --%>
+          <c:if test="${user.role == 'ADMIN'}">
+            <select class="filter-select" id="filterStatus" onchange="loadAllCourses(1)">
+              <option value="">전체 상태</option>
+              <option value="ACTIVE">활성(ACTIVE)</option>
+              <option value="PENDING">승인대기(PENDING)</option>
+              <option value="INACTIVE">비활성(INACTIVE)</option>
             </select>
-            <select class="filter-select" id="filterCredits" onchange="loadAllCourses()">
-              <option value="">전체 학점</option>
-              <option value="1">1학점</option>
-              <option value="2">2학점</option>
-              <option value="3">3학점</option>
-            </select>
-            <button class="btn-filter-reset" onclick="resetFilters()">초기화</button>
-            <div class="filter-search-wrap">
-              <span class="filter-search-icon">🔎</span>
-              <input type="text" id="searchKeyword" placeholder="강의명 / 교수명 검색"
-                     oninput="debounceSearch()">
-            </div>
-          </div>
+          </c:if>
 
-          <%-- 테이블 --%>
-          <div class="table-wrap" style="position:relative;">
-            <%-- 로딩 중 스피너 오버레이 — showLoading('loadingAll', true/false)로 제어 --%>
-            <div class="loading-overlay" id="loadingAll">
-              <div class="spinner"></div>
-            </div>
-            <div class="table-scroll">
-              <%--
-                [전체 강의 테이블]
-                tbody(allCourseBody)는 AJAX 응답 후 renderAllTable()이 동적으로 채움
-                컬럼: 번호 / 강의명(교수) / 유형 / 학점 / 요일 / 시간 / 강의실 / 정원 / 커리큘럼 / 신청버튼
-              --%>
-              <table class="lms-table" id="allCourseTable">
-                <thead>
-                  <tr>
-                    <th style="width:42px; text-align:center;">번호</th>
-                    <th>강의명</th>
-                    <th style="width:80px;">유형</th>
-                    <th style="width:70px; text-align:center;">학점</th>
-                    <th style="width:55px; text-align:center;">요일</th>
-                    <th style="width:105px;">시간</th>
-                    <th style="width:65px;">강의실</th>
-                    <th style="width:140px;">정원</th>
-                    <th style="width:60px; text-align:center;">커리큘럼</th>
-                    <th style="width:85px; text-align:center;">신청/취소</th>
-                  </tr>
-                </thead>
-                <tbody id="allCourseBody">
-                  <%-- AJAX로 채워짐 --%>
-                </tbody>
-              </table>
-            </div>
-            <%-- 페이지네이션 버튼 — renderPagination()이 동적 생성 --%>
-            <div class="pagination" id="allPagination"></div>
+          <button class="btn-filter-reset" onclick="resetFilters()">초기화</button>
+          <div class="filter-search-wrap">
+            <span class="filter-search-icon">🔎</span>
+            <input type="text" id="searchKeyword" placeholder="강의명 / 교수명 검색" oninput="debounceSearch()">
           </div>
         </div>
 
-        <%-- ===== 탭 2 : 내 수강 목록 ===== --%>
+        <%-- ADMIN 전용: 일괄 액션 바 --%>
+        <c:if test="${user.role == 'ADMIN'}">
+          <div class="bulk-action-bar">
+            <span class="bulk-selected-count">선택됨 <span id="bulkCount">0</span>건</span>
+            <button class="btn-action delete" onclick="bulkDelete()" id="btnBulkDelete" disabled>🗑 강의 삭제</button>
+            <button class="btn-action status" onclick="openStatusModal()" id="btnBulkStatus" disabled>⚙ 상태 변경</button>
+          </div>
+        </c:if>
+
+        <div class="table-wrap" style="position:relative;">
+          <div class="loading-overlay" id="loadingAll"><div class="spinner"></div></div>
+          <div class="table-scroll">
+            <table class="lms-table" id="allCourseTable">
+              <thead>
+                <tr>
+                  <c:if test="${user.role == 'ADMIN'}">
+                    <th style="width:38px; text-align:center;">
+                      <div class="check-header-wrap">
+                        <input type="checkbox" class="row-check" id="checkAll" onchange="toggleAllCheck(this)">
+                      </div>
+                    </th>
+                  </c:if>
+                  <th style="width:42px; text-align:center;">번호</th>
+                  <th>강의명</th>
+                  <th style="width:80px;">유형</th>
+                  <th style="width:70px; text-align:center;">학점</th>
+                  <th style="width:55px; text-align:center;">요일</th>
+                  <th style="width:105px;">시간</th>
+                  <th style="width:65px;">강의실</th>
+                  <th style="width:140px;">정원</th>
+                  <th style="width:60px; text-align:center;">커리큘럼</th>
+                  <%-- 역할별 마지막 컬럼 --%>
+                  <c:choose>
+                    <c:when test="${user.role == 'STUDENT'}">
+                      <th style="width:85px; text-align:center;">신청/취소</th>
+                    </c:when>
+                    <c:when test="${user.role == 'PROFESSOR'}">
+                      <%-- 교수는 읽기 전용 --%>
+                    </c:when>
+                    <c:when test="${user.role == 'ADMIN'}">
+                      <th style="width:80px; text-align:center;">상태</th>
+                    </c:when>
+                  </c:choose>
+                </tr>
+              </thead>
+              <tbody id="allCourseBody"></tbody>
+            </table>
+          </div>
+          <div class="pagination" id="allPagination"></div>
+        </div>
+      </div><%-- /panel-all --%>
+
+      <%-- ================================================================
+           탭 2: 내 수강목록 (STUDENT) / 내 강의 (PROFESSOR)
+           ================================================================ --%>
+      <c:if test="${user.role == 'STUDENT' || user.role == 'PROFESSOR'}">
         <div class="tab-panel" id="panel-mine">
           <div class="table-wrap" style="position:relative;">
-            <div class="loading-overlay" id="loadingMine">
-              <div class="spinner"></div>
-            </div>
+            <div class="loading-overlay" id="loadingMine"><div class="spinner"></div></div>
             <div class="table-scroll">
-              <%--
-                [내 수강 목록 테이블]
-                tbody(mineCourseBody)는 loadMyCourses() → renderMineTable()이 채움
-                컬럼: 번호 / 강의명(교수) / 유형 / 학점 / 요일 / 시간 / 강의실 / 신청상태 / 취소버튼
-                하단에 합계 학점 표시 (totalCreditsDisplay)
-              --%>
               <table class="lms-table">
                 <thead>
                   <tr>
@@ -611,29 +749,34 @@
                     <th style="width:55px; text-align:center;">요일</th>
                     <th style="width:105px;">시간</th>
                     <th style="width:65px;">강의실</th>
-                    <th style="width:90px; text-align:center;">신청상태</th>
-                    <th style="width:85px; text-align:center;">취소</th>
+                    <%-- 공통: 상태 배지 --%>
+                    <th style="width:90px; text-align:center;">상태</th>
+                    <%-- STUDENT only: 취소 버튼 --%>
+                    <c:if test="${user.role == 'STUDENT'}">
+                      <th style="width:85px; text-align:center;">취소</th>
+                    </c:if>
+                    <%-- PROFESSOR only: 수강인원 --%>
+                    <c:if test="${user.role == 'PROFESSOR'}">
+                      <th style="width:100px; text-align:center;">수강인원</th>
+                    </c:if>
                   </tr>
                 </thead>
-                <tbody id="mineCourseBody">
-                  <%-- AJAX로 채워짐 --%>
-                </tbody>
+                <tbody id="mineCourseBody"></tbody>
               </table>
             </div>
-            <div style="padding:.6rem 1rem; border-top:1px solid var(--gray-100);
-                        font-size:.78rem; color:var(--gray-500); flex-shrink:0;">
-              합계 학점 : <strong id="totalCreditsDisplay" style="color:var(--primary);">0</strong> 학점
-            </div>
+            <c:if test="${user.role == 'STUDENT'}">
+              <div style="padding:.6rem 1rem; border-top:1px solid var(--gray-100); font-size:.78rem; color:var(--gray-500); flex-shrink:0;">
+                합계 학점 : <strong id="totalCreditsDisplay" style="color:var(--primary);">0</strong> 학점
+              </div>
+            </c:if>
           </div>
         </div>
+      </c:if>
 
-        <%-- ===== 탭 3 : 시간표 ===== --%>
-        <%--
-          [시간표 탭]
-          renderTimetable()이 myCourses 배열 기반으로 09:00~20:00 그리드를 JS로 렌더링
-          day_of_week(요일), start_time/end_time(HH:mm) 필드를 사용하므로
-          DB 컬럼명과 반드시 일치해야 함
-        --%>
+      <%-- ================================================================
+           탭 3: 시간표 (STUDENT: 신청한 강의 / PROFESSOR: ACTIVE 강의만)
+           ================================================================ --%>
+      <c:if test="${user.role == 'STUDENT' || user.role == 'PROFESSOR'}">
         <div class="tab-panel" id="panel-timetable">
           <div class="timetable-wrap">
             <div class="timetable-header">
@@ -644,23 +787,16 @@
               <div class="tt-head-cell">목</div>
               <div class="tt-head-cell">금</div>
             </div>
-            <div class="timetable-body" id="timetableBody">
-              <%-- JS로 렌더링 --%>
-            </div>
+            <div class="timetable-body" id="timetableBody"></div>
           </div>
         </div>
+      </c:if>
 
-      </div><%-- /enroll-page --%>
-    </main>
-  </div>
+    </div><%-- /enroll-page --%>
+  </main>
 </div>
 
-<%-- ===== 커리큘럼 모달 ===== --%>
-<%--
-  curriculum_pdf URL을 iframe에 띄우는 모달
-  openModal(url) → iframe.src 세팅 / closeModal() → src 초기화
-  TODO: iframe 대신 새 탭으로 여는 방식도 고려 (모바일 호환성)
---%>
+<%-- ====== 커리큘럼 모달 ====== --%>
 <div class="modal curriculum-modal" id="curriculumModal">
   <div class="modal-content">
     <span class="close" onclick="closeModal()">✕</span>
@@ -669,32 +805,195 @@
   </div>
 </div>
 
-<script>
-/* EL 충돌 방지: JSP는 이 블록 안의 \${}를 EL로 파싱하므로
-   pageContext.request.contextPath 같은 JSP EL은 script 밖에서 변수로 빼서 사용 */
-var CTX_PATH = '<%=request.getContextPath()%>';
-/* ================================================================
-   전역 상태
-   - currentPage  : 현재 페이지 번호 (1부터 시작)
-   - PAGE_SIZE    : 한 페이지당 표시할 강의 수
-   - enrolledSet  : 이미 신청한 course_no 집합 → 신청/취소 버튼 상태 결정에 사용
-   - myCourses    : 내 수강 목록 배열 (시간표 렌더링에도 재사용)
-   - searchTimer  : debounce용 타이머 ID
-================================================================ */
-let currentPage   = 1;
-const PAGE_SIZE   = 10;
-let totalPages    = 1;
-let enrolledSet   = new Set();
-let myCourses     = [];
-let searchTimer   = null;
+<%-- ====== ADMIN 상태 변경 모달 ====== --%>
+<c:if test="${user.role == 'ADMIN'}">
+  <div class="status-modal-overlay" id="statusModalOverlay">
+    <div class="status-modal">
+      <h3>⚙ 강의 상태 변경</h3>
+      <div class="status-option-group">
+        <label class="status-option">
+          <input type="radio" name="statusChoice" value="ACTIVE">
+          <span>🟢</span>
+          <label>활성 (ACTIVE) — 수강신청 가능, 시간표 노출</label>
+        </label>
+        <label class="status-option">
+          <input type="radio" name="statusChoice" value="PENDING">
+          <span>🟡</span>
+          <label>승인대기 (PENDING) — 관리자 검토 중</label>
+        </label>
+        <label class="status-option">
+          <input type="radio" name="statusChoice" value="INACTIVE">
+          <span>🔴</span>
+          <label>비활성 (INACTIVE) — 수강신청 불가, 숨김</label>
+        </label>
+      </div>
+      <div class="status-modal-actions">
+        <button class="btn-sm gray" onclick="closeStatusModal()">취소</button>
+        <button class="btn-sm primary" onclick="confirmStatusChange()">변경 적용</button>
+      </div>
+    </div>
+  </div>
+</c:if>
 
-const DAYS  = ['월','화','수','목','금'];
-const HOURS = Array.from({length:12},(_,i)=> `\${i+9}:00`);  // 09:00 ~ 20:00
+<%-- ====== 강의 개설 모달 (PROFESSOR / ADMIN 공통) ====== --%>
+<%--
+  POST /course/create
+  요청 body:
+    courseName    : 강의명 (필수)
+    courseType    : 강의 유형 enum (필수)
+    credits       : 학점 1~3 (필수)
+    dayOfWeek     : 요일 콤마 구분 "월,수" (필수)
+    startTime     : 시작시간 "HH:mm" (필수)
+    endTime       : 종료시간 "HH:mm" (필수)
+    roomInfo      : 강의실 (선택)
+    maxStudents   : 최대 수강인원 (필수)
+    professorNo   : 교수 번호 — ADMIN이 직접 선택, PROFESSOR는 서버에서 세팅
+    description   : 강의 설명 (선택)
+  응답: { success: true/false, message: '...', courseNo: N }
+
+  Course 초기 status:
+    PROFESSOR가 개설 → PENDING  (관리자 승인 필요)
+    ADMIN이 개설    → ACTIVE   (바로 활성화)
+--%>
+<c:if test="${user.role == 'PROFESSOR' || user.role == 'ADMIN'}">
+<div class="create-modal-overlay" id="createModalOverlay">
+  <div class="create-modal">
+    <div class="create-modal-header">
+      <h3>📚 강의 개설</h3>
+      <button class="create-modal-close" onclick="closeCreateModal()">✕</button>
+    </div>
+    <div class="create-modal-body">
+
+      <%-- 강의명 --%>
+      <div class="form-group">
+        <label class="form-label">강의명 <span class="req">*</span></label>
+        <input type="text" class="form-input" id="cc_courseName" placeholder="예) 데이터구조 및 알고리즘">
+        <span class="form-error" id="err_courseName">강의명을 입력해주세요.</span>
+      </div>
+
+      <%-- 유형 / 학점 --%>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">강의 유형 <span class="req">*</span></label>
+          <select class="form-select-field" id="cc_courseType">
+            <option value="">선택</option>
+            <option value="MAJOR_REQUIRED">전공필수</option>
+            <option value="MAJOR_ELECTIVE">전공선택</option>
+            <option value="GENERAL_REQUIRED">교양필수</option>
+            <option value="GENERAL_ELECTIVE">교양선택</option>
+            <option value="FREE_ELECTIVE">일반선택</option>
+          </select>
+          <span class="form-error" id="err_courseType">강의 유형을 선택해주세요.</span>
+        </div>
+        <div class="form-group">
+          <label class="form-label">학점 <span class="req">*</span></label>
+          <select class="form-select-field" id="cc_credits">
+            <option value="">선택</option>
+            <option value="1">1학점</option>
+            <option value="2">2학점</option>
+            <option value="3">3학점</option>
+          </select>
+          <span class="form-error" id="err_credits">학점을 선택해주세요.</span>
+        </div>
+        <div class="form-group">
+          <label class="form-label">최대 수강인원 <span class="req">*</span></label>
+          <input type="number" class="form-input" id="cc_maxStudents" min="1" max="200" placeholder="예) 30">
+          <span class="form-error" id="err_maxStudents">수강인원을 입력해주세요.</span>
+        </div>
+      </div>
+
+      <%-- 요일 --%>
+      <div class="form-group">
+        <label class="form-label">수업 요일 <span class="req">*</span></label>
+        <div class="day-checkbox-group" id="cc_dayGroup">
+          <label class="day-cb-label"><input type="checkbox" value="월"> 월</label>
+          <label class="day-cb-label"><input type="checkbox" value="화"> 화</label>
+          <label class="day-cb-label"><input type="checkbox" value="수"> 수</label>
+          <label class="day-cb-label"><input type="checkbox" value="목"> 목</label>
+          <label class="day-cb-label"><input type="checkbox" value="금"> 금</label>
+        </div>
+        <span class="form-error" id="err_day">요일을 하나 이상 선택해주세요.</span>
+      </div>
+
+      <%-- 시작 / 종료 시간 --%>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">시작 시간 <span class="req">*</span></label>
+          <input type="time" class="form-input" id="cc_startTime" min="09:00" max="21:00">
+          <span class="form-error" id="err_startTime">시작 시간을 입력해주세요.</span>
+        </div>
+        <div class="form-group">
+          <label class="form-label">종료 시간 <span class="req">*</span></label>
+          <input type="time" class="form-input" id="cc_endTime" min="09:00" max="22:00">
+          <span class="form-error" id="err_endTime">종료 시간을 입력해주세요.</span>
+        </div>
+        <div class="form-group">
+          <label class="form-label">강의실</label>
+          <input type="text" class="form-input" id="cc_roomInfo" placeholder="예) 공학관 301">
+        </div>
+      </div>
+
+      <%-- ADMIN 전용: 교수 선택 드롭다운 --%>
+      <c:if test="${user.role == 'ADMIN'}">
+        <div class="form-group">
+          <label class="form-label">담당 교수 <span class="req">*</span></label>
+          <%--
+            실제 운영 시: 컨트롤러에서 professorList를 model에 담아
+            <c:forEach var="p" items="${professorList}"> 로 option 생성
+            지금은 JS로 AJAX 로드하는 방식을 사용 (openCreateModal 시 호출)
+          --%>
+          <select class="form-select-field" id="cc_professorNo">
+            <option value="">교수 목록 로딩 중…</option>
+          </select>
+          <span class="form-error" id="err_professorNo">담당 교수를 선택해주세요.</span>
+        </div>
+      </c:if>
+
+      <%-- PROFESSOR 전용: 본인이 담당, 안내 문구만 표시 --%>
+      <c:if test="${user.role == 'PROFESSOR'}">
+        <div class="form-group">
+          <label class="form-label">담당 교수</label>
+          <div class="form-input" style="background:var(--gray-50); color:var(--gray-500); cursor:default;">
+            ${user.name} (본인)
+          </div>
+          <p class="form-hint">개설된 강의는 관리자 승인 후 ACTIVE 상태로 전환됩니다.</p>
+        </div>
+      </c:if>
+
+      <%-- 강의 설명 --%>
+      <div class="form-group">
+        <label class="form-label">강의 설명</label>
+        <textarea class="form-textarea" id="cc_description" placeholder="강의 목표, 주요 내용, 평가 방식 등을 간략히 입력하세요."></textarea>
+      </div>
+
+    </div><%-- /create-modal-body --%>
+    <div class="create-modal-footer">
+      <button class="btn-sm gray" onclick="closeCreateModal()">취소</button>
+      <button class="btn-sm primary" onclick="submitCreateCourse()" id="btnCreateSubmit">개설 신청</button>
+    </div>
+  </div>
+</div>
+</c:if>
+<script>
+/* ================================================================
+   전역 설정
+   CTX_PATH  : 컨텍스트 경로 (JSP EL → JS 변수로 추출)
+   USER_ROLE : 서버에서 내려온 역할 ('STUDENT' | 'PROFESSOR' | 'ADMIN')
+================================================================ */
+var CTX_PATH  = '<%=request.getContextPath()%>';
+var USER_ROLE = '${user.role}';
+var CURRENT_SEMESTER = '${currentSemester}';
+
+let currentPage  = 1;
+const PAGE_SIZE  = 10;
+let totalPages   = 1;
+let enrolledSet  = new Set();   // STUDENT: 신청 courseNo Set
+let myCourses    = [];          // STUDENT: 신청목록 / PROFESSOR: 담당강의목록
+let searchTimer  = null;
+let selectedNos  = new Set();   // ADMIN: 체크박스 선택된 courseNo Set
 
 /* ================================================================
    탭 전환
-   - .tab-btn의 data-tab 속성으로 panel-{tab} ID의 패널을 활성화
-   - 탭 전환 시 해당 탭 데이터 재로드 (시간표는 이미 로드된 myCourses로 렌더링)
 ================================================================ */
 document.querySelectorAll('.tab-btn').forEach(btn => {
   btn.addEventListener('click', () => {
@@ -703,7 +1002,6 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
     btn.classList.add('active');
     const tab = btn.dataset.tab;
     document.getElementById('panel-' + tab).classList.add('active');
-
     if (tab === 'all')       loadAllCourses();
     if (tab === 'mine')      loadMyCourses();
     if (tab === 'timetable') renderTimetable();
@@ -711,104 +1009,99 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
 });
 
 /* ================================================================
-   전체 강의 목록 로드 (AJAX)
-   엔드포인트: GET /enrollment/list?page=&size=&dept=&type=&credits=&keyword=
-   응답 형태: { courses: [...], totalCount: N, totalPages: N }
-   실패 시: MOCK_COURSES로 폴백 (DB 연결 전 개발 테스트용)
+   전체 강의 목록 로드
+   GET /enrollment/list?page=&size=&type=&credits=&keyword=&status=
+   응답: { courses:[...], totalCount:N, totalPages:N }
 ================================================================ */
 function loadAllCourses(page) {
   if (page) currentPage = page;
-  const dept    = document.getElementById('filterDept').value;
   const type    = document.getElementById('filterType').value;
   const credits = document.getElementById('filterCredits').value;
   const keyword = document.getElementById('searchKeyword').value.trim();
+  const status  = USER_ROLE === 'ADMIN'
+                    ? (document.getElementById('filterStatus') ? document.getElementById('filterStatus').value : '')
+                    : '';
 
   showLoading('loadingAll', true);
+  const params = new URLSearchParams({ page: currentPage, size: PAGE_SIZE, type, credits, keyword, status, semester: CURRENT_SEMESTER });
 
-  const params = new URLSearchParams({
-    page:    currentPage,
-    size:    PAGE_SIZE,
-    dept:    dept,
-    type:    type,
-    credits: credits,
-    keyword: keyword
-  });
-
-  fetch(CTX_PATH + '/enrollment/list?' + params, {
-    headers: { 'X-Requested-With': 'XMLHttpRequest' }
-  })
-  .then(r => r.json())
-  .then(data => {
-    totalPages = data.totalPages || 1;
-    document.getElementById('countAll').textContent = data.totalCount || 0;
-    renderAllTable(data.courses || []);
-    renderPagination(data.totalCount || 0);
-  })
-  .catch(() => {
-    /* ⚠️ DB 연결 전 목업 폴백 — 서버 연동 후 이 catch 블록 제거 */
-    renderAllTable(MOCK_COURSES);
-    document.getElementById('countAll').textContent = MOCK_COURSES.length;
-    totalPages = 1;
-    renderPagination(MOCK_COURSES.length);
-  })
-  .finally(() => showLoading('loadingAll', false));
+  fetch(CTX_PATH + '/enrollment/courselist?' + params, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+    .then(r => r.json())
+    .then(data => {
+      totalPages = data.totalPages || 1;
+      document.getElementById('countAll').textContent = data.totalCount || 0;
+      renderAllTable(data.courses || []);
+      renderPagination(data.totalCount || 0);
+    })
+    .catch(() => {
+      /* 개발용 목업 폴백 — 서버 연동 후 제거 */
+      renderAllTable(MOCK_COURSES);
+      document.getElementById('countAll').textContent = MOCK_COURSES.length;
+      renderPagination(MOCK_COURSES.length);
+    })
+    .finally(() => showLoading('loadingAll', false));
 }
 
 /* ================================================================
-   전체 강의 테이블 렌더링
-   ⚠️ [버그 1 수정] 학점 셀 — 원본: \${empty c.credits ? 3 : c.credits}
-      JS 템플릿 리터럴 안에서 EL 문법은 동작하지 않음.
-      JS 삼항 연산자로 교체: c.credits != null ? c.credits : 3
-   ⚠️ [버그 2 수정] 정원 셀 — 원본: c.enrolled ? 0 : c.enrolled (조건 반전)
-      enrolled가 0이면 0 대신 0을 반환하는 의미없는 코드 + 오타(erolled)
-      올바른 표현: c.enrolled != null ? c.enrolled : 0
-   ⚠️ [버그 3] 커리큘럼 셀 — JS 템플릿 리터럴 안에 JSTL 태그 삽입 불가
-      JSTL은 서버에서 한 번만 렌더링되므로 JS가 동적으로 생성하는 행에서는 동작 안 함.
-      JS 삼항 연산자로 교체.
+   전체 강의 테이블 렌더링 (역할별 분기)
 ================================================================ */
 function renderAllTable(courses) {
   const tbody = document.getElementById('allCourseBody');
   if (!courses.length) {
-    tbody.innerHTML = `<tr><td colspan="10">
+    const colspan = USER_ROLE === 'ADMIN' ? 11 : USER_ROLE === 'PROFESSOR' ? 9 : 10;
+    tbody.innerHTML = `<tr><td colspan="\${colspan}">
       <div class="empty-state">
         <div class="empty-icon">📭</div>
         <div class="empty-text">조건에 맞는 강의가 없습니다</div>
         <div class="empty-sub">필터를 초기화하거나 검색어를 변경해보세요</div>
-      </div>
-    </td></tr>`;
+      </div></td></tr>`;
     return;
   }
+
   tbody.innerHTML = courses.map((c, i) => {
-    const applied   = enrolledSet.has(c.course_no);
-    const pct       = c.max_students ? Math.round(c.enrolled / c.max_students * 100) : 0;
-    const isFull    = pct >= 100;
-    const capClass  = pct >= 100 ? 'full' : pct >= 80 ? 'warn' : '';
-    const btnClass  = applied ? 'cancel' : isFull ? 'full' : 'apply';
-    const btnText   = applied ? '신청취소' : isFull ? '마감' : '수강신청';
-    const btnAction = applied ? `cancelEnroll(\${c.course_no})` : isFull ? '' : `applyEnroll(\${c.course_no})`;
-
-    /* [버그 1 수정] credits null 처리 — EL 대신 JS 삼항 연산자 사용 */
-    const credits = c.credits != null ? c.credits : 3;
-
-    /* [버그 2 수정] enrolled 오타·조건 반전 수정 */
+    const credits      = c.credits != null ? c.credits : 3;
     const enrolledCount = c.enrolled != null ? c.enrolled : 0;
+    const pct          = c.max_students ? Math.round(enrolledCount / c.max_students * 100) : 0;
+    const capClass     = pct >= 100 ? 'full' : pct >= 80 ? 'warn' : '';
+    const pdfHtml      = c.curriculum_pdf
+      ? `<a class="pdf-link" href="\${escHtml(c.curriculum_pdf)}" target="_blank">📄 보기</a>`
+      : `<span style="color:var(--gray-300);font-size:.75rem;">-</span>`;
 
-    /* [버그 3 수정] curriculum_pdf 조건부 렌더링 — JSTL 대신 JS 삼항 연산자 사용 */
-    const pdfHtml = c.curriculum_pdf
-      ? `<a class="pdf-link" href="` + escHtml(c.curriculum_pdf) + `" target="_blank">📄 보기</a>`
-      : `<span style="color:var(--gray-300); font-size:.75rem;">-</span>`;
+    let checkboxCell = '';
+    let lastCell = '';
+
+    if (USER_ROLE === 'ADMIN') {
+      checkboxCell = `<td style="text-align:center;">
+        <input type="checkbox" class="row-check" value="\${c.course_no}"
+               onchange="onRowCheck(this, \${c.course_no})">
+      </td>`;
+      lastCell = `<td style="text-align:center;">\${statusBadgeHtml(c.status)}</td>`;
+    } else if (USER_ROLE === 'STUDENT') {
+      const applied   = enrolledSet.has(c.course_no);
+      const isFull    = pct >= 100;
+      const conflict  = !applied && !isFull && hasTimeConflict(c);
+      const btnClass  = applied ? 'cancel' : isFull ? 'full' : conflict ? 'conflict' : 'apply';
+      const btnText   = applied ? '신청취소' : isFull ? '마감' : conflict ? '시간충돌' : '수강신청';
+      const btnAction = applied ? `cancelEnroll(\${c.course_no})`
+                      : (!isFull && !conflict) ? `applyEnroll(\${c.course_no})` : '';
+      lastCell = `<td style="text-align:center;">
+        <button class="btn-enroll \${btnClass}" \${!btnAction ? 'disabled' : ''} onclick="\${btnAction}">\${btnText}</button>
+      </td>`;
+    }
+    // PROFESSOR: 마지막 컬럼 없음 (읽기 전용)
 
     return `<tr>
-      <td style="text-align:center; color:var(--gray-400);">\${(currentPage-1)*PAGE_SIZE + i + 1}</td>
+      \${checkboxCell}
+      <td style="text-align:center;color:var(--gray-400);">\${(currentPage-1)*PAGE_SIZE + i + 1}</td>
       <td>
-        <div style="font-weight:600; color:var(--gray-900); font-size:.84rem;">\${escHtml(c.course_name)}</div>
-        <div style="font-size:.72rem; color:var(--gray-400); margin-top:.1rem;">\${escHtml(c.professor_name || '')}</div>
+        <div style="font-weight:600;color:var(--gray-900);font-size:.84rem;">\${escHtml(c.course_name)}</div>
+        <div style="font-size:.72rem;color:var(--gray-400);margin-top:.1rem;">\${escHtml(c.professor_name || '')}</div>
       </td>
       <td><span class="type-badge \${typeClass(c.course_type)}">\${typeLabel(c.course_type)}</span></td>
-      <td style="text-align:center; font-weight:700; color:var(--gray-700);">\${credits}</td>
+      <td style="text-align:center;font-weight:700;color:var(--gray-700);">\${credits}</td>
       <td style="text-align:center;">\${c.day_of_week || '-'}</td>
       <td style="font-size:.78rem;">\${formatTime(c.start_time)} ~ \${formatTime(c.end_time)}</td>
-      <td style="font-size:.78rem; color:var(--gray-500);">\${c.room_info || '-'}</td>
+      <td style="font-size:.78rem;color:var(--gray-500);">\${c.room_info || '-'}</td>
       <td>
         <div class="capacity-bar">
           <div class="cap-track"><div class="cap-fill \${capClass}" style="width:\${pct}%"></div></div>
@@ -816,110 +1109,138 @@ function renderAllTable(courses) {
         </div>
       </td>
       <td style="text-align:center;">\${pdfHtml}</td>
-      <td style="text-align:center;">
-        <button class="btn-enroll \${btnClass}" \${!btnAction ? 'disabled' : ''}
-                onclick="\${btnAction}">\${btnText}</button>
-      </td>
+      \${lastCell}
     </tr>`;
   }).join('');
 }
 
 /* ================================================================
-   내 수강 목록 로드 (AJAX)
-   엔드포인트: GET /enrollment/mine
-   응답 형태: { courses: [...] }
-   - enrolledSet을 갱신하여 전체 강의 탭의 신청/취소 버튼 상태도 반영
-   - 실패 시 MOCK_MINE으로 폴백
+   내 수강목록 / 내 강의 로드
+   STUDENT  : GET /enrollment/mine           → { courses:[...] }
+   PROFESSOR: GET /enrollment/my-courses     → { courses:[...] }  (status 포함)
 ================================================================ */
 function loadMyCourses() {
   showLoading('loadingMine', true);
-  fetch(CTX_PATH + '/enrollment/mine', {
-    headers: { 'X-Requested-With': 'XMLHttpRequest' }
-  })
-  .then(r => r.json())
-  .then(data => {
-    myCourses = data.courses || [];
-    enrolledSet = new Set(myCourses.map(c => c.course_no));
-    updateCreditSummary();
-    renderMineTable();
-  })
-  .catch(() => {
-    /* ⚠️ DB 연결 전 목업 폴백 — 서버 연동 후 이 catch 블록 제거 */
-    myCourses = MOCK_MINE;
-    enrolledSet = new Set(myCourses.map(c => c.course_no));
-    updateCreditSummary();
-    renderMineTable();
-  })
-  .finally(() => showLoading('loadingMine', false));
+  const endpoint = USER_ROLE === 'PROFESSOR'
+    ? CTX_PATH + '/enrollment/my-courses?semester=' + CURRENT_SEMESTER
+    : CTX_PATH + '/enrollment/mine?semester=' + CURRENT_SEMESTER;
+
+  return fetch(endpoint, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+    .then(r => r.json())
+    .then(data => {
+      myCourses = data.courses || [];
+      if (USER_ROLE === 'STUDENT') {
+        enrolledSet = new Set(myCourses.map(c => c.course_no));
+        updateCreditSummary();
+      }
+      document.getElementById('countMine').textContent = myCourses.length;
+      renderMineTable();
+    })
+    .catch(() => {
+      myCourses = USER_ROLE === 'PROFESSOR' ? MOCK_PROF_COURSES : MOCK_MINE;
+      if (USER_ROLE === 'STUDENT') {
+        enrolledSet = new Set(myCourses.map(c => c.course_no));
+        updateCreditSummary();
+      }
+      document.getElementById('countMine').textContent = myCourses.length;
+      renderMineTable();
+    })
+    .finally(() => showLoading('loadingMine', false));
 }
 
 /* ================================================================
-   내 수강 목록 테이블 렌더링
-   statusBadgeHtml()로 신청상태(APPLIED/PENDING/APPROVED) 배지 생성
+   내 수강목록 테이블 렌더링 (역할별 분기)
 ================================================================ */
 function renderMineTable() {
   const tbody = document.getElementById('mineCourseBody');
+  const colspan = USER_ROLE === 'PROFESSOR' ? 9 : 9;
   if (!myCourses.length) {
-    tbody.innerHTML = `<tr><td colspan="9">
+    tbody.innerHTML = `<tr><td colspan="\${colspan}">
       <div class="empty-state">
         <div class="empty-icon">📋</div>
-        <div class="empty-text">신청한 수강이 없습니다</div>
-        <div class="empty-sub">전체 강의 탭에서 수강신청을 해보세요</div>
-      </div>
-    </td></tr>`;
+        <div class="empty-text">\${USER_ROLE === 'PROFESSOR' ? '담당 강의가 없습니다' : '신청한 수강이 없습니다'}</div>
+        <div class="empty-sub">\${USER_ROLE === 'PROFESSOR' ? '배정된 강의가 표시됩니다' : '전체 강의 탭에서 수강신청을 해보세요'}</div>
+      </div></td></tr>`;
     return;
   }
+
   tbody.innerHTML = myCourses.map((c, i) => {
     const statusBadge = statusBadgeHtml(c.status);
+    let lastCell = '';
+    if (USER_ROLE === 'STUDENT') {
+      lastCell = `<td style="text-align:center;">
+        <button class="btn-enroll cancel" onclick="cancelEnroll(\${c.course_no})">취소</button>
+      </td>`;
+    } else if (USER_ROLE === 'PROFESSOR') {
+      // 교수: 수강인원 표시
+      const enrolled = c.enrolled != null ? c.enrolled : 0;
+      const max = c.max_students != null ? c.max_students : '-';
+      lastCell = `<td style="text-align:center;font-size:.82rem;font-weight:600;color:var(--gray-700);">\${enrolled} / \${max}</td>`;
+    }
     return `<tr>
-      <td style="text-align:center; color:var(--gray-400);">\${i+1}</td>
+      <td style="text-align:center;color:var(--gray-400);">\${i+1}</td>
       <td>
-        <div style="font-weight:600; color:var(--gray-900); font-size:.84rem;">\${escHtml(c.course_name)}</div>
-        <div style="font-size:.72rem; color:var(--gray-400); margin-top:.1rem;">\${escHtml(c.professor_name || '')}</div>
+        <div style="font-weight:600;color:var(--gray-900);font-size:.84rem;">\${escHtml(c.course_name)}</div>
+        <div style="font-size:.72rem;color:var(--gray-400);margin-top:.1rem;">\${escHtml(c.professor_name || '')}</div>
       </td>
       <td><span class="type-badge \${typeClass(c.course_type)}">\${typeLabel(c.course_type)}</span></td>
-      <td style="text-align:center; font-weight:700;">\${c.credits != null ? c.credits : 3}</td>
+      <td style="text-align:center;font-weight:700;">\${c.credits != null ? c.credits : 3}</td>
       <td style="text-align:center;">\${c.day_of_week || '-'}</td>
       <td style="font-size:.78rem;">\${formatTime(c.start_time)} ~ \${formatTime(c.end_time)}</td>
-      <td style="font-size:.78rem; color:var(--gray-500);">\${c.room_info || '-'}</td>
+      <td style="font-size:.78rem;color:var(--gray-500);">\${c.room_info || '-'}</td>
       <td style="text-align:center;">\${statusBadge}</td>
-      <td style="text-align:center;">
-        <button class="btn-enroll cancel" onclick="cancelEnroll(\${c.course_no})">취소</button>
-      </td>
+      \${lastCell}
     </tr>`;
   }).join('');
 }
 
 /* ================================================================
-   학점 요약 업데이트
-   ⚠️ [버그 4 수정] 원본: c.credits ? 3 : c.credits
-      credits가 truthy면 3을 반환 → 항상 3학점으로 잘못 계산됨
-      올바른 표현: c.credits != null ? c.credits : 3
+   학점 요약 업데이트 (STUDENT only)
 ================================================================ */
 function updateCreditSummary() {
-  /* [버그 4 수정] credits 존재 여부 체크 후 합산 */
   const total = myCourses.reduce((s, c) => s + (c.credits != null ? c.credits : 3), 0);
-  document.getElementById('enrolledCredits').textContent  = total;
-  document.getElementById('enrolledCount').textContent    = myCourses.length;
-  document.getElementById('countMine').textContent        = myCourses.length;
-  document.getElementById('totalCreditsDisplay').textContent = total;
+  document.getElementById('enrolledCredits') && (document.getElementById('enrolledCredits').textContent = total);
+  document.getElementById('enrolledCount')   && (document.getElementById('enrolledCount').textContent   = myCourses.length);
+  document.getElementById('totalCreditsDisplay') && (document.getElementById('totalCreditsDisplay').textContent = total);
 }
 
 /* ================================================================
-   수강 신청 / 취소
-   엔드포인트: POST /enrollment/apply | /enrollment/cancel
-   요청 본문: { courseNo: N }
-   응답 형태: { success: true/false, message: '...' }
-   성공 시 목록 재로드, 실패·에러 시 토스트 표시
+   시간 충돌 검사 (STUDENT only)
+   이미 신청한 myCourses와 요일·시간 겹침 여부 반환
+   - 같은 요일에 [sh, eh) ∩ [msh, meh) ≠ ∅ 이면 충돌
+================================================================ */
+function hasTimeConflict(newCourse) {
+  if (USER_ROLE !== 'STUDENT') return false;
+  const newDays = parseDays(newCourse.day_of_week);
+  const nsh = parseHour(newCourse.start_time);
+  const neh = parseHour(newCourse.end_time);
+  if (nsh < 0 || neh < 0) return false;
+
+  return myCourses.some(c => {
+    if (c.course_no === newCourse.course_no) return false; // 자기 자신 제외
+    const mDays = parseDays(c.day_of_week);
+    const msh   = parseHour(c.start_time);
+    const meh   = parseHour(c.end_time);
+    const dayOverlap = newDays.some(d => mDays.includes(d));
+    const timeOverlap = nsh < meh && neh > msh;
+    return dayOverlap && timeOverlap;
+  });
+}
+function parseDays(str) {
+  return str ? str.split(',').map(d => d.replace(/요일/, '').trim()) : [];
+}
+function parseHour(t) {
+  return t ? parseInt(t.split(':')[0]) : -1;
+}
+
+/* ================================================================
+   수강 신청 / 취소 (STUDENT only)
 ================================================================ */
 function applyEnroll(courseNo) {
   if (!confirm('수강신청 하시겠습니까?')) return;
   fetch(CTX_PATH + '/enrollment/apply', {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'X-Requested-With': 'XMLHttpRequest'
-    },
+    headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
     body: JSON.stringify({ courseNo })
   })
   .then(r => r.json())
@@ -939,10 +1260,7 @@ function cancelEnroll(courseNo) {
   if (!confirm('수강신청을 취소하시겠습니까?')) return;
   fetch(CTX_PATH + '/enrollment/cancel', {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'X-Requested-With': 'XMLHttpRequest'
-    },
+    headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
     body: JSON.stringify({ courseNo })
   })
   .then(r => r.json())
@@ -959,17 +1277,117 @@ function cancelEnroll(courseNo) {
 }
 
 /* ================================================================
+   ADMIN: 체크박스 처리
+================================================================ */
+function toggleAllCheck(masterCb) {
+  document.querySelectorAll('#allCourseBody .row-check').forEach(cb => {
+    cb.checked = masterCb.checked;
+    const no = parseInt(cb.value);
+    masterCb.checked ? selectedNos.add(no) : selectedNos.delete(no);
+  });
+  updateBulkButtons();
+}
+
+function onRowCheck(cb, courseNo) {
+  cb.checked ? selectedNos.add(courseNo) : selectedNos.delete(courseNo);
+  // 전체 체크 상태 동기화
+  const allCbs = document.querySelectorAll('#allCourseBody .row-check');
+  const allChecked = [...allCbs].every(c => c.checked);
+  const masterCb = document.getElementById('checkAll');
+  if (masterCb) masterCb.checked = allChecked && allCbs.length > 0;
+  updateBulkButtons();
+}
+
+function updateBulkButtons() {
+  const n = selectedNos.size;
+  const el = document.getElementById('bulkCount');
+  if (el) el.textContent = n;
+  const btnDel  = document.getElementById('btnBulkDelete');
+  const btnStat = document.getElementById('btnBulkStatus');
+  if (btnDel)  btnDel.disabled  = n === 0;
+  if (btnStat) btnStat.disabled = n === 0;
+}
+
+/* ================================================================
+   ADMIN: 일괄 삭제
+   POST /admin/course/delete  body: { courseNos: [...] }
+================================================================ */
+function bulkDelete() {
+  if (selectedNos.size === 0) return;
+  if (!confirm(`선택한 \${selectedNos.size}개 강의를 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.`)) return;
+
+  fetch(CTX_PATH + '/admin/course/delete', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+    body: JSON.stringify({ courseNos: [...selectedNos] })
+  })
+  .then(r => r.json())
+  .then(data => {
+    if (data.success) {
+      showToast(`🗑 \${selectedNos.size}개 강의가 삭제되었습니다.`, 'red');
+      selectedNos.clear();
+      updateBulkButtons();
+      loadAllCourses();
+    } else {
+      showToast('❌ ' + (data.message || '삭제에 실패했습니다.'), 'red');
+    }
+  })
+  .catch(() => showToast('⚠️ 서버 오류가 발생했습니다.', 'red'));
+}
+
+/* ================================================================
+   ADMIN: 상태 변경 모달
+   POST /admin/course/status  body: { courseNos: [...], status: 'ACTIVE'|... }
+================================================================ */
+function openStatusModal() {
+  if (selectedNos.size === 0) return;
+  document.getElementById('statusModalOverlay').classList.add('active');
+}
+function closeStatusModal() {
+  document.getElementById('statusModalOverlay').classList.remove('active');
+  document.querySelectorAll('input[name="statusChoice"]').forEach(r => r.checked = false);
+}
+function confirmStatusChange() {
+  const chosen = document.querySelector('input[name="statusChoice"]:checked');
+  if (!chosen) { showToast('변경할 상태를 선택해주세요.', 'yellow'); return; }
+
+  fetch(CTX_PATH + '/admin/course/status', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+    body: JSON.stringify({ courseNos: [...selectedNos], status: chosen.value })
+  })
+  .then(r => r.json())
+  .then(data => {
+    if (data.success) {
+      showToast(`✅ \${selectedNos.size}개 강의 상태가 변경되었습니다.`, 'green');
+      closeStatusModal();
+      selectedNos.clear();
+      updateBulkButtons();
+      loadAllCourses();
+    } else {
+      showToast('❌ ' + (data.message || '상태 변경에 실패했습니다.'), 'red');
+    }
+  })
+  .catch(() => showToast('⚠️ 서버 오류가 발생했습니다.', 'red'));
+}
+
+/* ================================================================
    시간표 렌더링
-   myCourses 배열 기반으로 09:00~20:00 (12행) × 월~금 (5열) 그리드 생성
-   - day_of_week : '월요일' or '월' 형태 모두 처리 (replace로 '요일' 제거)
-   - start_time / end_time : 'HH:mm:ss' 또는 'HH:mm' 형태 지원 (parseInt로 시 단위 추출)
-   - 강의가 없으면 빈 상태 메시지 표시
+   STUDENT  : myCourses 전체 사용
+   PROFESSOR: myCourses 중 status === 'ACTIVE'인 강의만 표시
+   09:00 ~ 20:00, 월~금
 ================================================================ */
 function renderTimetable() {
   const body = document.getElementById('timetableBody');
   body.innerHTML = '';
 
+  // PROFESSOR는 ACTIVE 강의만
+  const displayCourses = USER_ROLE === 'PROFESSOR'
+    ? myCourses.filter(c => c.status === 'ACTIVE')
+    : myCourses;
+
   const DAY_IDX = {'월':0,'화':1,'수':2,'목':3,'금':4};
+
   for (let h = 9; h <= 20; h++) {
     const row = document.createElement('div');
     row.className = 'tt-row';
@@ -983,20 +1401,25 @@ function renderTimetable() {
       const cell = document.createElement('div');
       cell.className = 'tt-cell';
 
-      const course = myCourses.find(c => {
-    	  const days = c.day_of_week ? c.day_of_week.split(',').map(d => d.replace(/요일/,'').trim()) : [];
-    	  if (!days.includes(Object.keys(DAY_IDX)[d])) return false;
-        const sh = c.start_time ? parseInt(c.start_time.split(':')[0]) : -1;
-        const eh = c.end_time   ? parseInt(c.end_time.split(':')[0])   : -1;
+      const course = displayCourses.find(c => {
+        const days = parseDays(c.day_of_week);
+        if (!days.includes(Object.keys(DAY_IDX)[d])) return false;
+        const sh = parseHour(c.start_time);
+        const eh = parseHour(c.end_time);
         return sh <= h && h < eh;
       });
 
       if (course) {
         const block = document.createElement('div');
         block.className = 'tt-course-block';
+        let extra = '';
+        if (USER_ROLE === 'PROFESSOR') {
+          extra = `<div class="tt-status" style="color:#15803d;">● ACTIVE</div>`;
+        }
         block.innerHTML = `
           <div>\${escHtml(course.course_name)}</div>
-          <div class="tt-room">\${escHtml(course.room_info || '')}</div>`;
+          <div class="tt-room">\${escHtml(course.room_info || '')}</div>
+          \${extra}`;
         cell.appendChild(block);
       }
       row.appendChild(cell);
@@ -1004,50 +1427,43 @@ function renderTimetable() {
     body.appendChild(row);
   }
 
-  if (!myCourses.length) {
+  if (!displayCourses.length) {
     body.innerHTML = `<div class="empty-state">
       <div class="empty-icon">🗓</div>
-      <div class="empty-text">신청된 수강이 없습니다</div>
-      <div class="empty-sub">수강신청 후 시간표가 표시됩니다</div>
+      <div class="empty-text">\${USER_ROLE === 'PROFESSOR' ? '활성(ACTIVE) 강의가 없습니다' : '신청된 수강이 없습니다'}</div>
+      <div class="empty-sub">\${USER_ROLE === 'PROFESSOR' ? '강의 상태가 ACTIVE인 경우 시간표에 표시됩니다' : '수강신청 후 시간표가 표시됩니다'}</div>
     </div>`;
   }
 }
 
 /* ================================================================
    페이지네이션
-   - 현재 페이지 기준 앞뒤 2페이지씩 최대 5개 버튼 표시
-   - 이전/다음 버튼은 첫/마지막 페이지에서 disabled
 ================================================================ */
 function renderPagination(totalCount) {
   const pg = document.getElementById('allPagination');
   totalPages = Math.ceil(totalCount / PAGE_SIZE) || 1;
-  let html = `<button class="page-btn" onclick="loadAllCourses(\${currentPage-1})"
-                \${currentPage==1 ? 'disabled' : ''}>‹</button>`;
+  let html = `<button class="page-btn" onclick="loadAllCourses(\${currentPage-1})" \${currentPage==1?'disabled':''}>‹</button>`;
   const start = Math.max(1, currentPage - 2);
   const end   = Math.min(totalPages, start + 4);
   for (let p = start; p <= end; p++) {
-    html += `<button class="page-btn \${p==currentPage?'active':''}"
-               onclick="loadAllCourses(\${p})">\${p}</button>`;
+    html += `<button class="page-btn \${p==currentPage?'active':''}" onclick="loadAllCourses(\${p})">\${p}</button>`;
   }
-  html += `<button class="page-btn" onclick="loadAllCourses(\${currentPage+1})"
-             \${currentPage==totalPages ? 'disabled' : ''}>›</button>`;
+  html += `<button class="page-btn" onclick="loadAllCourses(\${currentPage+1})" \${currentPage==totalPages?'disabled':''}>›</button>`;
   pg.innerHTML = html;
 }
 
 /* ================================================================
    필터 / 검색
-   - resetFilters : 모든 필터 초기화 후 1페이지 재로드
-   - debounceSearch : 입력 후 350ms 대기 후 검색 (타이핑마다 요청 방지)
 ================================================================ */
 function resetFilters() {
-  document.getElementById('filterDept').value    = '';
   document.getElementById('filterType').value    = '';
   document.getElementById('filterCredits').value = '';
   document.getElementById('searchKeyword').value = '';
+  const fs = document.getElementById('filterStatus');
+  if (fs) fs.value = '';
   currentPage = 1;
   loadAllCourses();
 }
-
 function debounceSearch() {
   clearTimeout(searchTimer);
   searchTimer = setTimeout(() => { currentPage = 1; loadAllCourses(); }, 350);
@@ -1055,12 +1471,6 @@ function debounceSearch() {
 
 /* ================================================================
    유틸 함수
-   - typeLabel   : course_type enum → 한글 라벨
-   - typeClass   : course_type enum → CSS 클래스명
-   - statusBadgeHtml : 신청상태 → 배지 HTML (APPLIED/PENDING/APPROVED)
-   - formatTime  : 'HH:mm:ss' → 'HH:mm' (앞 5자리만 추출)
-   - escHtml     : XSS 방지용 HTML 이스케이프
-   - showLoading : 로딩 오버레이 표시/숨김
 ================================================================ */
 function typeLabel(t) {
   return { MAJOR_REQUIRED:'전공필수', MAJOR_ELECTIVE:'전공선택',
@@ -1073,26 +1483,32 @@ function typeClass(t) {
            FREE_ELECTIVE:'type-free' }[t] || 'type-free';
 }
 function statusBadgeHtml(s) {
-  const map = { APPLIED:['badge-blue','신청'], PENDING:['badge-yellow','대기'], APPROVED:['badge-green','승인'] };
-  const [cls, label] = map[s] || ['badge-gray', s];
+  const map = {
+    APPLIED:  ['badge-blue',   '신청'],
+    PENDING:  ['badge-yellow', '대기'],
+    APPROVED: ['badge-green',  '승인'],
+    ACTIVE:   ['badge-green',  'ACTIVE'],
+    INACTIVE: ['badge-gray',   'INACTIVE'],
+    REJECTED: ['badge-red',    '반려']
+  };
+  const [cls, label] = map[s] || ['badge-gray', s || '-'];
   return `<span class="badge \${cls}">\${label}</span>`;
 }
-function formatTime(t) { return t ? t.substring(0,5) : '-'; }
+function formatTime(t) { return t ? t.substring(0, 5) : '-'; }
 function escHtml(s) {
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 function showLoading(id, show) {
-  document.getElementById(id).classList.toggle('active', show);
+  const el = document.getElementById(id);
+  if (el) el.classList.toggle('active', show);
 }
-
-/* 토스트 알림 — 하단 우측에 3초간 표시 후 자동 제거 */
 function showToast(msg, color) {
   const colors = { green:'#15803d', red:'#b91c1c', yellow:'#a16207' };
   const t = document.createElement('div');
   t.textContent = msg;
   Object.assign(t.style, {
     position:'fixed', bottom:'1.5rem', right:'1.5rem', zIndex:9999,
-    background: color === 'green' ? '#f0fdf4' : color === 'red' ? '#fff1f2' : '#fffbeb',
+    background: color==='green'?'#f0fdf4': color==='red'?'#fff1f2':'#fffbeb',
     color: colors[color] || '#374151',
     border: `1px solid \${color==='green'?'#bbf7d0':color==='red'?'#fecdd3':'#fde68a'}`,
     borderRadius:'10px', padding:'.75rem 1.2rem',
@@ -1104,34 +1520,201 @@ function showToast(msg, color) {
   document.body.appendChild(t);
   setTimeout(() => t.remove(), 3000);
 }
-
 function closeModal() {
   document.getElementById('curriculumModal').style.display = 'none';
   document.getElementById('curriculumFrame').src = '';
 }
 
 /* ================================================================
-   목업 데이터 (개발/테스트용 — 실제 서버 연동 시 제거)
-   AJAX 실패 시 catch 블록에서 사용
-   MOCK_COURSES : 전체 강의 목록 샘플
-   MOCK_MINE    : 내 수강 목록 샘플
+   강의 개설 모달 (PROFESSOR / ADMIN)
+================================================================ */
+
+/** 모달 열기 */
+function openCreateModal() {
+  // 폼 초기화
+  resetCreateForm();
+  document.getElementById('createModalOverlay').classList.add('active');
+
+  // ADMIN이면 교수 목록 AJAX 로드
+  if (USER_ROLE === 'ADMIN') {
+    loadProfessorList();
+  }
+}
+
+/** 모달 닫기 */
+function closeCreateModal() {
+  document.getElementById('createModalOverlay').classList.remove('active');
+}
+
+/** ADMIN 전용: 교수 목록 로드 */
+function loadProfessorList() {
+  const sel = document.getElementById('cc_professorNo');
+  if (!sel) return;
+  sel.innerHTML = '<option value="">로딩 중…</option>';
+
+  fetch(CTX_PATH + '/admin/professor/list', {
+    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+  })
+  .then(r => r.json())
+  .then(data => {
+    const list = data.professors || [];
+    sel.innerHTML = '<option value="">교수 선택</option>'
+      + list.map(p => `<option value="\${p.professorNo}">\${escHtml(p.name)}</option>`).join('');
+  })
+  .catch(() => {
+    // 목업 폴백
+    sel.innerHTML = `
+      <option value="">교수 선택</option>
+      <option value="101">김컴공</option>
+      <option value="102">이수학</option>
+      <option value="103">박경제</option>`;
+  });
+}
+
+/** 폼 초기화 */
+function resetCreateForm() {
+  ['cc_courseName','cc_roomInfo','cc_description','cc_startTime','cc_endTime']
+    .forEach(id => { const el = document.getElementById(id); if(el) el.value = ''; });
+  ['cc_courseType','cc_credits','cc_maxStudents']
+    .forEach(id => { const el = document.getElementById(id); if(el) el.value = ''; });
+  if (document.getElementById('cc_professorNo'))
+    document.getElementById('cc_professorNo').value = '';
+  document.querySelectorAll('#cc_dayGroup input[type=checkbox]')
+    .forEach(cb => cb.checked = false);
+  // 에러 메시지 숨김, 에러 클래스 제거
+  document.querySelectorAll('.form-error').forEach(e => e.style.display = 'none');
+  document.querySelectorAll('.create-modal .form-input, .create-modal .form-select-field')
+    .forEach(el => el.classList.remove('error'));
+}
+
+/** 유효성 검사 — 에러 있으면 false 반환 */
+function validateCreateForm() {
+  let valid = true;
+  const required = [
+    { id: 'cc_courseName',  errId: 'err_courseName',  msg: '강의명을 입력해주세요.' },
+    { id: 'cc_courseType',  errId: 'err_courseType',  msg: '강의 유형을 선택해주세요.' },
+    { id: 'cc_credits',     errId: 'err_credits',     msg: '학점을 선택해주세요.' },
+    { id: 'cc_maxStudents', errId: 'err_maxStudents', msg: '최대 수강인원을 입력해주세요.' },
+    { id: 'cc_startTime',   errId: 'err_startTime',   msg: '시작 시간을 입력해주세요.' },
+    { id: 'cc_endTime',     errId: 'err_endTime',     msg: '종료 시간을 입력해주세요.' },
+  ];
+  if (USER_ROLE === 'ADMIN') {
+    required.push({ id: 'cc_professorNo', errId: 'err_professorNo', msg: '담당 교수를 선택해주세요.' });
+  }
+  required.forEach(({ id, errId, msg }) => {
+    const el  = document.getElementById(id);
+    const err = document.getElementById(errId);
+    if (!el || !el.value.trim()) {
+      if (err) { err.textContent = msg; err.style.display = 'block'; }
+      if (el)  el.classList.add('error');
+      valid = false;
+    } else {
+      if (err) err.style.display = 'none';
+      if (el)  el.classList.remove('error');
+    }
+  });
+
+  // 요일 최소 1개
+  const days = [...document.querySelectorAll('#cc_dayGroup input:checked')].map(c => c.value);
+  const dayErr = document.getElementById('err_day');
+  if (!days.length) {
+    if (dayErr) dayErr.style.display = 'block';
+    valid = false;
+  } else {
+    if (dayErr) dayErr.style.display = 'none';
+  }
+
+  // 종료 시간 > 시작 시간
+  const st = document.getElementById('cc_startTime').value;
+  const et = document.getElementById('cc_endTime').value;
+  if (st && et && et <= st) {
+    const err = document.getElementById('err_endTime');
+    if (err) { err.textContent = '종료 시간은 시작 시간 이후여야 합니다.'; err.style.display = 'block'; }
+    document.getElementById('cc_endTime').classList.add('error');
+    valid = false;
+  }
+
+  return valid;
+}
+
+/**
+ * 강의 개설 제출
+ * POST /course/create
+ * PROFESSOR → 서버에서 status=PENDING 세팅, professorNo는 세션에서 추출
+ * ADMIN     → status=ACTIVE, professorNo는 폼에서 전달
+ */
+function submitCreateCourse() {
+  if (!validateCreateForm()) return;
+
+  const days = [...document.querySelectorAll('#cc_dayGroup input:checked')].map(c => c.value).join(',');
+  const body = {
+    courseName:   document.getElementById('cc_courseName').value.trim(),
+    courseType:   document.getElementById('cc_courseType').value,
+    credits:      parseInt(document.getElementById('cc_credits').value),
+    dayOfWeek:    days,
+    startTime:    document.getElementById('cc_startTime').value,
+    endTime:      document.getElementById('cc_endTime').value,
+    roomInfo:     (document.getElementById('cc_roomInfo')    || {value:''}).value.trim(),
+    maxStudents:  parseInt(document.getElementById('cc_maxStudents').value),
+    description:  (document.getElementById('cc_description') || {value:''}).value.trim(),
+  };
+  // ADMIN만 professorNo 포함 (PROFESSOR는 서버가 세션에서 추출)
+  if (USER_ROLE === 'ADMIN') {
+    body.professorNo = parseInt(document.getElementById('cc_professorNo').value);
+  }
+
+  const btn = document.getElementById('btnCreateSubmit');
+  btn.disabled = true;
+  btn.textContent = '처리 중…';
+
+  fetch(CTX_PATH + '/course/create', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+    body: JSON.stringify(body)
+  })
+  .then(r => r.json())
+  .then(data => {
+    if (data.success) {
+      const msg = USER_ROLE === 'PROFESSOR'
+        ? '✅ 강의 개설 신청이 완료됐습니다. 관리자 승인 후 활성화됩니다.'
+        : '✅ 강의가 개설되었습니다.';
+      showToast(msg, 'green');
+      closeCreateModal();
+      // 내 강의 탭(교수) 또는 전체 목록(관리자) 재로드
+      loadAllCourses();
+      if (USER_ROLE === 'PROFESSOR') loadMyCourses();
+    } else {
+      showToast('❌ ' + (data.message || '강의 개설에 실패했습니다.'), 'red');
+    }
+  })
+  .catch(() => showToast('⚠️ 서버 오류가 발생했습니다.', 'red'))
+  .finally(() => {
+    btn.disabled = false;
+    btn.textContent = '개설 신청';
+  });
+}
+
+/* 모달 바깥 클릭 시 닫기 */
+document.getElementById('createModalOverlay') && document.getElementById('createModalOverlay').addEventListener('click', function(e) {
+  if (e.target === this) closeCreateModal();
+});
+
+/* ================================================================
+   개발용 목업 데이터 — 서버 연동 후 제거
 ================================================================ */
 const MOCK_COURSES = [
   { course_no:1, course_name:'고급 영어 회화', professor_name:'김영어', course_type:'GENERAL_ELECTIVE',
     credits:3, day_of_week:'월', start_time:'09:00', end_time:'12:00', room_info:'A동 201',
-    max_students:30, enrolled:25, status:'APPROVED', curriculum_pdf:null },
+    max_students:30, enrolled:25, status:'ACTIVE', curriculum_pdf:null },
   { course_no:2, course_name:'데이터베이스 설계', professor_name:'이컴공', course_type:'MAJOR_REQUIRED',
     credits:3, day_of_week:'화', start_time:'13:00', end_time:'16:00', room_info:'공학관 305',
-    max_students:35, enrolled:35, status:'APPROVED', curriculum_pdf:null },
+    max_students:35, enrolled:35, status:'ACTIVE', curriculum_pdf:null },
   { course_no:3, course_name:'경제학 원론', professor_name:'박경제', course_type:'GENERAL_REQUIRED',
     credits:2, day_of_week:'수', start_time:'10:00', end_time:'12:00', room_info:'본관 102',
-    max_students:50, enrolled:30, status:'APPROVED', curriculum_pdf:null },
+    max_students:50, enrolled:30, status:'PENDING', curriculum_pdf:null },
   { course_no:4, course_name:'알고리즘', professor_name:'최알고', course_type:'MAJOR_ELECTIVE',
     credits:3, day_of_week:'목', start_time:'14:00', end_time:'17:00', room_info:'공학관 201',
-    max_students:40, enrolled:38, status:'APPROVED', curriculum_pdf:null },
-  { course_no:5, course_name:'선형대수학', professor_name:'정수학', course_type:'MAJOR_REQUIRED',
-    credits:3, day_of_week:'금', start_time:'09:00', end_time:'12:00', room_info:'이과관 101',
-    max_students:45, enrolled:20, status:'APPROVED', curriculum_pdf:null },
+    max_students:40, enrolled:38, status:'INACTIVE', curriculum_pdf:null },
 ];
 const MOCK_MINE = [
   { course_no:1, course_name:'고급 영어 회화', professor_name:'김영어', course_type:'GENERAL_ELECTIVE',
@@ -1139,18 +1722,32 @@ const MOCK_MINE = [
   { course_no:3, course_name:'경제학 원론', professor_name:'박경제', course_type:'GENERAL_REQUIRED',
     credits:2, day_of_week:'수', start_time:'10:00', end_time:'12:00', room_info:'본관 102', status:'APPLIED' },
 ];
+const MOCK_PROF_COURSES = [
+  { course_no:10, course_name:'운영체제', professor_name:'홍길동', course_type:'MAJOR_REQUIRED',
+    credits:3, day_of_week:'월,수', start_time:'10:00', end_time:'12:00', room_info:'공학관 401',
+    max_students:40, enrolled:32, status:'ACTIVE' },
+  { course_no:11, course_name:'컴파일러', professor_name:'홍길동', course_type:'MAJOR_ELECTIVE',
+    credits:3, day_of_week:'금', start_time:'13:00', end_time:'16:00', room_info:'공학관 302',
+    max_students:30, enrolled:18, status:'PENDING' },
+];
 
 /* ================================================================
    초기 로드
-   DOMContentLoaded 시 내 수강 목록 먼저 로드 (enrolledSet 채우기)
-   → 완료 후 전체 강의 목록 로드 (신청 버튼 상태 정확히 표시)
-   ⚠️ 현재 두 fetch가 병렬 실행됨 — enrolledSet이 채워지기 전에
-      renderAllTable이 실행될 수 있으므로, 정확한 순서가 필요하면
-      loadMyCourses().then(() => loadAllCourses()) 형태로 순차 처리 권장
+   STUDENT  : 내 수강 목록 먼저 → enrolledSet 채운 후 전체 목록 (시간충돌 버튼 정확히 표시)
+   PROFESSOR: 전체 목록 + 내 강의 병렬 로드
+   ADMIN    : 전체 목록만
 ================================================================ */
 window.addEventListener('DOMContentLoaded', () => {
-  loadMyCourses();
-  loadAllCourses();
+  if (USER_ROLE === 'STUDENT') {
+    // enrolledSet이 채워진 후 전체 목록 로드 → 신청/취소/충돌 버튼 정확히 표시
+    loadMyCourses().finally(() => loadAllCourses());
+  } else if (USER_ROLE === 'PROFESSOR') {
+    loadAllCourses();
+    loadMyCourses();
+  } else {
+    // ADMIN
+    loadAllCourses();
+  }
 });
 </script>
 </body>

@@ -2,6 +2,8 @@ package dto;
 
 import java.time.LocalDateTime;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -21,6 +23,7 @@ public class Course {
     private String end_time;
     private int max_students;
     private String status;
+    @JsonIgnore
     private LocalDateTime created_at;
     private String semester;
     private int credits;

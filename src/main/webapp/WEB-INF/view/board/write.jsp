@@ -57,6 +57,13 @@
         </form>
     </div>
 </main>
-
+<script>
+    document.getElementById('uploadFile').addEventListener('change', function () {
+        const display = document.querySelector('.file-text');
+        display.textContent = this.files.length > 0
+            ? this.files[0].name
+            : '클릭하여 파일을 선택하거나 드래그하세요.';
+    });
+</script>
 </body>
 </html>

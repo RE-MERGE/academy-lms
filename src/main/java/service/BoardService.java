@@ -7,10 +7,14 @@ import exception.PostAccessDeniedException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 @Service
 public class BoardService {
@@ -21,33 +25,67 @@ public class BoardService {
     private int PAGE_SIZE;
     @Value("${page.block-size}")
     private int BLOCK_SIZE;
+    @Value("${file.upload.path}")
+    String uploadPath;
 
-    public void insertPost(PostCreate board, int writerNo, UserRole role) {
-        // 공지 게시판은 PROFESSOR, ADMIN만 작성 가능
-//        if ("NOTICE".equals(board.getBoardType())) {
-//            if (role != role.PROFESSOR && role.ADMIN) {
-//                throw new PostAccessDeniedException("공지 게시판 작성 권한이 없습니다.");
-//            }
-//        }
+    public PostDetail detailPost(int boardNo) {
+        return boardDao.detailPost(boardNo);
+    }
+
+    public void insertPost(PostCreate board, int writerNo) {
+        MultipartFile uploadFile = board.getUploadFile();
+
+        if (uploadFile != null && !uploadFile.isEmpty()) {
+            // 디렉토리 없으면 자동 생성
+            File dir = new File(uploadPath);
+            if (!dir.exists()) {
+                dir.mkdirs(); // ← 이게 없으면 저장 실패
+            }
+
+            String originalName = uploadFile.getOriginalFilename();
+            String savedName = UUID.randomUUID() + "_" + originalName;
+            File dest = new File(uploadPath + File.separator + savedName);
+            try {
+                uploadFile.transferTo(dest);
+            } catch (IOException e) {
+                throw new RuntimeException("파일 저장 실패", e);
+            }
+            board.setFileUrl(savedName);
+        }
+
         boardDao.insertPost(board, writerNo);
     }
 
-    public PostDetail postDetail(int boardNo) {
-        return boardDao.postDetail(boardNo);
-    }
+    public void updatePost(PostUpdate postUpdate) {
+        MultipartFile uploadFile = postUpdate.getUploadFile();
 
+        if (uploadFile != null && !uploadFile.isEmpty()) {
+            // 기존 파일 삭제
+            String oldFileUrl = postUpdate.getFileUrl();
+            if (oldFileUrl != null) {
+                File oldFile = new File(uploadPath + oldFileUrl);
+                if (oldFile.exists()) {
+                    oldFile.delete();
+                }
+            }
 
-    public void updatePost(PostUpdate postUpdate, int userNo) {
-        PostDetail post = boardDao.postDetail(postUpdate.getBoardNo());
-        if (post.getWriterNo() != userNo) {
-            throw new PostAccessDeniedException();
+            // 새 파일 저장
+            String savedName = UUID.randomUUID() + "_" + uploadFile.getOriginalFilename();
+            File dest = new File(uploadPath + File.separator + savedName);
+            try {
+                uploadFile.transferTo(dest);
+            } catch (IOException e) {
+                throw new RuntimeException("파일 저장 실패", e);
+            }
+            postUpdate.setFileUrl(savedName);
         }
+
         boardDao.updatePost(postUpdate);
     }
 
-    public void deletePost(String boardNo, int userNo) {
-        PostDetail post = boardDao.postDetail(Integer.parseInt(boardNo));
-        if (post.getWriterNo() != userNo) {
+    public void deletePost(String boardNo, int userNo, UserRole role) {
+        PostDetail post = boardDao.detailPost(Integer.parseInt(boardNo));
+        if (role != UserRole.ADMIN && post.getWriterNo() != userNo) {
             throw new PostAccessDeniedException();
         }
         boardDao.deletePost(boardNo);

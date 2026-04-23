@@ -101,11 +101,12 @@
   </div>
 
   <!-- 수정 폼 -->
-  <form method="post" action="updatePost"
+  <form method="post" action="update"
         enctype="multipart/form-data">
 
     <input type="hidden" name="boardNo" value="${post.boardNo}">
-
+    <input type="hidden" name="boardType" value="${post.boardType}">
+    <input type="hidden" name="boardNo" value="${post.boardNo}">
     <!-- 제목 -->
     <div class="form-group" style="margin-bottom: 1rem;">
       <label>제목</label>

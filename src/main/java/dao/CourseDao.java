@@ -1,6 +1,7 @@
 package dao;
 
 import java.util.List;
+import java.util.Map;
 
 import org.mybatis.spring.SqlSessionTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,6 +53,13 @@ public class CourseDao {
 	public List<Course> getlist(String semester) {
 		return template.getMapper(cls).getlist(semester);
 	}
+
+
+
+	public List<Map<String, Object>> getStudentMyCourseMap(int userNo, String semester) {
+		return template.getMapper(cls).getStudentMyCourseMap(userNo,semester);
+	}
+
 	public List<Course> getMyCourse(int userNo, String semester) {
 		return template.getMapper(cls).getMyCourse(userNo,semester);
 	}
@@ -61,4 +69,12 @@ public class CourseDao {
 	public Course findByCourseNo(Integer courseNo) {
 		return template.getMapper(cls).find(courseNo);
 	}
+
+    public List<Map<String, Object>> getProfessorMyCourseMap(int userNo, String semester) {
+		return template.getMapper(cls).getProfessorMyCourseMap(userNo, semester);
+    }
+
+    public List<Map<String, Object>> getListWithProfessorName(String semester) {
+		return template.getMapper(cls).getListWithProfessorName(semester);
+    }
 }

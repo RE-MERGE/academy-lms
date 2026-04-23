@@ -408,146 +408,6 @@
     .btn-sm { padding:.38rem .9rem; font-size:.8rem; font-weight:600; border-radius:var(--radius-sm); cursor:pointer; border:none; font-family:'Pretendard','Noto Sans KR',sans-serif; }
     .btn-sm.primary { background:var(--primary); color:var(--white); }
     .btn-sm.gray    { background:var(--gray-100); color:var(--gray-600); border:1px solid var(--gray-200); }
-
-    /* ── 강의 개설 모달 ── */
-    .create-modal-overlay {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,.4);
-      z-index: 1100;
-      align-items: center;
-      justify-content: center;
-    }
-    .create-modal-overlay.active { display: flex; }
-    .create-modal {
-      background: var(--white);
-      border-radius: var(--radius-lg);
-      width: 560px;
-      max-height: 90vh;
-      overflow-y: auto;
-      box-shadow: 0 12px 40px rgba(0,0,0,.18);
-      display: flex;
-      flex-direction: column;
-    }
-    .create-modal-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 1.2rem 1.6rem;
-      border-bottom: 1.5px solid var(--gray-100);
-      flex-shrink: 0;
-    }
-    .create-modal-header h3 {
-      font-family: 'DM Serif Display', serif;
-      font-size: 1.15rem;
-      color: var(--gray-900);
-      margin: 0;
-    }
-    .create-modal-close {
-      width: 28px; height: 28px;
-      display: flex; align-items: center; justify-content: center;
-      border: none; background: var(--gray-100);
-      border-radius: 50%;
-      cursor: pointer;
-      font-size: .9rem;
-      color: var(--gray-500);
-      transition: background .15s;
-    }
-    .create-modal-close:hover { background: var(--gray-200); }
-    .create-modal-body { padding: 1.4rem 1.6rem; display: flex; flex-direction: column; gap: 1rem; }
-    .form-row { display: flex; gap: .8rem; }
-    .form-row .form-group { flex: 1; }
-    .form-group { display: flex; flex-direction: column; gap: .32rem; }
-    .form-label {
-      font-size: .75rem;
-      font-weight: 700;
-      color: var(--gray-600);
-      letter-spacing: .03em;
-    }
-    .form-label .req { color: #ef4444; margin-left: .15rem; }
-    .form-input, .form-select-field, .form-textarea {
-      padding: .48rem .75rem;
-      border: 1.5px solid var(--gray-200);
-      border-radius: var(--radius-md);
-      font-family: 'Pretendard', 'Noto Sans KR', sans-serif;
-      font-size: .84rem;
-      color: var(--gray-800);
-      background: var(--white);
-      transition: border-color .15s, box-shadow .15s;
-      width: 100%;
-      box-sizing: border-box;
-    }
-    .form-input:focus, .form-select-field:focus, .form-textarea:focus {
-      outline: none;
-      border-color: var(--primary-light);
-      box-shadow: 0 0 0 3px rgba(59,130,246,.1);
-    }
-    .form-input::placeholder { color: var(--gray-300); }
-    .form-select-field {
-      appearance: none;
-      -webkit-appearance: none;
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%239ca3af' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
-      background-repeat: no-repeat;
-      background-position: right .65rem center;
-      padding-right: 2rem;
-      cursor: pointer;
-    }
-    .form-textarea { resize: vertical; min-height: 72px; line-height: 1.5; }
-    .day-checkbox-group {
-      display: flex;
-      gap: .4rem;
-      flex-wrap: wrap;
-    }
-    .day-cb-label {
-      display: flex;
-      align-items: center;
-      gap: .28rem;
-      padding: .32rem .7rem;
-      border: 1.5px solid var(--gray-200);
-      border-radius: var(--radius-sm);
-      font-size: .8rem;
-      font-weight: 600;
-      color: var(--gray-600);
-      cursor: pointer;
-      transition: all .14s;
-      user-select: none;
-    }
-    .day-cb-label:has(input:checked) {
-      background: var(--primary-pale);
-      border-color: var(--primary);
-      color: var(--primary);
-    }
-    .day-cb-label input { accent-color: var(--primary); }
-    .form-hint { font-size: .72rem; color: var(--gray-400); margin-top: .1rem; }
-    .form-error { font-size: .72rem; color: #b91c1c; margin-top: .1rem; display: none; }
-    .form-input.error, .form-select-field.error { border-color: #fca5a5; }
-    .create-modal-footer {
-      padding: .9rem 1.6rem;
-      border-top: 1px solid var(--gray-100);
-      display: flex;
-      justify-content: flex-end;
-      gap: .6rem;
-      flex-shrink: 0;
-    }
-    /* 강의 개설 버튼 (헤더 우측) */
-    .btn-create-course {
-      display: flex;
-      align-items: center;
-      gap: .4rem;
-      padding: .45rem 1rem;
-      background: var(--primary);
-      color: var(--white);
-      border: none;
-      border-radius: var(--radius-md);
-      font-family: 'Pretendard', 'Noto Sans KR', sans-serif;
-      font-size: .82rem;
-      font-weight: 700;
-      cursor: pointer;
-      transition: all .15s;
-      box-shadow: 0 2px 8px rgba(29,78,216,.2);
-    }
-    .btn-create-course:hover { background: var(--primary-mid); transform: translateY(-1px); }
   </style>
 </head>
 <body>
@@ -577,7 +437,7 @@
         <div style="display:flex; align-items:center; gap:.7rem;">
           <%-- 강의 개설 버튼: PROFESSOR / ADMIN 에게만 표시 --%>
           <c:if test="${user.role == 'PROFESSOR' || user.role == 'ADMIN'}">
-            <button class="btn-create-course" onclick="openCreateModal()">
+            <button class="btn-create-course" onclick="location.href=CTX_PATH+'/enrollment/courseCreate'">
               ＋ 강의 개설
             </button>
           </c:if>
@@ -675,7 +535,7 @@
           <button class="btn-filter-reset" onclick="resetFilters()">초기화</button>
           <div class="filter-search-wrap">
             <span class="filter-search-icon">🔎</span>
-            <input type="text" id="searchKeyword" placeholder="강의명 / 교수명 검색" oninput="debounceSearch()">
+            <input type="text" id="searchKeyword" placeholder="강의명 / 교수명 검색" onkeydown="if(event.key==='Enter'){currentPage=1;loadAllCourses();}">
           </div>
         </div>
 
@@ -835,145 +695,7 @@
   </div>
 </c:if>
 
-<%-- ====== 강의 개설 모달 (PROFESSOR / ADMIN 공통) ====== --%>
-<%--
-  POST /course/create
-  요청 body:
-    courseName    : 강의명 (필수)
-    courseType    : 강의 유형 enum (필수)
-    credits       : 학점 1~3 (필수)
-    dayOfWeek     : 요일 콤마 구분 "월,수" (필수)
-    startTime     : 시작시간 "HH:mm" (필수)
-    endTime       : 종료시간 "HH:mm" (필수)
-    roomInfo      : 강의실 (선택)
-    maxStudents   : 최대 수강인원 (필수)
-    professorNo   : 교수 번호 — ADMIN이 직접 선택, PROFESSOR는 서버에서 세팅
-    description   : 강의 설명 (선택)
-  응답: { success: true/false, message: '...', courseNo: N }
 
-  Course 초기 status:
-    PROFESSOR가 개설 → PENDING  (관리자 승인 필요)
-    ADMIN이 개설    → ACTIVE   (바로 활성화)
---%>
-<c:if test="${user.role == 'PROFESSOR' || user.role == 'ADMIN'}">
-<div class="create-modal-overlay" id="createModalOverlay">
-  <div class="create-modal">
-    <div class="create-modal-header">
-      <h3>📚 강의 개설</h3>
-      <button class="create-modal-close" onclick="closeCreateModal()">✕</button>
-    </div>
-    <div class="create-modal-body">
-
-      <%-- 강의명 --%>
-      <div class="form-group">
-        <label class="form-label">강의명 <span class="req">*</span></label>
-        <input type="text" class="form-input" id="cc_courseName" placeholder="예) 데이터구조 및 알고리즘">
-        <span class="form-error" id="err_courseName">강의명을 입력해주세요.</span>
-      </div>
-
-      <%-- 유형 / 학점 --%>
-      <div class="form-row">
-        <div class="form-group">
-          <label class="form-label">강의 유형 <span class="req">*</span></label>
-          <select class="form-select-field" id="cc_courseType">
-            <option value="">선택</option>
-            <option value="MAJOR_REQUIRED">전공필수</option>
-            <option value="MAJOR_ELECTIVE">전공선택</option>
-            <option value="GENERAL_REQUIRED">교양필수</option>
-            <option value="GENERAL_ELECTIVE">교양선택</option>
-            <option value="FREE_ELECTIVE">일반선택</option>
-          </select>
-          <span class="form-error" id="err_courseType">강의 유형을 선택해주세요.</span>
-        </div>
-        <div class="form-group">
-          <label class="form-label">학점 <span class="req">*</span></label>
-          <select class="form-select-field" id="cc_credits">
-            <option value="">선택</option>
-            <option value="1">1학점</option>
-            <option value="2">2학점</option>
-            <option value="3">3학점</option>
-          </select>
-          <span class="form-error" id="err_credits">학점을 선택해주세요.</span>
-        </div>
-        <div class="form-group">
-          <label class="form-label">최대 수강인원 <span class="req">*</span></label>
-          <input type="number" class="form-input" id="cc_maxStudents" min="1" max="200" placeholder="예) 30">
-          <span class="form-error" id="err_maxStudents">수강인원을 입력해주세요.</span>
-        </div>
-      </div>
-
-      <%-- 요일 --%>
-      <div class="form-group">
-        <label class="form-label">수업 요일 <span class="req">*</span></label>
-        <div class="day-checkbox-group" id="cc_dayGroup">
-          <label class="day-cb-label"><input type="checkbox" value="월"> 월</label>
-          <label class="day-cb-label"><input type="checkbox" value="화"> 화</label>
-          <label class="day-cb-label"><input type="checkbox" value="수"> 수</label>
-          <label class="day-cb-label"><input type="checkbox" value="목"> 목</label>
-          <label class="day-cb-label"><input type="checkbox" value="금"> 금</label>
-        </div>
-        <span class="form-error" id="err_day">요일을 하나 이상 선택해주세요.</span>
-      </div>
-
-      <%-- 시작 / 종료 시간 --%>
-      <div class="form-row">
-        <div class="form-group">
-          <label class="form-label">시작 시간 <span class="req">*</span></label>
-          <input type="time" class="form-input" id="cc_startTime" min="09:00" max="21:00">
-          <span class="form-error" id="err_startTime">시작 시간을 입력해주세요.</span>
-        </div>
-        <div class="form-group">
-          <label class="form-label">종료 시간 <span class="req">*</span></label>
-          <input type="time" class="form-input" id="cc_endTime" min="09:00" max="22:00">
-          <span class="form-error" id="err_endTime">종료 시간을 입력해주세요.</span>
-        </div>
-        <div class="form-group">
-          <label class="form-label">강의실</label>
-          <input type="text" class="form-input" id="cc_roomInfo" placeholder="예) 공학관 301">
-        </div>
-      </div>
-
-      <%-- ADMIN 전용: 교수 선택 드롭다운 --%>
-      <c:if test="${user.role == 'ADMIN'}">
-        <div class="form-group">
-          <label class="form-label">담당 교수 <span class="req">*</span></label>
-          <%--
-            실제 운영 시: 컨트롤러에서 professorList를 model에 담아
-            <c:forEach var="p" items="${professorList}"> 로 option 생성
-            지금은 JS로 AJAX 로드하는 방식을 사용 (openCreateModal 시 호출)
-          --%>
-          <select class="form-select-field" id="cc_professorNo">
-            <option value="">교수 목록 로딩 중…</option>
-          </select>
-          <span class="form-error" id="err_professorNo">담당 교수를 선택해주세요.</span>
-        </div>
-      </c:if>
-
-      <%-- PROFESSOR 전용: 본인이 담당, 안내 문구만 표시 --%>
-      <c:if test="${user.role == 'PROFESSOR'}">
-        <div class="form-group">
-          <label class="form-label">담당 교수</label>
-          <div class="form-input" style="background:var(--gray-50); color:var(--gray-500); cursor:default;">
-            ${user.name} (본인)
-          </div>
-          <p class="form-hint">개설된 강의는 관리자 승인 후 ACTIVE 상태로 전환됩니다.</p>
-        </div>
-      </c:if>
-
-      <%-- 강의 설명 --%>
-      <div class="form-group">
-        <label class="form-label">강의 설명</label>
-        <textarea class="form-textarea" id="cc_description" placeholder="강의 목표, 주요 내용, 평가 방식 등을 간략히 입력하세요."></textarea>
-      </div>
-
-    </div><%-- /create-modal-body --%>
-    <div class="create-modal-footer">
-      <button class="btn-sm gray" onclick="closeCreateModal()">취소</button>
-      <button class="btn-sm primary" onclick="submitCreateCourse()" id="btnCreateSubmit">개설 신청</button>
-    </div>
-  </div>
-</div>
-</c:if>
 <script>
 /* ================================================================
    전역 설정
@@ -989,7 +711,6 @@ const PAGE_SIZE  = 10;
 let totalPages   = 1;
 let enrolledSet  = new Set();   // STUDENT: 신청 courseNo Set
 let myCourses    = [];          // STUDENT: 신청목록 / PROFESSOR: 담당강의목록
-let searchTimer  = null;
 let selectedNos  = new Set();   // ADMIN: 체크박스 선택된 courseNo Set
 
 /* ================================================================
@@ -1060,7 +781,7 @@ function renderAllTable(courses) {
 
   tbody.innerHTML = courses.map((c, i) => {
     const credits      = c.credits != null ? c.credits : 3;
-    const enrolledCount = c.enrolled != null ? c.enrolled : 0;
+    const enrolledCount = c.counts != null ? c.counts : 0;
     const pct          = c.max_students ? Math.round(enrolledCount / c.max_students * 100) : 0;
     const capClass     = pct >= 100 ? 'full' : pct >= 80 ? 'warn' : '';
     const pdfHtml      = c.curriculum_pdf
@@ -1173,7 +894,7 @@ function renderMineTable() {
       </td>`;
     } else if (USER_ROLE === 'PROFESSOR') {
       // 교수: 수강인원 표시
-      const enrolled = c.enrolled != null ? c.enrolled : 0;
+      const enrolled = c.counts != null ? c.counts : 0;
       const max = c.max_students != null ? c.max_students : '-';
       lastCell = `<td style="text-align:center;font-size:.82rem;font-weight:600;color:var(--gray-700);">\${enrolled} / \${max}</td>`;
     }
@@ -1224,7 +945,7 @@ function hasTimeConflict(newCourse) {
     const dayOverlap = newDays.some(d => mDays.includes(d));
     const timeOverlap = nsh < meh && neh > msh;
     return dayOverlap && timeOverlap;
-  });
+  }); 
 }
 function parseDays(str) {
   return str ? str.split(',').map(d => d.replace(/요일/, '').trim()) : [];
@@ -1381,7 +1102,7 @@ function renderTimetable() {
 
   // PROFESSOR는 ACTIVE 강의만
   const displayCourses = USER_ROLE === 'PROFESSOR'
-    ? myCourses.filter(c => c.status === 'ACTIVE')
+    ? myCourses.filter(c => c.status === 'APPROVED')
     : myCourses;
 
   const DAY_IDX = {'월':0,'화':1,'수':2,'목':3,'금':4};
@@ -1412,7 +1133,7 @@ function renderTimetable() {
         block.className = 'tt-course-block';
         let extra = '';
         if (USER_ROLE === 'PROFESSOR') {
-          extra = `<div class="tt-status" style="color:#15803d;">● ACTIVE</div>`;
+          extra = `<div class="tt-status" style="color:#15803d;">● APPROVED</div>`;
         }
         block.innerHTML = `
           <div>\${escHtml(course.course_name)}</div>
@@ -1428,8 +1149,8 @@ function renderTimetable() {
   if (!displayCourses.length) {
     body.innerHTML = `<div class="empty-state">
       <div class="empty-icon">🗓</div>
-      <div class="empty-text">\${USER_ROLE === 'PROFESSOR' ? '활성(ACTIVE) 강의가 없습니다' : '신청된 수강이 없습니다'}</div>
-      <div class="empty-sub">\${USER_ROLE === 'PROFESSOR' ? '강의 상태가 ACTIVE인 경우 시간표에 표시됩니다' : '수강신청 후 시간표가 표시됩니다'}</div>
+      <div class="empty-text">\${USER_ROLE === 'PROFESSOR' ? '승인(APPROVED) 강의가 없습니다' : '신청된 수강이 없습니다'}</div>
+      <div class="empty-sub">\${USER_ROLE === 'PROFESSOR' ? '강의 상태가 APPROVED인 경우 시간표에 표시됩니다' : '수강신청 후 시간표가 표시됩니다'}</div>
     </div>`;
   }
 }
@@ -1461,10 +1182,6 @@ function resetFilters() {
   if (fs) fs.value = '';
   currentPage = 1;
   loadAllCourses();
-}
-function debounceSearch() {
-  clearTimeout(searchTimer);
-  searchTimer = setTimeout(() => { currentPage = 1; loadAllCourses(); }, 350);
 }
 
 /* ================================================================
@@ -1523,179 +1240,6 @@ function closeModal() {
   document.getElementById('curriculumFrame').src = '';
 }
 
-/* ================================================================
-   강의 개설 모달 (PROFESSOR / ADMIN)
-================================================================ */
-
-/** 모달 열기 */
-function openCreateModal() {
-  // 폼 초기화
-  resetCreateForm();
-  document.getElementById('createModalOverlay').classList.add('active');
-
-  // ADMIN이면 교수 목록 AJAX 로드
-  if (USER_ROLE === 'ADMIN') {
-    loadProfessorList();
-  }
-}
-
-/** 모달 닫기 */
-function closeCreateModal() {
-  document.getElementById('createModalOverlay').classList.remove('active');
-}
-
-/** ADMIN 전용: 교수 목록 로드 */
-function loadProfessorList() {
-  const sel = document.getElementById('cc_professorNo');
-  if (!sel) return;
-  sel.innerHTML = '<option value="">로딩 중…</option>';
-
-  fetch(CTX_PATH + '/admin/professor/list', {
-    headers: { 'X-Requested-With': 'XMLHttpRequest' }
-  })
-  .then(r => r.json())
-  .then(data => {
-    const list = data.professors || [];
-    sel.innerHTML = '<option value="">교수 선택</option>'
-      + list.map(p => `<option value="\${p.professorNo}">\${escHtml(p.name)}</option>`).join('');
-  })
-  .catch(() => {
-    // 목업 폴백
-    sel.innerHTML = `
-      <option value="">교수 선택</option>
-      <option value="101">김컴공</option>
-      <option value="102">이수학</option>
-      <option value="103">박경제</option>`;
-  });
-}
-
-/** 폼 초기화 */
-function resetCreateForm() {
-  ['cc_courseName','cc_roomInfo','cc_description','cc_startTime','cc_endTime']
-    .forEach(id => { const el = document.getElementById(id); if(el) el.value = ''; });
-  ['cc_courseType','cc_credits','cc_maxStudents']
-    .forEach(id => { const el = document.getElementById(id); if(el) el.value = ''; });
-  if (document.getElementById('cc_professorNo'))
-    document.getElementById('cc_professorNo').value = '';
-  document.querySelectorAll('#cc_dayGroup input[type=checkbox]')
-    .forEach(cb => cb.checked = false);
-  // 에러 메시지 숨김, 에러 클래스 제거
-  document.querySelectorAll('.form-error').forEach(e => e.style.display = 'none');
-  document.querySelectorAll('.create-modal .form-input, .create-modal .form-select-field')
-    .forEach(el => el.classList.remove('error'));
-}
-
-/** 유효성 검사 — 에러 있으면 false 반환 */
-function validateCreateForm() {
-  let valid = true;
-  const required = [
-    { id: 'cc_courseName',  errId: 'err_courseName',  msg: '강의명을 입력해주세요.' },
-    { id: 'cc_courseType',  errId: 'err_courseType',  msg: '강의 유형을 선택해주세요.' },
-    { id: 'cc_credits',     errId: 'err_credits',     msg: '학점을 선택해주세요.' },
-    { id: 'cc_maxStudents', errId: 'err_maxStudents', msg: '최대 수강인원을 입력해주세요.' },
-    { id: 'cc_startTime',   errId: 'err_startTime',   msg: '시작 시간을 입력해주세요.' },
-    { id: 'cc_endTime',     errId: 'err_endTime',     msg: '종료 시간을 입력해주세요.' },
-  ];
-  if (USER_ROLE === 'ADMIN') {
-    required.push({ id: 'cc_professorNo', errId: 'err_professorNo', msg: '담당 교수를 선택해주세요.' });
-  }
-  required.forEach(({ id, errId, msg }) => {
-    const el  = document.getElementById(id);
-    const err = document.getElementById(errId);
-    if (!el || !el.value.trim()) {
-      if (err) { err.textContent = msg; err.style.display = 'block'; }
-      if (el)  el.classList.add('error');
-      valid = false;
-    } else {
-      if (err) err.style.display = 'none';
-      if (el)  el.classList.remove('error');
-    }
-  });
-
-  // 요일 최소 1개
-  const days = [...document.querySelectorAll('#cc_dayGroup input:checked')].map(c => c.value);
-  const dayErr = document.getElementById('err_day');
-  if (!days.length) {
-    if (dayErr) dayErr.style.display = 'block';
-    valid = false;
-  } else {
-    if (dayErr) dayErr.style.display = 'none';
-  }
-
-  // 종료 시간 > 시작 시간
-  const st = document.getElementById('cc_startTime').value;
-  const et = document.getElementById('cc_endTime').value;
-  if (st && et && et <= st) {
-    const err = document.getElementById('err_endTime');
-    if (err) { err.textContent = '종료 시간은 시작 시간 이후여야 합니다.'; err.style.display = 'block'; }
-    document.getElementById('cc_endTime').classList.add('error');
-    valid = false;
-  }
-
-  return valid;
-}
-
-/**
- * 강의 개설 제출
- * POST /course/create
- * PROFESSOR → 서버에서 status=PENDING 세팅, professorNo는 세션에서 추출
- * ADMIN     → status=ACTIVE, professorNo는 폼에서 전달
- */
-function submitCreateCourse() {
-  if (!validateCreateForm()) return;
-
-  const days = [...document.querySelectorAll('#cc_dayGroup input:checked')].map(c => c.value).join(',');
-  const body = {
-    courseName:   document.getElementById('cc_courseName').value.trim(),
-    courseType:   document.getElementById('cc_courseType').value,
-    credits:      parseInt(document.getElementById('cc_credits').value),
-    dayOfWeek:    days,
-    startTime:    document.getElementById('cc_startTime').value,
-    endTime:      document.getElementById('cc_endTime').value,
-    roomInfo:     (document.getElementById('cc_roomInfo')    || {value:''}).value.trim(),
-    maxStudents:  parseInt(document.getElementById('cc_maxStudents').value),
-    description:  (document.getElementById('cc_description') || {value:''}).value.trim(),
-  };
-  // ADMIN만 professorNo 포함 (PROFESSOR는 서버가 세션에서 추출)
-  if (USER_ROLE === 'ADMIN') {
-    body.professorNo = parseInt(document.getElementById('cc_professorNo').value);
-  }
-
-  const btn = document.getElementById('btnCreateSubmit');
-  btn.disabled = true;
-  btn.textContent = '처리 중…';
-
-  fetch(CTX_PATH + '/course/create', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
-    body: JSON.stringify(body)
-  })
-  .then(r => r.json())
-  .then(data => {
-    if (data.success) {
-      const msg = USER_ROLE === 'PROFESSOR'
-        ? '✅ 강의 개설 신청이 완료됐습니다. 관리자 승인 후 활성화됩니다.'
-        : '✅ 강의가 개설되었습니다.';
-      showToast(msg, 'green');
-      closeCreateModal();
-      // 내 강의 탭(교수) 또는 전체 목록(관리자) 재로드
-      loadAllCourses();
-      if (USER_ROLE === 'PROFESSOR') loadMyCourses();
-    } else {
-      showToast('❌ ' + (data.message || '강의 개설에 실패했습니다.'), 'red');
-    }
-  })
-  .catch(() => showToast('⚠️ 서버 오류가 발생했습니다.', 'red'))
-  .finally(() => {
-    btn.disabled = false;
-    btn.textContent = '개설 신청';
-  });
-}
-
-/* 모달 바깥 클릭 시 닫기 */
-document.getElementById('createModalOverlay') && document.getElementById('createModalOverlay').addEventListener('click', function(e) {
-  if (e.target === this) closeCreateModal();
-});
 
 /* ================================================================
    개발용 목업 데이터 — 서버 연동 후 제거

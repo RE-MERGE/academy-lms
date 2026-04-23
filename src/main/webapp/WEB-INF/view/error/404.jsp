@@ -14,7 +14,7 @@
         html, body {
             height: 100%;
             overflow: hidden;
-            background: #0f1f4b;
+            background: #f0f4ff;  /* ← 흰색/밝은 배경 */
             font-family: 'Pretendard', 'Noto Sans KR', sans-serif;
         }
 
@@ -23,8 +23,8 @@
             position: fixed;
             inset: 0;
             background-image:
-                linear-gradient(rgba(255,255,255,.035) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(255,255,255,.035) 1px, transparent 1px);
+                linear-gradient(rgba(37,99,235,.06) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(37,99,235,.06) 1px, transparent 1px);
             background-size: 48px 48px;
             z-index: 0;
         }
@@ -39,19 +39,19 @@
         }
         .bg-blob-1 {
             width: 600px; height: 600px;
-            background: radial-gradient(circle, rgba(37,99,235,.45) 0%, transparent 70%);
+            background: radial-gradient(circle, rgba(37,99,235,.12) 0%, transparent 70%);
             top: -200px; left: -150px;
             animation: blobFloat 8s ease-in-out infinite;
         }
         .bg-blob-2 {
             width: 400px; height: 400px;
-            background: radial-gradient(circle, rgba(59,130,246,.3) 0%, transparent 70%);
+            background: radial-gradient(circle, rgba(59,130,246,.10) 0%, transparent 70%);
             bottom: -100px; right: -100px;
             animation: blobFloat 10s ease-in-out infinite reverse;
         }
         .bg-blob-3 {
             width: 300px; height: 300px;
-            background: radial-gradient(circle, rgba(96,165,250,.2) 0%, transparent 70%);
+            background: radial-gradient(circle, rgba(96,165,250,.08) 0%, transparent 70%);
             top: 40%; left: 60%;
             animation: blobFloat 12s ease-in-out infinite 2s;
         }
@@ -79,9 +79,8 @@
         /* ── 404 숫자 ── */
         .error-code-wrap {
             position: relative;
-            margin-bottom: 4rem;
+            margin-bottom: 2rem;
             animation: fadeDown .5s cubic-bezier(.22,1,.36,1);
-            
         }
 
         .error-code {
@@ -89,7 +88,7 @@
             font-weight: 900;
             line-height: 1;
             letter-spacing: -.04em;
-            background: linear-gradient(135deg, #93c5fd 0%, #3b82f6 40%, #1d4ed8 100%);
+            background: linear-gradient(135deg, #60a5fa 0%, #2563eb 40%, #1d4ed8 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
@@ -106,7 +105,7 @@
             font-weight: 900;
             line-height: 1;
             letter-spacing: -.04em;
-            color: rgba(59,130,246,.12);
+            color: rgba(37,99,235,.08);
             transform: translate(6px, 8px);
             z-index: 0;
             user-select: none;
@@ -115,12 +114,12 @@
         /* ── 아이콘 ── */
         .error-icon-wrap {
             width: 64px; height: 64px;
-            background: rgba(59,130,246,.15);
-            border: 1.5px solid rgba(96,165,250,.3);
+            background: rgba(37,99,235,.08);
+            border: 1.5px solid rgba(37,99,235,.18);
             border-radius: 18px;
             display: flex; align-items: center; justify-content: center;
             font-size: 1.6rem;
-            color: #93c5fd;
+            color: #2563eb;
             margin: 0 auto 1.4rem;
             animation: fadeUp .45s cubic-bezier(.22,1,.36,1) .1s both;
         }
@@ -129,16 +128,16 @@
         .error-title {
             font-size: clamp(1.3rem, 3vw, 1.9rem);
             font-weight: 700;
-            color: #2F3699;
+            color: #1e3a8a;   /* ← 진한 파란색으로 */
             margin-bottom: .6rem;
             animation: fadeUp .45s cubic-bezier(.22,1,.36,1) .15s both;
         }
 
         .error-desc {
-            font-size: .88rem;
-            color:  #737CE3;
-            line-height: 1.7;
-            max-width: 340px;
+            font-size: .95rem;
+            color: #475569;   /* ← 읽기 좋은 회색 */
+            line-height: 1.85;
+            max-width: 380px;
             margin: 0 auto 2rem;
             animation: fadeUp .45s cubic-bezier(.22,1,.36,1) .2s both;
         }
@@ -167,13 +166,13 @@
             cursor: pointer;
             text-decoration: none;
             transition: all .18s;
-            box-shadow: 0 4px 18px rgba(37,99,235,.4);
+            box-shadow: 0 4px 18px rgba(37,99,235,.3);
             letter-spacing: .01em;
         }
         .btn-home:hover {
             background: #1d4ed8;
             transform: translateY(-2px);
-            box-shadow: 0 6px 24px rgba(37,99,235,.55);
+            box-shadow: 0 6px 24px rgba(37,99,235,.45);
         }
         .btn-home:active { transform: translateY(0); }
 
@@ -182,9 +181,9 @@
             align-items: center;
             gap: .45rem;
             padding: .75rem 1.6rem;
-            background: transparent;
-            color: rgba(148,183,255,.8);
-            border: 1.5px solid rgba(96,165,250,.25);
+            background: #fff;
+            color: #2563eb;
+            border: 1.5px solid rgba(37,99,235,.25);
             border-radius: 10px;
             font-family: 'Pretendard', 'Noto Sans KR', sans-serif;
             font-size: .9rem;
@@ -193,11 +192,12 @@
             text-decoration: none;
             transition: all .18s;
             letter-spacing: .01em;
+            box-shadow: 0 2px 8px rgba(37,99,235,.08);
         }
         .btn-back:hover {
-            color: #93c5fd;
-            border-color: rgba(96,165,250,.55);
-            background: rgba(59,130,246,.08);
+            color: #1d4ed8;
+            border-color: rgba(37,99,235,.5);
+            background: #eff6ff;
             transform: translateY(-2px);
         }
         .btn-back:active { transform: translateY(0); }
@@ -211,7 +211,7 @@
             display: flex;
             align-items: center;
             gap: .5rem;
-            color: rgba(148,183,255,.35);
+            color: rgba(37,99,235,.35);
             font-size: .75rem;
             font-weight: 600;
             letter-spacing: .08em;
@@ -221,7 +221,7 @@
         }
         .error-brand-dot {
             width: 6px; height: 6px;
-            background: rgba(96,165,250,.4);
+            background: rgba(37,99,235,.3);
             border-radius: 50%;
         }
 
@@ -236,7 +236,7 @@
         .particle {
             position: absolute;
             width: 3px; height: 3px;
-            background: rgba(96,165,250,.5);
+            background: rgba(37,99,235,.25);
             border-radius: 50%;
             animation: particleDrift linear infinite;
         }
@@ -293,16 +293,14 @@
     <div class="error-code-wrap">
         <div class="error-code-shadow" aria-hidden="true">404</div>
         <div class="error-code">404</div>
-        
     </div>
 
     <!-- 텍스트 -->
-    <h1 class="error-title">
-        <spring:message code="error.page.notFound.title" default="페이지를 찾을 수 없습니다" />
-    </h1>
+    <h1 class="error-title">페이지를 찾을 수 없습니다</h1>
     <p class="error-desc">
-        <spring:message code="error.page.notFound.content" default="요청하신 페이지가 존재하지 않거나 이동되었을 수 있습니다." />
-        <br>주소를 다시 확인해 주세요.
+        요청하신 페이지가 존재하지 않거나<br>
+        이동되었을 수 있습니다.<br>
+        주소를 다시 확인해 주세요.
     </p>
 
     <!-- 버튼 -->

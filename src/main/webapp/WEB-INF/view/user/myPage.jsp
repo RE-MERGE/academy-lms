@@ -214,6 +214,34 @@
             </table>
         </div>
 
+        <%-- 비밀번호 변경 알림 모달 --%>
+        <div id="pwAlertModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.45); z-index:9999; justify-content:center; align-items:center;">
+            <div style="background:#fff; border-radius:16px; padding:36px 40px; max-width:400px; width:90%; box-shadow:0 8px 32px rgba(0,0,0,0.2); text-align:center;">
+                <div style="font-size:48px; margin-bottom:16px;">🔐</div>
+                <h3 style="font-size:1.2rem; font-weight:700; color:#1e3a6e; margin-bottom:10px;">비밀번호 변경 안내</h3>
+                <p style="font-size:0.9rem; color:#64748b; line-height:1.7; margin-bottom:24px;">
+                    마지막 비밀번호 변경 후 <strong id="pwDayCount" style="color:#e74c3c;"></strong>일이 경과했습니다.<br>
+                    보안을 위해 비밀번호를 변경해주세요.
+                </p>
+                <div style="display:flex; gap:10px; justify-content:center; flex-direction:column; align-items:center;">
+                    <label style="display:flex; align-items:center; gap:6px; font-size:0.78rem; color:#94a3b8; cursor:pointer;">
+                        <input type="checkbox" id="skipCheck" style="width:15px; height:15px; cursor:pointer;"/>
+                        90일간 보지 않기
+                    </label>
+                    <div style="display:flex; gap:10px;">
+                        <button onclick="closeModal()"
+                                style="padding:10px 20px; border:1.5px solid #e2e8f0; border-radius:8px; font-size:0.78rem; cursor:pointer; background:#fff; color:#64748b; white-space:nowrap;">
+                            나중에
+                        </button>
+                        <a href="${pageContext.request.contextPath}/user/updatePwForm"
+                           style="padding:10px 20px; background:#1e3a6e; border-radius:8px; font-size:0.78rem; font-weight:700; color:#fff; text-decoration:none; display:flex; align-items:center; white-space:nowrap;">
+                            변경하기
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div class="profile-actions">
             <a href="${pageContext.request.contextPath}/user/editProfile" class="btn-action btn-action-primary">회원정보 수정</a>
             <a href="${pageContext.request.contextPath}/user/updatePwForm" class="btn-action btn-action-outline">비밀번호 변경</a>
@@ -601,6 +629,36 @@
             loadMpTimetable();
         }
     });
+
+    window.addEventListener('DOMContentLoaded', function() {
+        var pwDays = Math.floor((new Date() - new Date('${sessionUser.last_password_changed}')) / (1000 * 60 * 60 * 24));
+
+        if (pwDays >= 90) {
+            // 7일간 안보기 체크
+            var skipUntil = localStorage.getItem('pwAlertSkipUntil');
+            if (skipUntil && new Date() < new Date(skipUntil)) {
+                return; // 스킵 기간이면 모달 안 띄움
+            }
+            document.getElementById('pwDayCount').textContent = pwDays;
+            document.getElementById('pwAlertModal').style.display = 'flex';
+        }
+    });
+
+    function skipPwAlert() {
+        var skipDate = new Date();
+        skipDate.setDate(skipDate.getDate() + 7); // 7일 후
+        localStorage.setItem('pwAlertSkipUntil', skipDate.toISOString());
+        document.getElementById('pwAlertModal').style.display = 'none';
+    }
+    function closeModal() {
+        var checked = document.getElementById('skipCheck').checked;
+        if (checked) {
+            var skipDate = new Date();
+            skipDate.setDate(skipDate.getDate() + 90); // 90일
+            localStorage.setItem('pwAlertSkipUntil', skipDate.toISOString());
+        }
+        document.getElementById('pwAlertModal').style.display = 'none';
+    }
 </script>
 </body>
 </html>

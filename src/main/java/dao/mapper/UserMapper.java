@@ -46,7 +46,7 @@ public interface UserMapper {
     @Select("SELECT password FROM USERS WHERE user_id=#{userId} AND email=#{email} AND phone=#{phone}")
     String selectUserPassword(@Param("userId") String userId, @Param("email") String email, @Param("phone") String phone);
 
-    @Update("UPDATE USERS SET password = #{tempPassword} WHERE user_id = #{userId}")
+    @Update("UPDATE USERS SET password = #{tempPassword}, last_password_changed = now()  WHERE user_id = #{userId}")
     void updatePassword(@Param("userId") String userId, @Param("tempPassword") String tempPassword);
 
     @Update("UPDATE USERS " +
@@ -66,5 +66,9 @@ public interface UserMapper {
     void updateStatus(@Param("userId") String userId, @Param("status") UserStatus userStatus);
 
 
+    @Update("UPDATE USERS SET lock_count=0 WHERE user_id = #{userId}")
+    void resetLockCount(String userId);
 
+    @Update("UPDATE USERS SET lock_count=#{newLockCount} WHERE user_id = #{userId}")
+    void updateLockcOunt(@Param("userId") String userId, @Param("newLockCount") int newLockCount);
 }

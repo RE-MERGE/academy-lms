@@ -226,14 +226,24 @@
             <button class="filter-btn active" id="btn-all"     onclick="filterCourseStatus('all')">전체</button>
             <button class="filter-btn"        id="btn-active"  onclick="filterCourseStatus('active')">진행중인 수업</button>
             <button class="filter-btn"        id="btn-pending" onclick="filterCourseStatus('pending')">대기중인 수업</button>
-            <span class="guide-text">교수가 개설 신청한 강의를 승인 또는 거절할 수 있습니다.</span>
         </div>
 
-        <!-- 오른쪽: 검색 -->
-        <div class="search-wrap">
-            <span style="font-size: 16px; color: #aaa;">🔍</span>
-            <input type="text" id="searchInput" placeholder="" onkeyup="searchTable()"/>
-            <button onclick="searchTable()">검색</button>
+        <!-- 오른쪽: 상태변경 + 검색 -->
+        <div style="display: flex; align-items: center; gap: 8px;">
+            <select id="bulkStatus" style="padding: 7px 14px; border-radius: 6px; border: 1.5px solid #d0d7f0; font-size: 14px; cursor: pointer; min-width: 130px; color: #333;">
+                <option value="">상태 선택</option>
+                <option value="APPROVED">승인</option>
+                <option value="APPLIED">신청</option>
+                <option value="PENDING">대기</option>
+                <option value="CANCELED">거절</option>
+            </select>
+            <button class="btn-confirm" onclick="applyBulkStatus()">확인</button>
+
+            <div class="search-wrap">
+                <span style="font-size: 16px; color: #aaa;">🔍</span>
+                <input type="text" id="searchInput" placeholder="" onkeyup="searchTable()"/>
+                <button onclick="searchTable()">검색</button>
+            </div>
         </div>
 
     </div>

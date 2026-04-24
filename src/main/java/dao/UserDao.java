@@ -51,15 +51,7 @@ public class UserDao {
     }
 
     public void updateInfo(UserEditForm userEditForm) {
-//        param.clear();
-//        param.put("profileImg", userEditForm.getCurrentProfileImg());
-//        param.put("userId", userEditForm.getUserId());
-//        param.put("name", userEditForm.getName());
-//        param.put("email", userEditForm.getEmail());
-//        param.put("phone", userEditForm.getPhone());
-
         template.getMapper(cls).updateInfo(userEditForm);
-//        template.getMapper(cls).updateInfo(param);
     }
 
     public void updateProfileImg(String userId, String currentProfileImg) {
@@ -68,5 +60,13 @@ public class UserDao {
 
     public void updateStatus(String userId, UserStatus userStatus) {
         template.getMapper(cls).updateStatus(userId, userStatus);
+    }
+
+    public void resetLockCount(String userId) {
+        template.getMapper(cls).resetLockCount(userId);
+    }
+
+    public void updateLockCount(String userId, int newLockCount) {
+        template.getMapper(cls).updateLockcOunt(userId, newLockCount);
     }
 }

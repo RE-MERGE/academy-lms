@@ -238,13 +238,13 @@
                 data-role="${user.role}"
                 data-status="${user.status}"
                 data-name="${user.name}"
-                data-student-id="${user.userCode}"
+                data-student-id="${user.userNo}"
                 data-apply-date="${user.createdAt}">
 
                 <td><input type="checkbox" class="row-check" value="${user.userNo}"/></td>
                 <td class="cell-no">${(currentPage - 1) * 10 + status.count}</td>
                 <td>
-                    <a href="${pageContext.request.contextPath}/user/myPage?no=${user.userNo}"
+                    <a href="${pageContext.request.contextPath}/admin/userDetail/${user.userNo}"
                        style="color: #004595; text-decoration: underline; cursor: pointer;">
                         ${user.name}
                     </a>
@@ -335,11 +335,7 @@
     let currentActiveRole = 'all'; // 기본값 all로 변경
 
     function filterRole(role) {
-        currentActiveRole = role;
-        document.getElementById('btn-all').classList.toggle('active',       role === 'all');
-        document.getElementById('btn-student').classList.toggle('active',   role === 'student');
-        document.getElementById('btn-professor').classList.toggle('active', role === 'professor');
-        applyFilters();
+        location.href = '?page=1&role=' + role;
     }
 
     function applyFilters() {
@@ -386,8 +382,12 @@
 
     // 초기 실행
     document.addEventListener("DOMContentLoaded", function() {
-        filterRole('all');
+        var role = '${currentRole}';
+        document.getElementById('btn-all').classList.toggle('active', role === 'all');
+        document.getElementById('btn-student').classList.toggle('active', role === 'student');
+        document.getElementById('btn-professor').classList.toggle('active', role === 'professor');
     });
+
     function applyBulkStatus() {
         const status = document.getElementById('bulkStatus').value;
         if (!status) { alert('변경할 상태를 선택해 주세요.'); return; }

@@ -35,7 +35,6 @@ public class LoginUserArgumentResolver implements HandlerMethodArgumentResolver 
             return null;
         }
 
-
         Object user = session.getAttribute(UserConst.SESSION_USER);
 
         return user;

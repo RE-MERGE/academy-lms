@@ -1,12 +1,12 @@
 package controller;
 
 import config.NaverLoginConfig;
-import dao.UserDao;
 import dto.user.*;
 import dto.user.login.Login;
 import dto.user.login.UpdatePwForm;
 import dto.user.mypage.MyPageData;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.mail.MailSender;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.stereotype.Controller;
@@ -35,7 +35,6 @@ import java.util.UUID;
 public class UserController {
 
     private final UserService userService;
-    private final UserDao userDao;
     private final NaverLoginConfig naverLoginConfig;
     private final NaverLoginService naverLoginService;
     private final MailSender mailSender;
@@ -55,7 +54,7 @@ public class UserController {
             return "user/joinForm";
         }
 
-        User dbUser = userDao.selectUser(userJoinForm.getUserId());
+        User dbUser = userService.selectUser(userJoinForm.getUserId());
 
         //아이디가 중복인 경우
         if (dbUser != null) {
@@ -78,7 +77,7 @@ public class UserController {
 
         User joinUser = createUser(userJoinForm);
 
-        userDao.join(joinUser);
+        userService.join(joinUser);
 
         return "redirect:/home/home";
 
@@ -105,13 +104,23 @@ public class UserController {
             return "home/home";
         }
 
-        User dbUser = userDao.selectUser(loginForm.getUserId());
+        User dbUser = userService.selectUser(loginForm.getUserId());
 
-        if (dbUser == null || loginForm.getPassword() == null ||
-                !loginForm.getPassword().equals(dbUser.getPassword())) {
-
+        if (dbUser == null) {
             bindingResult.reject("error.loginFail");
+        }
 
+        if(!loginForm.getPassword().equals(dbUser.getPassword())) {
+            int newLockCount = dbUser.getLock_count() + 1;
+
+            if (newLockCount >= 5) {
+                userService.updateStatus(loginForm.getUserId(), UserStatus.LOCKED);
+                userService.resetLockCount(loginForm.getUserId());
+                bindingResult.reject("error.status.locked");
+            } else {
+                userService.updateLockCount(loginForm.getUserId(), newLockCount);
+                bindingResult.reject("error.loginFail");
+            }
             return "home/home";
         }
 
@@ -121,6 +130,7 @@ public class UserController {
             return "home/home";
         }
 
+        dbUser.setLock_count(0);
         SessionUser sessionUser = createSessionUser(dbUser);
         session.setAttribute(UserConst.SESSION_USER, sessionUser);
         return "redirect:" + redirectURL;
@@ -141,7 +151,6 @@ public class UserController {
         return "user/myPage";
     }
 
-
     @PostMapping("findId")
     public String findId(@Validated FindIdForm findIdForm, BindingResult bindingResult, Model model) {
 
@@ -151,7 +160,7 @@ public class UserController {
             return "home/findAccount";
         }
 
-        String findUserId = userDao.selectUserIdByEmail(findIdForm.getEmail());
+        String findUserId = userService.selectUserIdByEmail(findIdForm.getEmail());
 
         if (findUserId == null) {
             bindingResult.reject("error.mismatch.info");
@@ -176,7 +185,7 @@ public class UserController {
             return "home/findAccount";
         }
 
-        String findPassword = userDao.selectUserPassword(findPwForm.getUserId(), findPwForm.getEmail(), findPwForm.getPhone());
+        String findPassword = userService.selectUserPassword(findPwForm.getUserId(), findPwForm.getEmail(), findPwForm.getPhone());
 
         if (findPassword == null || findPassword.trim().isEmpty()) {
 
@@ -188,7 +197,7 @@ public class UserController {
 
         String tempPassword = UUID.randomUUID().toString().substring(0, 8);
 
-        userDao.updatePassword(findPwForm.getUserId(), tempPassword);
+        userService.updatePassword(findPwForm.getUserId(), tempPassword);
 
         try {
             sentTempPasswordEmail(findPwForm.getEmail(), tempPassword);
@@ -275,7 +284,7 @@ public class UserController {
             return "user/editProfile";
         }
 
-        User dbUser = userDao.selectUser(sessionUser.getUserId());
+        User dbUser = userService.selectUser(sessionUser.getUserId());
 
         if (dbUser == null) {
             return "rediredct:/home/home";
@@ -289,10 +298,10 @@ public class UserController {
         if (userEditForm.getProfileImg() != null && !userEditForm.getProfileImg().isEmpty()) {
             String newProfileImgName = saveProfileImage(userEditForm.getProfileImg());
             userEditForm.setCurrentProfileImg(newProfileImgName);
-            userDao.updateProfileImg(userEditForm.getUserId(), userEditForm.getCurrentProfileImg());
+            userService.updateProfileImg(userEditForm.getUserId(), userEditForm.getCurrentProfileImg());
         }
 
-        userDao.updateInfo(userEditForm);
+        userService.updateInfo(userEditForm);
 
         SessionUser updatedUser = new SessionUser(
                 sessionUser.getUserNo(),
@@ -303,7 +312,8 @@ public class UserController {
                 userEditForm.getName(),
                 sessionUser.getRole(),
                 sessionUser.getStatus(),
-                userEditForm.getCurrentProfileImg()
+                userEditForm.getCurrentProfileImg(),
+                sessionUser.getLast_password_changed()
         );
 
         session.setAttribute(UserConst.SESSION_USER, updatedUser);
@@ -328,7 +338,7 @@ public class UserController {
             return "user/updatePwForm";
         }
 
-        User dbUser = userDao.selectUser(updatePwForm.getUserId());
+        User dbUser = userService.selectUser(updatePwForm.getUserId());
 
         //입력한 비밀번호와 현재 비밀번호가 일치하지 않으면
         if (!updatePwForm.getCurrentPassword().equals(dbUser.getPassword())) {
@@ -349,8 +359,8 @@ public class UserController {
             return "user/updatePwForm";
         }
 
-        userDao.updatePassword(updatePwForm.getUserId(), updatePwForm.getNewPassword());
-        User updatePwUser = userDao.selectUser(updatePwForm.getUserId());
+        userService.updatePassword(updatePwForm.getUserId(), updatePwForm.getNewPassword());
+        User updatePwUser = userService.selectUser(updatePwForm.getUserId());
 
         session.setAttribute(UserConst.SESSION_USER, new SessionUser(updatePwUser));
 
@@ -361,7 +371,6 @@ public class UserController {
     @PostMapping("withdraw")
     public String withdraw(@RequestParam("password") String password, @Login SessionUser sessionUser, HttpSession session,
                            RedirectAttributes rttr) {
-
 
         if (sessionUser == null) {
             return "redirect:/home/home";
@@ -453,24 +462,14 @@ public class UserController {
     }
 
     private static SessionUser createSessionUser(User dbUser) {
-        SessionUser sessionUser = new SessionUser(
-                dbUser.getUserNo(),
-                dbUser.getUserCode(),
-                dbUser.getUserId(),
-                dbUser.getEmail(),
-                dbUser.getPhone(),
-                dbUser.getName(),
-                dbUser.getRole(),
-                dbUser.getStatus(),
-                dbUser.getProfileImg()
-        );
+        SessionUser sessionUser = new SessionUser(dbUser);
         return sessionUser;
     }
 
     private int getUserCode() {
 
         int currentYear = LocalDate.now().getYear();
-        Integer lastUserCode = userDao.getLastUserCode();
+        Integer lastUserCode = userService.getLastUserCode();
 
         if (lastUserCode == null) {
             return currentYear * 10000 + 1;

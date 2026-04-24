@@ -3,6 +3,7 @@ package dto.board;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.web.multipart.MultipartFile;
 
 // 등록
 @Data
@@ -13,6 +14,7 @@ public class PostCreate {
     private String boardType;    // 공지, 자유, Q&A
     private String title;
     private String content;
+    private MultipartFile uploadFile;
     private String fileUrl;      // nullable
     private int isSecret;
 }

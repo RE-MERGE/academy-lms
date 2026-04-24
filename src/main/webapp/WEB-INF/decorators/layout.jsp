@@ -1,6 +1,9 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
+<c:if test="${not empty errorMsg}">
+    <script>alert("${errorMsg}");</script>
+</c:if>
 <!DOCTYPE html>
 <html lang="ko">
 
@@ -115,11 +118,11 @@
  	 	<span class="sidebar-section-label">관리자</span>
   	<a href="${pageContext.request.contextPath}/admin/userList" class="sidebar-item">
     	<img src="${pageContext.request.contextPath}/img/icon_Member Management.png" alt="회원관리 아이콘" width="50px" height="50px">
-    	<span class="si-label">전체회원관리</span>
+    	<span class="si-label">전체 회원 관리</span>
   	</a>
   <a href="${pageContext.request.contextPath}/admin/courseList" class="sidebar-item">
     <img src="${pageContext.request.contextPath}/img/icon_Course Management.png" alt="수업관리 아이콘" width="50px" height="50px">
-    <span class="si-label">전체수업관리</span>
+    <span class="si-label">전체 수업 관리</span>
   </a>
 	</c:if>
 	

@@ -1,5 +1,6 @@
 package config;
 
+import interceptor.AdminCheckInterceptor;
 import interceptor.LoginCheckInterceptor;
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.*;
@@ -60,12 +61,12 @@ public class MvcConfig implements WebMvcConfigurer {
         return mr;
     }
 
-    //예외처리 객체 : 예외발생시 예외 처리해 주는 객체
+    // 예외처리 객체 : 예외발생시 예외 처리해 주는 객체
     @Bean
     public SimpleMappingExceptionResolver exceptionHandler() {
         SimpleMappingExceptionResolver ser = new SimpleMappingExceptionResolver();
         Properties pr = new Properties();
-        pr.put("exception.ShopException", "exception");
+        pr.put("PostAccessDeniedException", "exception");
         ser.setExceptionMappings(pr);
         return ser;
     }
@@ -80,7 +81,7 @@ public class MvcConfig implements WebMvcConfigurer {
         return ms;
     }
 
-    //@Validated 사용하기 위해 설정 추가
+    // @Validated 사용하기 위해 설정 추가
     @Bean
     public LocalValidatorFactoryBean validator() {
         LocalValidatorFactoryBean bean = new LocalValidatorFactoryBean();
@@ -88,7 +89,7 @@ public class MvcConfig implements WebMvcConfigurer {
         return bean;
     }
 
-    //@Validated 사용하기 위해 설정 추가
+    // @Validated 사용하기 위해 설정 추가
     @Override
     public Validator getValidator() {
         return validator();
@@ -117,6 +118,11 @@ public class MvcConfig implements WebMvcConfigurer {
                         "/user/naverLogin",
                         "/user/naverCallback"
                 );
+
+        //관리자 전용 권한 체크
+        registry.addInterceptor(new AdminCheckInterceptor())
+                .order(2)
+                .addPathPatterns("/admin/**");
     }
 
     @Bean

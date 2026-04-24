@@ -4,12 +4,14 @@ import config.NaverLoginConfig;
 import dao.CourseDao;
 import dao.EnrollmentDao;
 import dao.UserDao;
-import dto.Course;
 import dto.user.*;
+import dto.user.grade.AdminAllStudentGrade;
+import dto.user.grade.MyGrade;
+import dto.user.grade.MyProfessorGrade;
 import dto.user.login.Login;
 import dto.user.login.UpdatePwForm;
+import dto.user.mypage.MyPageData;
 import lombok.RequiredArgsConstructor;
-import org.mariadb.jdbc.plugin.codec.LocalDateCodec;
 import org.springframework.mail.MailSender;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.stereotype.Controller;
@@ -28,7 +30,6 @@ import java.io.File;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.Month;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -41,7 +42,6 @@ public class UserController {
 
     private final UserService userService;
     private final UserDao userDao;
-    private final EnrollmentDao enrollmentDao;
     private final NaverLoginConfig naverLoginConfig;
     private final NaverLoginService naverLoginService;
     private final MailSender mailSender;
@@ -136,34 +136,17 @@ public class UserController {
     public String myPage(@Login SessionUser sessionUser, Model model) {
 
         String semester = getSemester();
-//        int courseNo = enrollmentDao.getCourse(sessionUser.getUserId());
 
-//        List<Course> courseList = courseDao.getMyCourse(sessionUser.getUserNo(), semester);
+        MyPageData data = userService.getMyPageData(sessionUser, semester);
 
-//        System.out.println("courseList = " + courseList);
-
+        model.addAttribute("courseList", data.getCourseList());
+        model.addAttribute("myGradeList", data.getGradeList());
+        model.addAttribute("semester", semester);
         model.addAttribute(UserConst.SESSION_USER, sessionUser);
-//        model.addAttribute("courseList", courseList);
 
         return "user/myPage";
     }
 
-
-    private String getSemester() {
-
-        String year = String.valueOf(LocalDate.now().getYear());
-        int month = LocalDate.now().getMonthValue();
-
-        String semester = "-";
-
-        if (month <= 6) {
-            month = 1;
-        } else {
-            month = 2;
-        }
-
-        return year += semester += String.valueOf(month);
-    }
 
     @PostMapping("findId")
     public String findId(@Validated FindIdForm findIdForm, BindingResult bindingResult, Model model) {
@@ -560,6 +543,22 @@ public class UserController {
         model.addAttribute("currentPage", page);
         model.addAttribute("totalPages", 1);
         return "user/gradeManage";
+    }
+
+    private String getSemester() {
+
+        String year = String.valueOf(LocalDate.now().getYear());
+        int month = LocalDate.now().getMonthValue();
+
+        String semester = "-";
+
+        if (month <= 6) {
+            month = 1;
+        } else {
+            month = 2;
+        }
+
+        return year += semester += String.valueOf(month);
     }
 
 }

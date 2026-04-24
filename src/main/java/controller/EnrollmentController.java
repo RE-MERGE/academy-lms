@@ -40,11 +40,18 @@ public class EnrollmentController {
 	
 	@GetMapping("courseCreate")
 	public String courseCreate(Model model) {
-	    // 서버에서 현재 학기 계산해서 내려주기
 	    LocalDate now = LocalDate.now();
 	    int month = now.getMonthValue();
-	    String term = (month >= 3 && month <= 8) ? "1" : "2";
-	    model.addAttribute("currentSemester", now.getYear() + "-" + term);
+	    int year = now.getYear();
+	    String term;
+
+	    if (month >= 1 && month <= 6) {
+	        term = "1"; // 1학기, 연도 그대로
+	    } else {
+	        term = "2";
+	    }
+
+	    model.addAttribute("currentSemester", year + "-" + term);
 	    return "enrollment/courseCreate";
 	}
 	

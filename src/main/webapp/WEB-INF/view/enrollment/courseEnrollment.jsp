@@ -802,7 +802,7 @@ function renderAllTable(courses) {
       const isFull    = pct >= 100;
       const conflict  = !applied && !isFull && hasTimeConflict(c);
       const btnClass  = applied ? 'cancel' : isFull ? 'full' : conflict ? 'conflict' : 'apply';
-      const btnText   = applied ? '신청취소' : isFull ? '마감' : conflict ? '시간충돌' : '수강신청';
+      const btnText   = applied ? '신청취소' : isFull ? '마감' : conflict ? '수강불가' : '수강신청';
       const btnAction = applied ? `cancelEnroll(\${c.course_no})`
                       : (!isFull && !conflict) ? `applyEnroll(\${c.course_no})` : '';
       lastCell = `<td style="text-align:center;">

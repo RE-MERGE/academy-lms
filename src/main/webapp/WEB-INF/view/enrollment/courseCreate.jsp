@@ -265,12 +265,8 @@
           <div class="form-label">시작 학기</div>
           <div class="form-field">
             <div class="inline-group">
-              <select class="form-select" id="semester" style="width:140px;">
-                <option value="2026-1">26년 1학기</option>
-                <option value="2026-2" selected>26년 2학기</option>
-                <option value="2027-1">27년 1학기</option>
-                <option value="2027-2">27년 2학기</option>
-              </select>
+              <span style="font-size:.88rem; font-weight:700; color:var(--gray-700);">${currentSemester}</span>
+              <input type="hidden" id="semester" value="${currentSemester}">
               <span class="inline-label">신청 교실</span>
               <select class="form-select" id="roomInfo" style="width:110px;" onchange="loadBlockedSlots()">
                 <option value="101호" selected>101호</option>

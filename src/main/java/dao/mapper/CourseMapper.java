@@ -10,6 +10,7 @@ import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.Update;
 
 import dto.Course;
+import dto.user.User;
 
 public interface CourseMapper {
     @Select("select * from COURSE")
@@ -131,4 +132,34 @@ public interface CourseMapper {
     	int getCount(@Param("semester") String semester, @Param("type") String type,
     	             @Param("credits") String credits, @Param("keyword") String keyword,
     	             @Param("status") String status);
+
+    @Select("SELECT u.user_no AS userNo, u.name, u.user_code AS userCode, u.email " +
+            "FROM USERS u " +
+            "JOIN ENROLLMENT e ON u.user_no = e.student_no " +
+            "WHERE e.course_no = #{no}")
+	public List<User> getStudentList(Integer userNo);
+    
+    @Insert("INSERT INTO GRADE (enrollment_no, score, type, alphabet) " +
+            "VALUES (#{enrollment_no}, #{midterm}, 'MIDTERM', #{alphabet}) " +
+            "ON DUPLICATE KEY UPDATE score = #{midterm}, alphabet = #{alphabet}")
+    void insertMidterm(@Param("enrollment_no") int enrollment_no,
+                       @Param("midterm") int midterm,
+                       @Param("alphabet") String alphabet);
+
+    @Insert("INSERT INTO GRADE (enrollment_no, score, type, alphabet) " +
+            "VALUES (#{enrollment_no}, #{final_score}, 'FINAL', #{alphabet}) " +
+            "ON DUPLICATE KEY UPDATE score = #{final_score}, alphabet = #{alphabet}")
+    void insertFinal(@Param("enrollment_no") int enrollment_no,
+                     @Param("final_score") int final_score,
+                     @Param("alphabet") String alphabet);
+
+    @Insert("INSERT INTO GRADE (enrollment_no, score, type, alphabet) " +
+            "VALUES (#{enrollment_no}, #{attendance}, 'ATTENDANCE', #{alphabet}) " +
+            "ON DUPLICATE KEY UPDATE score = #{attendance}, alphabet = #{alphabet}")
+    void insertAttendance(@Param("enrollment_no") int enrollment_no,
+                          @Param("attendance") int attendance,
+                          @Param("alphabet") String alphabet);
+    
+    @Select("SELECT enrollment_no FROM ENROLLMENT WHERE student_no = #{user_no} AND course_no = #{course_no}")
+	public int getselectEnrollmentNo(@Param("user_no") int user_no, @Param("course_no") int course_no);
 }

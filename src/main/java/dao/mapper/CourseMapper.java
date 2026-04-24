@@ -131,4 +131,12 @@ public interface CourseMapper {
     	int getCount(@Param("semester") String semester, @Param("type") String type,
     	             @Param("credits") String credits, @Param("keyword") String keyword,
     	             @Param("status") String status);
+    @Update("<script>" +
+    	    "UPDATE COURSE SET status = #{status} " +
+    	    "WHERE course_no IN " +
+    	    "<foreach collection='courseNos' item='no' open='(' separator=',' close=')'>" +
+    	    "#{no}" +
+    	    "</foreach>" +
+    	    "</script>")
+    	void updateStatus(@Param("courseNos") List<Integer> courseNos, @Param("status") String status);
 }

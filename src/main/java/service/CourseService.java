@@ -66,4 +66,10 @@ public class CourseService {
 			
 			return coursedao.getCount(semester,type, credits, keyword,status);
 		}
+
+		public void updateStatus(List<Integer> courseNos, String status) {
+			coursedao.updateStatus(courseNos, status);
+			
+		}
+		
 }

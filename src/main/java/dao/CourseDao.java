@@ -87,5 +87,9 @@ public class CourseDao {
 	public int getCount(String semester, String type, String credits, String keyword, String status) {
 		return template.getMapper(cls).getCount(semester, type,credits, keyword, status);
 	}
+	public void updateStatus(List<Integer> courseNos, String status) {
+		template.getMapper(cls).updateStatus(courseNos, status);
+		
+	}
 	
 }

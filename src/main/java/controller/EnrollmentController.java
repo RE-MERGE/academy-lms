@@ -169,5 +169,19 @@ public class EnrollmentController {
 	    return result;
 	}
 	
-	
+	@PostMapping("status")
+	@ResponseBody
+	public Map<String, Object> updateCourseStatus(@RequestBody Map<String, Object> body) {
+	    Map<String, Object> result = new HashMap<>();
+	    try {
+	        List<Integer> courseNos = (List<Integer>) body.get("courseNos");
+	        String status = (String) body.get("status");
+	        courseService.updateStatus(courseNos, status);
+	        result.put("success", true);
+	    } catch (Exception e) {
+	        result.put("success", false);
+	        result.put("message", e.getMessage());
+	    }
+	    return result;
+	}
 }

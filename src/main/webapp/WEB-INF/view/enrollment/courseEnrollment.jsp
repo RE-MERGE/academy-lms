@@ -526,9 +526,8 @@
           <c:if test="${user.role == 'ADMIN'}">
             <select class="filter-select" id="filterStatus" onchange="loadAllCourses(1)">
               <option value="">전체 상태</option>
-              <option value="ACTIVE">활성(ACTIVE)</option>
+              <option value="APPROVED">승인(APPROVED)</option>
               <option value="PENDING">승인대기(PENDING)</option>
-              <option value="INACTIVE">비활성(INACTIVE)</option>
             </select>
           </c:if>
 
@@ -672,19 +671,14 @@
       <h3>⚙ 강의 상태 변경</h3>
       <div class="status-option-group">
         <label class="status-option">
-          <input type="radio" name="statusChoice" value="ACTIVE">
+          <input type="radio" name="statusChoice" value="APPROVED">
           <span>🟢</span>
-          <label>활성 (ACTIVE) — 수강신청 가능, 시간표 노출</label>
+          <label>승인 (APPROVED) — 수강신청 가능, 시간표 노출</label>
         </label>
         <label class="status-option">
           <input type="radio" name="statusChoice" value="PENDING">
           <span>🟡</span>
           <label>승인대기 (PENDING) — 관리자 검토 중</label>
-        </label>
-        <label class="status-option">
-          <input type="radio" name="statusChoice" value="INACTIVE">
-          <span>🔴</span>
-          <label>비활성 (INACTIVE) — 수강신청 불가, 숨김</label>
         </label>
       </div>
       <div class="status-modal-actions">
@@ -802,7 +796,7 @@ function renderAllTable(courses) {
       const isFull    = pct >= 100;
       const conflict  = !applied && !isFull && hasTimeConflict(c);
       const btnClass  = applied ? 'cancel' : isFull ? 'full' : conflict ? 'conflict' : 'apply';
-      const btnText   = applied ? '신청취소' : isFull ? '마감' : conflict ? '시간충돌' : '수강신청';
+      const btnText   = applied ? '신청취소' : isFull ? '마감' : conflict ? '수강불가' : '수강신청';
       const btnAction = applied ? `cancelEnroll(\${c.course_no})`
                       : (!isFull && !conflict) ? `applyEnroll(\${c.course_no})` : '';
       lastCell = `<td style="text-align:center;">
@@ -1070,7 +1064,7 @@ function confirmStatusChange() {
   const chosen = document.querySelector('input[name="statusChoice"]:checked');
   if (!chosen) { showToast('변경할 상태를 선택해주세요.', 'yellow'); return; }
 
-  fetch(CTX_PATH + '/admin/course/status', {
+  fetch(CTX_PATH + '/enrollment/status', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
     body: JSON.stringify({ courseNos: [...selectedNos], status: chosen.value })

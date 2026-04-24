@@ -109,6 +109,61 @@
         .subject-purple { background-color: #f3e5f5; color: #7b1fa2; border-left: 4px solid #7b1fa2; }
         .subject-green { background-color: #e8f5e9; color: #388e3c; border-left: 4px solid #388e3c; }
         .subject-rose { background-color: #ffebee; color: #c2185b; border-left: 4px solid #c2185b; }
+
+        .badge-orange {
+            background-color: #fff3cd;
+            color: #e67e22;
+            border: 1px solid #e67e22;
+        }
+        .grade-badge, .course-badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-top: 4px;
+        }
+        /* --- 시간표 CSS --- */
+        .mp-tt-wrap {
+            width: 90%; margin: auto;
+            background: #fff; border: 1px solid #ddd;
+            border-radius: 10px; overflow: hidden;
+            padding: 12px; box-sizing: border-box;
+        }
+        .tt-grid-header {
+            display: grid;
+            grid-template-columns: 50px repeat(5, 1fr);
+            gap: 3px; margin-bottom: 4px;
+        }
+        .tt-day {
+            text-align: center; font-size: 14px; font-weight: 700;
+            border-radius: 6px; color: #fff; background: #1E3A8A; min-height: 70px;
+            height: 34px; display: flex; align-items: center; justify-content: center;
+        }
+        .tt-body { display: flex; flex-direction: column; gap: 3px; }
+        .tt-row {
+            display: grid;
+            grid-template-columns: 50px repeat(5, 1fr);
+            gap: 3px; min-height: 80px;
+        }
+        .tt-period {
+            font-size: 10px; color: #888; font-weight: 600;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+        }
+        .tt-cell {
+            border-radius: 5px; font-size: 14px; font-weight: 600;  min-height: 70px;
+            display: flex; align-items: center; justify-content: center;
+            text-align: center; line-height: 1.3; padding: 4px 2px; color: #fff;
+        }
+        .tt-cell.empty { background: #f1f5f9; }
+        .mp-c1 { background: #AEE2FF; color: #0369a1; border: 1.5px solid #0369a1; }
+        .mp-c2 { background: #FFCEEE; color: #be185d; border: 1.5px solid #be185d; }
+        .mp-c3 { background: #FFF6D2; color: #a16207; border: 1.5px solid #a16207; }
+        .mp-c4 { background: #DED9FF; color: #5b21b6; border: 1.5px solid #5b21b6; }
+        .mp-c5 { background: #D6FFDE; color: #166534; border: 1.5px solid #166534; }
+        .mp-tabs-full .mypage-tab { flex: 1; text-align: center; }
+    </style>
+
     </style>
 </head>
 <body>
@@ -167,7 +222,7 @@
 
     <div class="mypage-tabs">
         <button class="mypage-tab active" onclick="switchTab('courses')">
-        ${sessionUser.role == 'ADMIN' ? '전체 개설 과목' : (sessionUser.role == 'PROFESSOR' ? '강의 중인 과목' : '수강 중인 과목')}        </button>
+            ${sessionUser.role == 'ADMIN' ? '전체 개설 과목' : (sessionUser.role == 'PROFESSOR' ? '강의 중인 과목' : '수강 중인 과목')}        </button>
 
         <c:choose>
             <c:when test="${sessionUser.role == 'PROFESSOR'}">
@@ -178,7 +233,9 @@
             </c:otherwise>
         </c:choose>
 
-        <button class="mypage-tab" onclick="switchTab('timetable')">시간표</button>
+        <c:if test="${sessionUser.role != 'ADMIN'}">
+            <button class="mypage-tab" onclick="switchTab('timetable')">시간표</button>
+        </c:if>
     </div>
 
     <%-- 수강/강의 과목 탭 --%>
@@ -266,7 +323,16 @@
                     <c:when test="${not empty myGradeList}">
                         <c:forEach var="stat" items="${myGradeList}">
                             <tr>
-                                <td>${stat.courseName}</td>
+                                <td>
+                                    <div style="font-weight: bold; margin-bottom: 4px;">${stat.courseName}</div>
+                                    <c:set var="gBadgeClass" value="badge-gray" />
+                                    <c:set var="gBadgeText" value="교양" />
+                                    <c:if test="${stat.courseType eq 'MAJOR_REQUIRED'}"><c:set var="gBadgeClass" value="badge-red" /><c:set var="gBadgeText" value="전공필수" /></c:if>
+                                    <c:if test="${stat.courseType eq 'MAJOR_ELECTIVE'}"><c:set var="gBadgeClass" value="badge-green" /><c:set var="gBadgeText" value="전공선택" /></c:if>
+                                    <c:if test="${stat.courseType eq 'GENERAL_REQUIRED'}"><c:set var="gBadgeClass" value="badge-orange" /><c:set var="gBadgeText" value="일반필수" /></c:if>
+                                    <c:if test="${stat.courseType eq 'GENERAL_ELECTIVE'}"><c:set var="gBadgeClass" value="badge-gray" /><c:set var="gBadgeText" value="일반선택" /></c:if>
+                                    <span class="grade-badge ${gBadgeClass}">${gBadgeText}</span>
+                                </td>
                                 <td>${stat.total_students}명</td>
                                 <td style="font-weight: 700;">${stat.avg_score}점</td>
                                 <td>
@@ -327,11 +393,20 @@
                     <c:forEach var="grade" items="${myGradeList}">
                         <tr>
                             <td>
-                                ${grade.courseName}
-                                <c:if test="${sessionUser.role == 'ADMIN'}">
-                                    <br><small style="color: #888;">(${grade.courseType})</small>
-                                </c:if>
+                                <div style="font-weight: bold; margin-bottom: 4px;">${grade.courseName}</div>
+                                    <%-- badge 클래스/텍스트 설정 --%>
+                                <c:set var="gBadgeClass" value="badge-gray" />
+                                <c:set var="gBadgeText" value="${gTypeText}" />
+                                <c:if test="${grade.courseType eq 'MAJOR_REQUIRED'}"><c:set var="gBadgeClass" value="badge-red" /><c:set var="gBadgeText" value="전공필수" /></c:if>
+                                <c:if test="${grade.courseType eq 'MAJOR_ELECTIVE'}"><c:set var="gBadgeClass" value="badge-green" /><c:set var="gBadgeText" value="전공선택" /></c:if>
+                                <c:if test="${grade.courseType eq 'GENERAL_REQUIRED'}"><c:set var="gBadgeClass" value="badge-orange" /><c:set var="gBadgeText" value="일반필수" /></c:if>
+                                <c:if test="${grade.courseType eq 'GENERAL_ELECTIVE'}"><c:set var="gBadgeClass" value="badge-gray" /><c:set var="gBadgeText" value="일반선택" /></c:if>
+
+                                <span class="grade-badge ${gBadgeClass}">${gBadgeText}</span>
+
+
                             </td>
+
                             <c:choose>
                                 <c:when test="${sessionUser.role == 'ADMIN'}">
                                     <td>${grade.total_students}명</td>
@@ -342,7 +417,6 @@
                                         <span style="color: #3498db; font-weight: bold;">${grade.min_score}</span>
                                     </td>
                                 </c:when>
-                                <%-- 교수 데이터 --%>
                                 <c:when test="${sessionUser.role == 'PROFESSOR'}">
                                     <td>${grade.total_students}명</td>
                                     <td style="font-weight: 700;">${grade.avg_score}점</td>
@@ -351,19 +425,11 @@
                                         <span style="color: #3498db; font-weight: bold;">${grade.min_score}</span>
                                     </td>
                                 </c:when>
-                                <%-- 학생 데이터 --%>
                                 <c:otherwise>
                                     <td>
-                                        <c:set var="gBadgeClass" value="badge-gray" />
-                                        <c:set var="gBadgeText" value="${grade.courseType}" />
-                                        <c:if test="${grade.courseType eq 'MAJOR_REQUIRED'}"><c:set var="gBadgeClass" value="badge-red" /><c:set var="gBadgeText" value="전공필수" /></c:if>
-                                        <c:if test="${grade.courseType eq 'MAJOR_ELECTIVE'}"><c:set var="gBadgeClass" value="badge-green" /><c:set var="gBadgeText" value="전공선택" /></c:if>
-                                        <span class="grade-badge ${gBadgeClass}">${gBadgeText}</span>
-                                    </td>
-                                    <td>
-                                        <span class="type-badge ${grade.examType eq 'MIDTERM' ? 'badge-indigo' : 'badge-purple'}">
-                                            ${grade.examType eq 'MIDTERM' ? '중간고사' : '기말고사'}
-                                        </span>
+                            <span class="type-badge ${grade.examType eq 'MIDTERM' ? 'badge-indigo' : 'badge-purple'}">
+                                    ${grade.examType eq 'MIDTERM' ? '중간고사' : '기말고사'}
+                            </span>
                                     </td>
                                     <td style="font-weight: 700;">${grade.score}</td>
                                 </c:otherwise>
@@ -372,7 +438,6 @@
                     </c:forEach>
                 </c:when>
                 <c:otherwise>
-                    <%-- 관리자일 경우 5열이므로 colspan="5" 처리 --%>
                     <tr><td colspan="${sessionUser.role == 'ADMIN' ? 5 : 4}" style="padding: 50px 0; color: #999;">조회된 내역이 없습니다.</td></tr>
                 </c:otherwise>
             </c:choose>
@@ -381,50 +446,21 @@
     </div>
 
     <%-- 시간표 탭 --%>
-    <div id="tab-timetable" class="tab-panel">
-        <div class="timetable">
-            <div class="timetable-header">
-                <div>시간</div>
-                <div>월</div>
-                <div>화</div>
-                <div>수</div>
-                <div>목</div>
-                <div>금</div>
-            </div>
-            <div class="timetable-row">
-                <div class="timetable-time">09:00</div>
-                <div class="timetable-cell"><div class="timetable-subject subject-amber">공학수학<br>공학관 101</div></div>
-                <div class="timetable-cell"></div>
-                <div class="timetable-cell"><div class="timetable-subject subject-amber">공학수학<br>공학관 101</div></div>
-                <div class="timetable-cell"></div>
-                <div class="timetable-cell"><div class="timetable-subject subject-amber">공학수학<br>공학관 101</div></div>
-            </div>
-            <div class="timetable-row">
-                <div class="timetable-time">10:00</div>
-                <div class="timetable-cell"><div class="timetable-subject subject-blue">운영체제<br>IT관 203</div></div>
-                <div class="timetable-cell"><div class="timetable-subject subject-purple">소프트웨어공학<br>공학관 305</div></div>
-                <div class="timetable-cell"><div class="timetable-subject subject-blue">운영체제<br>IT관 203</div></div>
-                <div class="timetable-cell"><div class="timetable-subject subject-purple">소프트웨어공학<br>공학관 305</div></div>
-                <div class="timetable-cell"></div>
-            </div>
-            <div class="timetable-row">
-                <div class="timetable-time">13:00</div>
-                <div class="timetable-cell"></div>
-                <div class="timetable-cell"><div class="timetable-subject subject-green">데이터베이스<br>IT관 401</div></div>
-                <div class="timetable-cell"></div>
-                <div class="timetable-cell"><div class="timetable-subject subject-green">데이터베이스<br>IT관 401</div></div>
-                <div class="timetable-cell"></div>
-            </div>
-            <div class="timetable-row">
-                <div class="timetable-time">14:00</div>
-                <div class="timetable-cell"></div>
-                <div class="timetable-cell"></div>
-                <div class="timetable-cell"></div>
-                <div class="timetable-cell"></div>
-                <div class="timetable-cell"><div class="timetable-subject subject-rose">컴퓨터네트워크<br>IT관 202</div></div>
+    <c:if test="${sessionUser.role != 'ADMIN'}">
+        <div id="tab-timetable" class="tab-panel">
+            <div class="mp-tt-wrap">
+                <div class="tt-grid-header">
+                    <div></div>
+                    <div class="tt-day">월</div>
+                    <div class="tt-day">화</div>
+                    <div class="tt-day">수</div>
+                    <div class="tt-day">목</div>
+                    <div class="tt-day">금</div>
+                </div>
+                <div class="tt-body" id="mpTimetableBody"></div>
             </div>
         </div>
-    </div>
+    </c:if>
 </div>
 
 <script>
@@ -435,6 +471,136 @@
         document.getElementById('tab-' + tab).classList.add('active');
         event.currentTarget.classList.add('active');
     }
+
+    /* ================================================================
+   마이페이지 시간표 — 수강신청 데이터 연동
+   기존 코드 수정 없음 / 변수명 MP_ 접두어로 충돌 방지
+================================================================ */
+    var MP_CTX      = '${pageContext.request.contextPath}';
+    var MP_ROLE     = '${sessionUser.role}';
+    var MP_SEMESTER = '${semester}';
+    var mp_courses  = [];
+
+    var MP_COLORS = ['mp-c1', 'mp-c2', 'mp-c3', 'mp-c4', 'mp-c5'];
+    var MP_DAYS   = ['월', '화', '수', '목', '금'];
+
+    function mpParseDays(str) {
+        return str ? str.split(',').map(function(d){ return d.replace(/요일/, '').trim(); }) : [];
+    }
+    function mpParseHour(t) {
+        return t ? parseInt(t.split(':')[0]) : -1;
+    }
+
+    function renderMpTimetable() {
+        var body = document.getElementById('mpTimetableBody');
+        body.innerHTML = '';
+
+        if (!mp_courses.length) {
+            body.style.display = 'block';
+            body.innerHTML = '<div style="padding:40px 0; text-align:center; color:#999; font-size:12px;">수강신청된 과목이 없습니다.</div>';
+            return;
+        }
+
+        /* 단일 그리드로 전환 — 행(tt-row) 없이 셀 직접 배치 */
+        body.style.display = 'grid';
+        body.style.gridTemplateColumns = '50px repeat(5, 1fr)';
+        body.style.gap = '3px';
+
+        var DAY_COL = {'월': 2, '화': 3, '수': 4, '목': 5, '금': 6};
+        var DAY_KEYS = ['월', '화', '수', '목', '금'];
+
+        /* 색상 매핑 */
+        var colorMap = {};
+        mp_courses.forEach(function(c, i) {
+            colorMap[c.course_no] = MP_COLORS[i % MP_COLORS.length];
+        });
+
+        /* 시간 범위 계산 */
+        var minH = 9, maxH = 18;
+        mp_courses.forEach(function(c) {
+            var sh = mpParseHour(c.start_time);
+            var eh = mpParseHour(c.end_time);
+            if (sh > 0) minH = Math.min(minH, sh);
+            if (eh > 0) maxH = Math.max(maxH, eh);
+        });
+
+        /* 시간 라벨 + 빈 셀 배치 */
+        for (var h = minH; h < maxH; h++) {
+            var rowIdx = h - minH + 1;
+            var period = h - minH + 1;
+
+            /* 교시/시간 라벨 */
+            var timeCell = document.createElement('div');
+            timeCell.className = 'tt-period';
+            timeCell.style.gridColumn = '1';
+            timeCell.style.gridRow = String(rowIdx);
+            timeCell.innerHTML =
+                '<span style="font-size:12px;font-weight:700;color:#444;display:block;">' + period + '교시</span>' +
+                '<span style="font-size:10px;font-weight:400;color:#888;">' + String(h).padStart(2,'0') + ':00</span>';
+            body.appendChild(timeCell);
+
+            /* 과목이 없는 슬롯만 빈 셀 배치 */
+            DAY_KEYS.forEach(function(day, di) {
+                var occupied = mp_courses.some(function(c) {
+                    var days = mpParseDays(c.day_of_week);
+                    var sh = mpParseHour(c.start_time);
+                    var eh = mpParseHour(c.end_time);
+                    return days.indexOf(day) !== -1 && sh <= h && h < eh;
+                });
+                if (!occupied) {
+                    var empty = document.createElement('div');
+                    empty.className = 'tt-cell empty';
+                    empty.style.gridColumn = String(di + 2);
+                    empty.style.gridRow = String(rowIdx);
+                    body.appendChild(empty);
+                }
+            });
+        }
+
+        /* 과목 셀 배치 — 연속 시간은 span으로 병합 */
+        mp_courses.forEach(function(c) {
+            var days = mpParseDays(c.day_of_week);
+            var sh   = mpParseHour(c.start_time);
+            var eh   = mpParseHour(c.end_time);
+            var span = eh - sh;
+            var rowStart = sh - minH + 1;
+
+            days.forEach(function(day) {
+                var colIdx = DAY_COL[day];
+                if (!colIdx) return;
+                var cell = document.createElement('div');
+                cell.className = 'tt-cell ' + colorMap[c.course_no];
+                cell.style.gridColumn = String(colIdx);
+                cell.style.gridRow = rowStart + ' / span ' + span;
+                cell.innerHTML = c.course_name + '<br>' + (c.room_info || '');
+                body.appendChild(cell);
+            });
+        });
+    }
+
+    function loadMpTimetable() {
+        var endpoint = MP_ROLE === 'PROFESSOR'
+            ? MP_CTX + '/enrollment/my-courses?semester=' + MP_SEMESTER
+            : MP_CTX + '/enrollment/mine?semester=' + MP_SEMESTER;
+        fetch(endpoint, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                mp_courses = data.courses || [];
+                renderMpTimetable();
+            })
+            .catch(function() {
+                mp_courses = [];
+                renderMpTimetable();
+            });
+    }
+
+    window.addEventListener('DOMContentLoaded', function() {
+        if (MP_ROLE === 'ADMIN') {
+            document.querySelector('.mypage-tabs').classList.add('mp-tabs-full');
+        } else {
+            loadMpTimetable();
+        }
+    });
 </script>
 </body>
 </html>

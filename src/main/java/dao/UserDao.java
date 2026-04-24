@@ -41,7 +41,7 @@ public class UserDao {
         return template.getMapper(cls).selectUser(userId);
     }
 
-    public int getLastUserCode() {
+    public Integer getLastUserCode() {
         return template.getMapper(cls).getLastUserCode();
     }
 

@@ -41,7 +41,7 @@ public interface UserMapper {
     User selectUser(String userId);
 
     @Select("SELECT IFNULL(MAX(user_code), 0) FROM USERS")
-    int getLastUserCode();
+    Integer getLastUserCode();
 
     @Select("SELECT password FROM USERS WHERE user_id=#{userId} AND email=#{email} AND phone=#{phone}")
     String selectUserPassword(@Param("userId") String userId, @Param("email") String email, @Param("phone") String phone);

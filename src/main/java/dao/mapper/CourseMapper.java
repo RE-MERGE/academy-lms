@@ -104,6 +104,7 @@ public interface CourseMapper {
     WHERE c.semester = #{semester}
 """)
     List<Map<String, Object>> getListWithProfessorName(String semester);
+
     @Select("SELECT c.*, u.name AS professor_name FROM COURSE c " +
             "JOIN USERS u ON u.user_no = c.professor_no " +
             "WHERE c.course_no IN (SELECT course_no FROM ENROLLMENT WHERE student_no = #{userNo}) " +

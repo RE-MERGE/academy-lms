@@ -2,6 +2,7 @@ package dao;
 
 import dao.mapper.AdminMapper;
 import dto.user.AdminUserList;
+import dto.user.mypage.AdminCourseList;
 import org.mybatis.spring.SqlSessionTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
@@ -22,4 +23,11 @@ public class AdminDao {
         return template.getMapper(cls).getAllUserList();
     }
 
+    public List<AdminCourseList> getAllCourseList() {
+        return template.getMapper(cls).getAllCourseList();
+    }
+
+    public void updateUserStatus(String status, List<Integer> userNos) {
+            template.getMapper(cls).updateUserStatus(status, userNos);
+    }
 }

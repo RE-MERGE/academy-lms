@@ -1,13 +1,8 @@
 package controller;
 
 import config.NaverLoginConfig;
-import dao.CourseDao;
-import dao.EnrollmentDao;
 import dao.UserDao;
 import dto.user.*;
-import dto.user.grade.AdminAllStudentGrade;
-import dto.user.grade.MyGrade;
-import dto.user.grade.MyProfessorGrade;
 import dto.user.login.Login;
 import dto.user.login.UpdatePwForm;
 import dto.user.mypage.MyPageData;
@@ -31,7 +26,6 @@ import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -476,14 +470,16 @@ public class UserController {
     private int getUserCode() {
 
         int currentYear = LocalDate.now().getYear();
-        int lastUserCode = userDao.getLastUserCode();
+        Integer lastUserCode = userDao.getLastUserCode();
 
-        int lastYearPart = (lastUserCode % 1000000) / 10000;
-        int currentYearPart = currentYear % 100;
+        if (lastUserCode == null) {
+            return currentYear * 10000 + 1;
+        }
 
-        if (currentYearPart > lastYearPart) {
-            int prefix = lastUserCode / 1000000;
-            return (prefix * 1000000) + (currentYearPart * 10000) + 1;
+        int lastYear = lastUserCode / 10000;
+
+        if (currentYear > lastYear) {
+            return currentYear * 10000 + 1;
         } else {
             return lastUserCode + 1;
         }

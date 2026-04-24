@@ -83,7 +83,7 @@
 .badge-APPROVED { color: #004595; }
 .badge-PENDING  { color: #27ae60; }
 .badge-CANCELED { color: #e74c3c; }
-.badge-REJECTED { color: #c0392b; }
+.badge-APPLIED { color: #c0392b; }
 
 /* ── 상태 필터 셀렉트 (헤더 안) ── */
 .status-filter-select {
@@ -245,9 +245,7 @@
                 <th style="width: 3%;"><input type="checkbox" id="checkAll" onclick="toggleAll(this)"/></th>
                           
                 <th style="width: 3%;">번호</th>
-                
-                 <th style="width: 8%;">학번</th>
-                
+
                 <th style="width: 7%;" class="sortable" onclick="sortTable('profName')" id="th-profName">
                     교수이름 <span class="sort-icon" id="icon-profName">▼</span>
                 </th>                
@@ -274,6 +272,7 @@
                         <option value="">전체</option>
                         <option value="APPROVED">승인</option>
                         <option value="PENDING">대기</option>
+                        <option value="APPLIED">신청</option>
                         <option value="CANCELED">거절</option>
                     </select>
                 </th>
@@ -298,9 +297,7 @@
                 
              <td class="cell-no">${(currentPage - 1) * 10 + status.count}</td>
              
-              <td>${course.course_code}</td>
-                
-               <td>${course.prof_name}</td> 
+               <td>${course.prof_name}</td>
                
                  <td style="text-align: left; padding-left: 10px;">${course.course_name}</td>
                 
@@ -323,7 +320,8 @@
                         <c:choose>
                             <c:when test="${course.status eq 'APPROVED'}">승인</c:when>
                             <c:when test="${course.status eq 'PENDING'}">대기</c:when>
-                            <c:when test="${course.status eq 'CANCELED'}">거절</c:when>
+                            <c:when test="${course.status eq 'APPLIED'}">신청</c:when>
+                            <c:when test="${course.status eq 'CANCLED'}">취소</c:when>
                             <c:otherwise>${course.status}</c:otherwise>
                         </c:choose>
                     </span>
@@ -354,6 +352,7 @@
         <select id="bulkStatus">
             <option value="">상태 선택</option>
             <option value="APPROVED">승인</option>
+            <option value="APPLIED">신청</option>
             <option value="PENDING">대기</option>
             <option value="CANCELED">거절</option>
         </select>
@@ -445,7 +444,7 @@
             let show = false;
             if (type === 'all')     show = true;
             if (type === 'active')  show = (s === 'APPROVED');
-            if (type === 'pending') show = (s === 'PENDING' || s === 'CANCELED');
+            if (type === 'pending') show = (s === 'PENDING' || s === 'CANCELED' || s ==='APPLIED');
             row.style.display = show ? '' : 'none';
         });
         reNumberRows();

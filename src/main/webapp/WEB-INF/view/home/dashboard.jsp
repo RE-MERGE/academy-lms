@@ -156,87 +156,70 @@ body {
 /* ── 시간표 ── */
 .tt-grid-header {
   display: grid;
-  grid-template-columns: 34px repeat(5, 1fr);
-  gap: 3px;
-  margin-bottom: 4px;
+  grid-template-columns: 42px repeat(5, 1fr);
+  gap: 2px;
+  margin-bottom: 3px;
 }
 
 .tt-day {
   text-align: center;
-  justify-content: center;
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 700;
-  padding: 0;
-  border-radius: 6px;
-  color: white;
-  align-items: center;
-  height: 40px;
+  border-radius: 4px;
+  color: #fff;
+  background: #1E3A8A;
+  height: 28px;
   display: flex;
-  
+  align-items: center;
+  justify-content: center;
 }
 
-.tt-day.mon, .tt-day.wed, .tt-day.fri { background: #1E3A8A; }
-.tt-day.tue, .tt-day.thu { background: #1E3A8A; }
-
-.tt-body { display: flex; flex-direction: column; gap: 3px; }
-
-.tt-row {
+.tt-body {
   display: grid;
-  grid-template-columns: 34px repeat(5, 1fr);
-  gap: 3px;
-  height: 40px;
+  grid-template-columns: 42px repeat(5, 1fr);
+  gap: 2px;
 }
 
 .tt-period {
-  font-size: 10px;
-  height: 100%;
+  font-size: 9px;
   color: #888;
   font-weight: 600;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
+  min-height: 42px;
+  line-height: 1.4;
 }
 
+.tt-period .p-num { font-size: 10px; font-weight: 700; color: #555; }
+
 .tt-cell {
-  height: 100%;
-  min-height: 40px;
-  border-radius: 5px;
+  border-radius: 4px;
   font-size: 9px;
   font-weight: 600;
   display: flex;
   align-items: center;
   justify-content: center;
   text-align: center;
-  line-height: 1.2;
-  cursor: pointer;
-  transition: opacity 0.15s;
-  padding: 2px;
-  color: white;
+  line-height: 1.3;
+  padding: 3px 2px;
+  min-height: 42px;
 }
 
-.tt-cell:hover { opacity: 0.8; }
 .tt-cell.empty { background: #f1f5f9; }
-.tt-cell.c1 { background: #3b82f6; }
-.tt-cell.c2 { background: #f59f00; }
-.tt-cell.c3 { background: #10b981; }
+.mp-c1 { background: #AEE2FF; color: #0369a1; border: 1.5px solid #0369a1; }
+.mp-c2 { background: #FFCEEE; color: #be185d; border: 1.5px solid #be185d; }
+.mp-c3 { background: #FFF6D2; color: #a16207; border: 1.5px solid #a16207; }
+.mp-c4 { background: #DED9FF; color: #5b21b6; border: 1.5px solid #5b21b6; }
+.mp-c5 { background: #D6FFDE; color: #166534; border: 1.5px solid #166534; }
 
 .tt-btn {
-  display: block;
-  width: 100%;
-  margin-top: 12px;
-  padding: 9px;
-  background: #1e3a8a;
-  color: white;
-  font-size: 12px;
-  font-weight: 600;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  text-align: center;
-  transition: background 0.15s;
-  font-family: 'Noto Sans KR', sans-serif;
+  display: block; width: 90%; margin-top: 12px; padding: 9px;  margin-left: auto;
+  background: #1e3a8a; color: white; font-size: 12px; font-weight: 600;
+  border: none; border-radius: 8px; cursor: pointer; text-align: center;
+  transition: background 0.15s; font-family: 'Noto Sans KR', sans-serif;
 }
-
 .tt-btn:hover { background: #3b82f6; }
 
 /* ── 게시판 ── */
@@ -394,91 +377,18 @@ body {
   <div class="col-right">
 
     <!-- 시간표 -->
-    <div class="card">
+    <div class="card" id="dashTimetableCard">
       <h3>🗓️ 시간표</h3>
       <div class="tt-grid-header">
-        <div></div>
-        <div class="tt-day mon">월</div>
-        <div class="tt-day tue">화</div>
-        <div class="tt-day wed">수</div>
-        <div class="tt-day thu">목</div>
-        <div class="tt-day fri">금</div>
-      </div>
-      <div class="tt-body">
-        <div class="tt-row">
-          <div class="tt-period">1교시</div>
-          <div class="tt-cell c1">경영학원론</div>
-          <div class="tt-cell empty"></div>
-          <div class="tt-cell c1">경영학원론</div>
-          <div class="tt-cell empty"></div>
-          <div class="tt-cell empty"></div>
-        </div>
-        <div class="tt-row">
-          <div class="tt-period">2교시</div>
-          <div class="tt-cell empty"></div>
-          <div class="tt-cell c2">마케팅개론</div>
-          <div class="tt-cell empty"></div>
-          <div class="tt-cell c2">마케팅개론</div>
-          <div class="tt-cell empty"></div>
-        </div>
-        <div class="tt-row">
-          <div class="tt-period">3교시</div>
-          <div class="tt-cell empty"></div>
-          <div class="tt-cell empty"></div>
-          <div class="tt-cell empty"></div>
-          <div class="tt-cell empty"></div>
-          <div class="tt-cell c3">경영정보시스템</div>
-        </div>
-        <div class="tt-row">
-          <div class="tt-period">4교시</div>
-          <div class="tt-cell empty"></div>
-          <div class="tt-cell empty"></div>
-          <div class="tt-cell empty"></div>
-          <div class="tt-cell empty"></div>
-          <div class="tt-cell c3">경영정보시스템</div>
-        </div>
-        <div class="tt-row">
-          <div class="tt-period">5교시</div>
-          <div class="tt-cell empty"></div>
-          <div class="tt-cell empty"></div>
-          <div class="tt-cell empty"></div>
-          <div class="tt-cell empty"></div>
-          <div class="tt-cell empty"></div>
-        </div>
-        <div class="tt-row">
-          <div class="tt-period">6교시</div>
-          <div class="tt-cell empty"></div>
-          <div class="tt-cell empty"></div>
-          <div class="tt-cell empty"></div>
-          <div class="tt-cell empty"></div>
-          <div class="tt-cell empty"></div>
-        </div>
-        <div class="tt-row">
-          <div class="tt-period">7교시</div>
-          <div class="tt-cell empty"></div>
-          <div class="tt-cell empty"></div>
-          <div class="tt-cell empty"></div>
-          <div class="tt-cell empty"></div>
-          <div class="tt-cell empty"></div>
-        </div>
-        <div class="tt-row">
-          <div class="tt-period">8교시</div>
-          <div class="tt-cell empty"></div>
-          <div class="tt-cell empty"></div>
-          <div class="tt-cell empty"></div>
-          <div class="tt-cell empty"></div>
-          <div class="tt-cell empty"></div>
-        </div>
-        <div class="tt-row">
-          <div class="tt-period">9교시</div>
-          <div class="tt-cell empty"></div>
-          <div class="tt-cell empty"></div>
-          <div class="tt-cell empty"></div>
-          <div class="tt-cell empty"></div>
-          <div class="tt-cell empty"></div>
-        </div>
-      </div>
-      <button class="tt-btn">시간표 전체 보기 →</button>
+  <div></div>
+  <div class="tt-day">월</div>
+  <div class="tt-day">화</div>
+  <div class="tt-day">수</div>
+  <div class="tt-day">목</div>
+  <div class="tt-day">금</div>
+</div>
+<div class="tt-body" id="dashTimetableBody"></div>
+<button class="tt-btn" onclick="location.href='${pageContext.request.contextPath}/user/myPage'">시간표 전체 보기 →</button>
     </div>
 
     <!-- 게시판 -->
@@ -552,6 +462,118 @@ body {
   function openAttendance() {
 	    window.location.href = '<%=request.getContextPath()%>/course/subject';
 	}
+</script>
+
+<script>
+var DASH_CTX      = '${pageContext.request.contextPath}';
+var DASH_SEMESTER = '2026-1';
+var DASH_ROLE     = '${sessionUser.role}';
+
+var DASH_COLORS  = ['mp-c1', 'mp-c2', 'mp-c3', 'mp-c4', 'mp-c5'];
+var DASH_DAYS    = ['월', '화', '수', '목', '금'];
+var DASH_DAY_COL = {'월': 2, '화': 3, '수': 4, '목': 5, '금': 6};
+
+function dashParseDays(str) {
+    return str ? str.split(',').map(function(d){ return d.replace(/요일/, '').trim(); }) : [];
+}
+function dashParseHour(t) {
+    return t ? parseInt(t.split(':')[0]) : -1;
+}
+
+function renderDashTimetable() {
+    var body = document.getElementById('dashTimetableBody');
+    body.innerHTML = '';
+
+    if (!dash_courses.length) {
+        minH = 9; maxH = 14;
+    }
+
+    body.style.display = 'grid';
+
+    var colorMap = {};
+    dash_courses.forEach(function(c, i) {
+        colorMap[c.course_no] = DASH_COLORS[i % DASH_COLORS.length];
+    });
+
+    var minH = 9, maxH = 18;
+    dash_courses.forEach(function(c) {
+        var sh = dashParseHour(c.start_time);
+        var eh = dashParseHour(c.end_time);
+        if (sh > 0) minH = Math.min(minH, sh);
+        if (eh > 0) maxH = Math.max(maxH, eh);
+    });
+
+    for (var h = minH; h < maxH; h++) {
+        var rowIdx = h - minH + 1;
+        var period = h - minH + 1;
+
+        var timeCell = document.createElement('div');
+        timeCell.className = 'tt-period';
+        timeCell.style.gridColumn = '1';
+        timeCell.style.gridRow = String(rowIdx);
+        timeCell.innerHTML =
+            '<span class="p-num">' + period + '교시</span>' +
+            '<span style="font-size:9px;color:#aaa;">' + String(h).padStart(2,'0') + ':00</span>';
+        body.appendChild(timeCell);
+
+        DASH_DAYS.forEach(function(day, di) {
+            var occupied = dash_courses.some(function(c) {
+                var days = dashParseDays(c.day_of_week);
+                var sh = dashParseHour(c.start_time);
+                var eh = dashParseHour(c.end_time);
+                return days.indexOf(day) !== -1 && sh <= h && h < eh;
+            });
+            if (!occupied) {
+                var empty = document.createElement('div');
+                empty.className = 'tt-cell empty';
+                empty.style.gridColumn = String(di + 2);
+                empty.style.gridRow = String(rowIdx);
+                body.appendChild(empty);
+            }
+        });
+    }
+
+    dash_courses.forEach(function(c) {
+        var days = dashParseDays(c.day_of_week);
+        var sh   = dashParseHour(c.start_time);
+        var eh   = dashParseHour(c.end_time);
+        var span = eh - sh;
+        var rowStart = sh - minH + 1;
+
+        days.forEach(function(day) {
+            var colIdx = DASH_DAY_COL[day];
+            if (!colIdx) return;
+            var cell = document.createElement('div');
+            cell.className = 'tt-cell ' + colorMap[c.course_no];
+            cell.style.gridColumn = String(colIdx);
+            cell.style.gridRow = rowStart + ' / span ' + span;
+            cell.textContent = c.course_name;
+            body.appendChild(cell);
+        });
+    });
+}
+
+window.addEventListener('DOMContentLoaded', function() {
+    if (DASH_ROLE === 'ADMIN') {
+        document.getElementById('dashTimetableCard').style.display = 'none';
+        return;
+    }
+
+    var endpoint = DASH_ROLE === 'PROFESSOR'
+        ? DASH_CTX + '/enrollment/my-courses?semester=' + DASH_SEMESTER
+        : DASH_CTX + '/enrollment/mine?semester=' + DASH_SEMESTER;
+
+    fetch(endpoint, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            dash_courses = data.courses || [];
+            renderDashTimetable();
+        })
+        .catch(function() {
+            dash_courses = [];
+            renderDashTimetable();
+        });
+});
 </script>
 
 </body>

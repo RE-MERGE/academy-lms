@@ -23,6 +23,7 @@ public class Course {
     private String end_time;
     private int max_students;
     private String status;
+    private String curriculum_pdf;
     @JsonIgnore
     private LocalDateTime created_at;
     private String semester;

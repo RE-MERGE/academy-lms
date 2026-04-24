@@ -549,24 +549,26 @@ function submitForm() {
   var professorNo   = professorNoEl ? parseInt(professorNoEl.value) : 0;
   if (professorNoEl && !professorNo) { alert('교수번호를 입력해주세요.'); return; }
 
-  var payload = {
-    course_name:   courseName,
-    course_type:   courseType,
-    credits:       parseInt(credits),
-    semester:      semester,
-    room_info:     roomInfo,
-    day_of_week:   daySet.join(','),
-    start_time:    startTime,
-    end_time:      endTime,
-    max_students:  30,
-    status:        'PENDING',
-    professor_no:  professorNo
-  };
+  var formData = new FormData();
+  formData.append('course_name',  courseName);
+  formData.append('course_type',  courseType);
+  formData.append('credits',      parseInt(credits));
+  formData.append('semester',     semester);
+  formData.append('room_info',    roomInfo);
+  formData.append('day_of_week',  daySet.join(','));
+  formData.append('start_time',   startTime);
+  formData.append('end_time',     endTime);
+  formData.append('max_students', 30);
+  formData.append('status', '${sessionUser.role == "ADMIN" ? "APPROVED" : "APPLIED"}');
+  formData.append('professor_no', professorNo);
+
+  var pdfFile = document.getElementById('curriculumPdf').files[0];
+  if (pdfFile) formData.append('curriculumPdf', pdfFile);
 
   fetch(CTX_PATH + '/enrollment/create', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
-    body: JSON.stringify(payload)
+    headers: { 'X-Requested-With': 'XMLHttpRequest' },
+    body: formData
   })
   .then(function(r) { return r.json(); })
   .then(function(data) {

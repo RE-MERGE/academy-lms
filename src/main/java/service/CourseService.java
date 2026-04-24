@@ -71,5 +71,9 @@ public class CourseService {
 			coursedao.updateStatus(courseNos, status);
 			
 		}
+
+		public void deleteCourses(List<Integer> courseNos) {
+		    coursedao.deleteCourses(courseNos);
+		}
 		
 }

@@ -91,5 +91,9 @@ public class CourseDao {
 		template.getMapper(cls).updateStatus(courseNos, status);
 		
 	}
+	public void deleteCourses(List<Integer> courseNos) {
+		template.getMapper(cls).deleteCourses(courseNos);
+		
+	}
 	
 }

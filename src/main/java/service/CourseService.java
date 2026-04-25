@@ -19,8 +19,7 @@ public class CourseService {
 	}
 	
 	public Course selectCourse(int no) {
-		Course course = coursedao.selectCourse(no);
-    	return course;
+    	return coursedao.selectCourse(no);
 	}
 
 	public int insertCourse(Course course) {

@@ -8,9 +8,7 @@
     <link rel="stylesheet" href="${pageContext.request.contextPath}/css/board.css">
 </head>
 <body>
-
 <div class="bg-mesh"></div>
-
 <main class="write-wrap">
     <div class="write-header">
         <div class="header-title">
@@ -22,10 +20,9 @@
             <button type="submit" form="write" class="btn-submit">등록하기</button>
         </div>
     </div>
-
-
     <div class="card write-card">
         <form id="write" action="write" method="post" enctype="multipart/form-data">
+            <input type="hidden" name="no" value="${param.courseNo}"/>
             <input type="hidden" name="boardType" value="${boardType}"/>
             <div class="form-row">
                 <div class="form-group group-category">
@@ -37,12 +34,10 @@
                     <input type="text" name="title" id="title" class="lms-input" placeholder="제목을 입력하세요" required>
                 </div>
             </div>
-
             <div class="form-group">
                 <label for="content">내용</label>
                 <textarea name="content" id="content" class="lms-textarea" placeholder="내용을 상세히 입력해 주세요. 타인에 대한 비방이나 부적절한 콘텐츠는 제재를 받을 수 있습니다."></textarea>
             </div>
-
             <div class="form-group">
                 <label>파일 첨부</label>
                 <div class="file-upload-wrapper">
@@ -53,7 +48,6 @@
                     </label>
                 </div>
             </div>
-
         </form>
     </div>
 </main>

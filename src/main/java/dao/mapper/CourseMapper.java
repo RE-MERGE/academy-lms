@@ -13,13 +13,13 @@ import dto.Course;
 
 public interface CourseMapper {
     @Select("select * from COURSE")
-    public List<Course> list();
+    List<Course> list();
 
     @Insert("INSERT INTO COURSE (professor_no, course_name, course_type, room_info, day_of_week, start_time, end_time, max_students, status, semester, credits, created_at) VALUES (#{professor_no}, #{course_name}, #{course_type}, #{room_info}, #{day_of_week}, #{start_time}, #{end_time}, #{max_students}, #{status}, #{semester}, #{credits}, NOW())")
-    public int insertCourse(Course course);
+    int insertCourse(Course course);
 
     @Select("SELECT course_no, day_of_week, start_time, end_time FROM COURSE WHERE room_info = #{room} AND semester = #{semester} AND status != 'REJECTED'")
-    public List<Course> getBlokcedCourse(@Param("room") String room, @Param("semester") String semester);
+    List<Course> getBlokcedCourse(@Param("room") String room, @Param("semester") String semester);
 
     @Select("select * from COURSE where course_no = #{course_no}")
     Course getCourse(Course course);
@@ -49,8 +49,7 @@ public interface CourseMapper {
     	    "<if test='status != null and status != \"\"'> AND c.status = #{status}</if>" +
     	    " LIMIT #{size} OFFSET #{offset}"+
     	    "</script>")
-
-	public List<Map<String, Object>> getlist(@Param("semester") String semester,
+	List<Map<String, Object>> getlist(@Param("semester") String semester,
             @Param("type") String type,
             @Param("credits") String credits,
             @Param("keyword") String keyword,
@@ -72,10 +71,10 @@ public interface CourseMapper {
             "JOIN USERS u ON c.professor_no = u.user_no " +
             "WHERE c.semester = #{semester} " +
             "AND c.course_no IN (SELECT course_no FROM ENROLLMENT WHERE user_no = #{userNo})")
-    public List<Course> getMyCourse(@Param("userNo") int userNo, @Param("semester") String semester);
+    List<Course> getMyCourse(@Param("userNo") int userNo, @Param("semester") String semester);
 
     @Select("SELECT* FROM COURSE WHERE course_no IN (SELECT course_no FROM ENROLLMENT WHERE student_no = #{userNo}) AND semester = #{semester}")
-    public List<Course> getMyEnrollment(@Param("userNo") int userNo,@Param("semester") String semester);
+    List<Course> getMyEnrollment(@Param("userNo") int userNo,@Param("semester") String semester);
 
     @Select("""
     SELECT 
@@ -108,16 +107,16 @@ public interface CourseMapper {
             "JOIN USERS u ON u.user_no = c.professor_no " +
             "WHERE c.course_no IN (SELECT course_no FROM ENROLLMENT WHERE student_no = #{userNo}) " +
             "AND c.semester = #{semester}")
-	public List<Map<String, Object>> getEnrollment(@Param("userNo") int userNo,@Param("semester") String semester);
+	List<Map<String, Object>> getEnrollment(@Param("userNo") int userNo,@Param("semester") String semester);
 
     @Select("SELECT * FROM COURSE WHERE course_no = #{value}")
-	public Course find(Integer courseNo);
+	Course find(Integer courseNo);
 
     @Update("UPDATE COURSE SET counts = counts+1 WHERE course_no = #{value}")
-	public void addCounts(Integer courseNo);
+	void addCounts(Integer courseNo);
 
     @Update("UPDATE COURSE SET counts = counts-1 where course_no = #{value}")
-	public void minusCounts(Integer courseNo);
+	void minusCounts(Integer courseNo);
 
     @Select("<script>" +
     	    "SELECT COUNT(*) FROM COURSE c " +

@@ -40,4 +40,9 @@ public class AdminController {
 
         return "admin/adminCourseList";
     }
+    
+    @GetMapping("roomTimetable")
+    public String getRoomTimetable() {
+        return "admin/roomTimetable";
+    }
 }

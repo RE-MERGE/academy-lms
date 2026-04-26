@@ -99,4 +99,13 @@ public class CourseService {
 		        coursedao.insertAttendance(enrollment_no, Integer.parseInt(grade.get("attendance")), alphabet);
 		    }
 		}
+		public void updateStatus(List<Integer> courseNos, String status) {
+			coursedao.updateStatus(courseNos, status);
+			
+		}
+
+		public void deleteCourses(List<Integer> courseNos) {
+		    coursedao.deleteCourses(courseNos);
+		}
+		
 }

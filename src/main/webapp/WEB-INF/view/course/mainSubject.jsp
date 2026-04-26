@@ -22,21 +22,22 @@
 </style>
 </head>
 <body>
+<input type="hidden" id="mainCourseNo" value="${Course.course_no}"/>
+<input type="hidden" id="mainContextPath" value="${pageContext.request.contextPath}"/>
 <div style="display: flex; height: 100vh;">
 
     <!-- 과목 사이드바 -->
     <aside class="subject-sidebar">
         <h2 class="subject-sidebar-title">${Course.course_name}</h2>
-        <nav class="subject-nav">
-   
+        <nav class="subject-nav">   
         
             <a href="#" class="subject-nav-item active">
             <img src="${pageContext.request.contextPath}/img/icon_home.png" 
             alt="홈 아이콘" width="40px" height="40px">홈</a>
             
             
-		 <div class="sidebar-divider"></div>  
-		 <!-- 연한 구분순 <hr>  -->
+		        <div class="sidebar-divider"></div>  
+		        <!-- 연한 구분순 <hr>  -->
 
 
             <a href="#" class="subject-nav-item">
@@ -68,10 +69,37 @@
     </aside>
 
     <!-- 메인 콘텐츠 -->
-    <main class="subject-main">
-        <!-- 여기에 각 카테고리 내용 -->
+    <main class="subject-main" id="mainContent">	
+    
     </main>
 
 </div>
+<script>
+function loadContent(page) {
+	const courseNo = document.getElementById("mainCourseNo").value;      // ← 추가
+    const contextPath = document.getElementById("mainContextPath").value;
+	const urlMap = {
+        'profScore': contextPath + '/course/profScore?no=' + courseNo,
+        'myPage' : contextPath + '/user/myPage',
+    };
+	
+	fetch(urlMap[page])
+    .then(response => response.text())
+    .then(html => {
+        const main = document.getElementById("mainContent");
+        main.innerHTML = html;
+
+        // ✅ 불러온 HTML 안의 script 태그 직접 실행
+        main.querySelectorAll("script").forEach(oldScript => {
+            const newScript = document.createElement("script");
+            newScript.textContent = oldScript.textContent;
+            document.body.appendChild(newScript);
+            oldScript.remove();
+        });
+    })
+    .catch(err => console.error("로딩 실패:", err));
+}
+
+</script>
 </body>
 </html>

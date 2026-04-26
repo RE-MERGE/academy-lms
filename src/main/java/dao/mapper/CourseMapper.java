@@ -15,7 +15,11 @@ public interface CourseMapper {
     @Select("select * from COURSE")
     public List<Course> list();
 
-    @Insert("INSERT INTO COURSE (professor_no, course_name, course_type, room_info, day_of_week, start_time, end_time, max_students, status, semester, credits, created_at) VALUES (#{professor_no}, #{course_name}, #{course_type}, #{room_info}, #{day_of_week}, #{start_time}, #{end_time}, #{max_students}, #{status}, #{semester}, #{credits}, NOW())")
+ // curriculum_pdf 추가
+    @Insert("INSERT INTO COURSE (professor_no, course_name, course_type, room_info, day_of_week, " +
+            "start_time, end_time, max_students, status, semester, credits, curriculum_pdf, created_at) " +
+            "VALUES (#{professor_no}, #{course_name}, #{course_type}, #{room_info}, #{day_of_week}, " +
+            "#{start_time}, #{end_time}, #{max_students}, #{status}, #{semester}, #{credits}, #{curriculum_pdf}, NOW())")
     public int insertCourse(Course course);
 
     @Select("SELECT course_no, day_of_week, start_time, end_time FROM COURSE WHERE room_info = #{room} AND semester = #{semester} AND status != 'REJECTED'")
@@ -66,12 +70,12 @@ public interface CourseMapper {
     List<Map<String, Object>> getStudentMyCourseMap(@Param("userNo") int userNo, @Param("semester") String semester);
 
     @Select("SELECT " +
-            "    c.*, " +                  // 코스의 모든 정보
-            "    u.name AS professor_name " + // 유저 테이블에서 이름을 가져와 별칭 지정
+            "    c.*, " +
+            "    u.name AS professor_name " +
             "FROM COURSE c " +
             "JOIN USERS u ON c.professor_no = u.user_no " +
             "WHERE c.semester = #{semester} " +
-            "AND c.course_no IN (SELECT course_no FROM ENROLLMENT WHERE user_no = #{userNo})")
+            "AND c.professor_no = #{userNo}")  // ← ENROLLMENT 서브쿼리 대신 professor_no로 직접 조회
     public List<Course> getMyCourse(@Param("userNo") int userNo, @Param("semester") String semester);
 
     @Select("SELECT* FROM COURSE WHERE course_no IN (SELECT course_no FROM ENROLLMENT WHERE student_no = #{userNo}) AND semester = #{semester}")
@@ -131,4 +135,17 @@ public interface CourseMapper {
     	int getCount(@Param("semester") String semester, @Param("type") String type,
     	             @Param("credits") String credits, @Param("keyword") String keyword,
     	             @Param("status") String status);
+    @Update("<script>" +
+    	    "UPDATE COURSE SET status = #{status} " +
+    	    "WHERE course_no IN " +
+    	    "<foreach collection='courseNos' item='no' open='(' separator=',' close=')'>" +
+    	    "#{no}" +
+    	    "</foreach>" +
+    	    "</script>")
+    	void updateStatus(@Param("courseNos") List<Integer> courseNos, @Param("status") String status);
+
+    @Delete("<script>DELETE FROM COURSE WHERE course_no IN " +
+            "<foreach collection='list' item='no' open='(' separator=',' close=')'>#{no}</foreach>" +
+            "</script>")
+    void deleteCourses(List<Integer> courseNos);
 }

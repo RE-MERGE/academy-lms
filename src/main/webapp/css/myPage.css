@@ -487,3 +487,16 @@
   .grade-summary { flex-wrap: wrap; }
   .timetable { overflow-x: auto; }
 }
+
+.course-badge,
+.grade-badge {
+  display: inline-block;
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 0.2rem 0.6rem;
+  border-radius: 4px;
+  margin-bottom: 0.6rem;
+}
+
+.badge-gray   { background: #f1f5f9; color: #64748b; }
+.badge-yellow { background: #fef3c7; color: #92400e; }

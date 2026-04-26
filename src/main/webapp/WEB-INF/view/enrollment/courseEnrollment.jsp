@@ -526,9 +526,9 @@
           <c:if test="${user.role == 'ADMIN'}">
             <select class="filter-select" id="filterStatus" onchange="loadAllCourses(1)">
               <option value="">전체 상태</option>
-              <option value="ACTIVE">활성(ACTIVE)</option>
+              <option value="APPROVED">승인(APPROVED)</option>
               <option value="PENDING">승인대기(PENDING)</option>
-              <option value="INACTIVE">비활성(INACTIVE)</option>
+              <option value="APPLIED">신청(APPLIED)</option>
             </select>
           </c:if>
 
@@ -569,7 +569,6 @@
                   <th style="width:105px;">시간</th>
                   <th style="width:65px;">강의실</th>
                   <th style="width:140px;">정원</th>
-                  <th style="width:60px; text-align:center;">커리큘럼</th>
                   <%-- 역할별 마지막 컬럼 --%>
                   <c:choose>
                     <c:when test="${user.role == 'STUDENT'}">
@@ -672,19 +671,14 @@
       <h3>⚙ 강의 상태 변경</h3>
       <div class="status-option-group">
         <label class="status-option">
-          <input type="radio" name="statusChoice" value="ACTIVE">
+          <input type="radio" name="statusChoice" value="APPROVED">
           <span>🟢</span>
-          <label>활성 (ACTIVE) — 수강신청 가능, 시간표 노출</label>
+          <label>승인 (APPROVED) — 수강신청 가능, 시간표 노출</label>
         </label>
         <label class="status-option">
           <input type="radio" name="statusChoice" value="PENDING">
           <span>🟡</span>
           <label>승인대기 (PENDING) — 관리자 검토 중</label>
-        </label>
-        <label class="status-option">
-          <input type="radio" name="statusChoice" value="INACTIVE">
-          <span>🔴</span>
-          <label>비활성 (INACTIVE) — 수강신청 불가, 숨김</label>
         </label>
       </div>
       <div class="status-modal-actions">
@@ -705,6 +699,14 @@
 var CTX_PATH  = '<%=request.getContextPath()%>';
 var USER_ROLE = '${user.role}';
 var CURRENT_SEMESTER = '${currentSemester}';
+
+document.addEventListener('click', function(e) {
+  const el = e.target.closest('.pdf-link');
+  if (!el) return;
+  const semester = el.dataset.semester;
+  const pdf = el.dataset.pdf;
+  if (pdf) window.open(CTX_PATH + '/upload/curriculum/' + semester + '/' + pdf, '_blank', 'width=800,height=900');
+});
 
 let currentPage  = 1;
 const PAGE_SIZE  = 10;
@@ -769,7 +771,7 @@ function loadAllCourses(page) {
 function renderAllTable(courses) {
   const tbody = document.getElementById('allCourseBody');
   if (!courses.length) {
-    const colspan = USER_ROLE === 'ADMIN' ? 11 : USER_ROLE === 'PROFESSOR' ? 9 : 10;
+    const colspan = USER_ROLE === 'ADMIN' ? 10 : USER_ROLE === 'PROFESSOR' ? 8 : 9;
     tbody.innerHTML = `<tr><td colspan="\${colspan}">
       <div class="empty-state">
         <div class="empty-icon">📭</div>
@@ -784,9 +786,7 @@ function renderAllTable(courses) {
     const enrolledCount = c.counts != null ? c.counts : 0;
     const pct          = c.max_students ? Math.round(enrolledCount / c.max_students * 100) : 0;
     const capClass     = pct >= 100 ? 'full' : pct >= 80 ? 'warn' : '';
-    const pdfHtml      = c.curriculum_pdf
-      ? `<a class="pdf-link" href="\${escHtml(c.curriculum_pdf)}" target="_blank">📄 보기</a>`
-      : `<span style="color:var(--gray-300);font-size:.75rem;">-</span>`;
+
 
     let checkboxCell = '';
     let lastCell = '';
@@ -802,7 +802,7 @@ function renderAllTable(courses) {
       const isFull    = pct >= 100;
       const conflict  = !applied && !isFull && hasTimeConflict(c);
       const btnClass  = applied ? 'cancel' : isFull ? 'full' : conflict ? 'conflict' : 'apply';
-      const btnText   = applied ? '신청취소' : isFull ? '마감' : conflict ? '시간충돌' : '수강신청';
+      const btnText   = applied ? '신청취소' : isFull ? '마감' : conflict ? '수강불가' : '수강신청';
       const btnAction = applied ? `cancelEnroll(\${c.course_no})`
                       : (!isFull && !conflict) ? `applyEnroll(\${c.course_no})` : '';
       lastCell = `<td style="text-align:center;">
@@ -815,7 +815,12 @@ function renderAllTable(courses) {
       \${checkboxCell}
       <td style="text-align:center;color:var(--gray-400);">\${(currentPage-1)*PAGE_SIZE + i + 1}</td>
       <td>
-        <div style="font-weight:600;color:var(--gray-900);font-size:.84rem;">\${escHtml(c.course_name)}</div>
+        <div style="font-weight:600;color:var(--gray-900);font-size:.84rem;"
+          class="\${c.curriculum_pdf ? 'pdf-link' : ''}"
+          data-semester="\${c.semester || ''}"
+          data-pdf="\${c.curriculum_pdf || ''}">
+          \${escHtml(c.course_name)}
+        </div>
         <div style="font-size:.72rem;color:var(--gray-400);margin-top:.1rem;">\${escHtml(c.professor_name || '')}</div>
       </td>
       <td><span class="type-badge \${typeClass(c.course_type)}">\${typeLabel(c.course_type)}</span></td>
@@ -829,7 +834,6 @@ function renderAllTable(courses) {
           <span>\${enrolledCount}/\${c.max_students != null ? c.max_students : '-'}</span>
         </div>
       </td>
-      <td style="text-align:center;">\${pdfHtml}</td>
       \${lastCell}
     </tr>`;
   }).join('');
@@ -901,7 +905,12 @@ function renderMineTable() {
     return `<tr>
       <td style="text-align:center;color:var(--gray-400);">\${i+1}</td>
       <td>
-        <div style="font-weight:600;color:var(--gray-900);font-size:.84rem;">\${escHtml(c.course_name)}</div>
+        <div style="font-weight:600;color:var(--gray-900);font-size:.84rem;"
+          class="\${c.curriculum_pdf ? 'pdf-link' : ''}"
+          data-semester="\${c.semester || ''}"
+          data-pdf="\${c.curriculum_pdf || ''}">
+          \${escHtml(c.course_name)}
+        </div>
         <div style="font-size:.72rem;color:var(--gray-400);margin-top:.1rem;">\${escHtml(c.professor_name || '')}</div>
       </td>
       <td><span class="type-badge \${typeClass(c.course_type)}">\${typeLabel(c.course_type)}</span></td>
@@ -1035,7 +1044,7 @@ function bulkDelete() {
   if (selectedNos.size === 0) return;
   if (!confirm(`선택한 \${selectedNos.size}개 강의를 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.`)) return;
 
-  fetch(CTX_PATH + '/admin/course/delete', {
+  fetch(CTX_PATH + '/enrollment/courseDelete', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
     body: JSON.stringify({ courseNos: [...selectedNos] })
@@ -1070,7 +1079,7 @@ function confirmStatusChange() {
   const chosen = document.querySelector('input[name="statusChoice"]:checked');
   if (!chosen) { showToast('변경할 상태를 선택해주세요.', 'yellow'); return; }
 
-  fetch(CTX_PATH + '/admin/course/status', {
+  fetch(CTX_PATH + '/enrollment/status', { 
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
     body: JSON.stringify({ courseNos: [...selectedNos], status: chosen.value })
@@ -1201,10 +1210,7 @@ function statusBadgeHtml(s) {
   const map = {
     APPLIED:  ['badge-blue',   '신청'],
     PENDING:  ['badge-yellow', '대기'],
-    APPROVED: ['badge-green',  '승인'],
-    ACTIVE:   ['badge-green',  'ACTIVE'],
-    INACTIVE: ['badge-gray',   'INACTIVE'],
-    REJECTED: ['badge-red',    '반려']
+    APPROVED: ['badge-green',  '승인']
   };
   const [cls, label] = map[s] || ['badge-gray', s || '-'];
   return `<span class="badge \${cls}">\${label}</span>`;

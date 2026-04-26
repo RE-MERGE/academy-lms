@@ -111,4 +111,9 @@ public class AdminController {
         return year += semester += String.valueOf(month);
     }
 
+    
+    @GetMapping("roomTimetable")
+    public String getRoomTimetable() {
+        return "admin/roomTimetable";
+    }
 }

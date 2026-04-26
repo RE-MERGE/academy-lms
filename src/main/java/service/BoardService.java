@@ -91,12 +91,13 @@ public class BoardService {
         boardDao.deletePost(boardNo);
     }
 
-    public Map<String, Object> getBoardList(String boardType, String keyword,
+    public Map<String, Object> getBoardList(Integer courseNo, String boardType, String keyword,
                                             String searchType, int page) {
         int totalCount = boardDao.getTotalCount(boardType, keyword, searchType);
         PageInfo pageInfo = new PageInfo(page, totalCount, PAGE_SIZE, BLOCK_SIZE);
 
         BoardListRequest dto = new BoardListRequest();
+        dto.setCourseNo(courseNo);
         dto.setBoardType(boardType);
         dto.setKeyword(keyword);
         dto.setSearchType(searchType);
@@ -115,5 +116,9 @@ public class BoardService {
         result.put("postList", postList);
         result.put("pageInfo", pageInfo);
         return result;
+    }
+
+    public void viewCount(int boardNo) {
+        boardDao.viewCount(boardNo);
     }
 }

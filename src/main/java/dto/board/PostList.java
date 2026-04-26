@@ -20,4 +20,5 @@ public class PostList {
     private int views;
     private int isSecret;
     private Date createdAt;
+    private String fileUrl;
 }

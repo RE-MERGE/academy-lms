@@ -63,11 +63,14 @@ public interface BoardMapper {
     @Select("""
             <script>
                 SELECT b.board_no as boardNo, b.course_no as courseNo, b.board_type as boardType, b.title,
-                       b.views, b.is_secret AS isSecret, b.created_at AS createdAt,
+                       b.views, b.is_secret AS isSecret, b.created_at AS createdAt, b.file_url AS fileUrl,
                        m.name AS writerName
                 FROM BOARD b
                 JOIN USERS m ON b.writer_no = m.user_no
                 WHERE b.board_type = #{boardType}
+                <if test="courseNo != null">
+                    AND b.course_no = #{courseNo}
+                </if>
                 <if test="keyword != null and keyword != ''">
                     <choose>
                         <when test="searchType == 'title'">
@@ -112,4 +115,7 @@ public interface BoardMapper {
     int getTotalCount(@Param("boardType") String boardType,
                       @Param("keyword") String keyword,
                       @Param("searchType") String searchType);
+
+    @Update("UPDATE BOARD SET views = views + 1 WHERE board_no = #{value}")
+    void viewCount(int boardNo);
 }

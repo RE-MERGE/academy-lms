@@ -53,14 +53,14 @@ public interface EnrollmentMapper {
 	@Select("SELECT " +
 			"    c.course_no, " +
 			"    c.course_name AS courseName, " +
-			"    c.course_type, " +
+			"    c.course_type AS courseType, " +
 			"    COUNT(DISTINCT e.student_no) AS total_students, " +
 			"    IFNULL(ROUND(AVG(g.score), 1), 0) AS avg_score, " +
 			"    IFNULL(MAX(g.score), 0) AS max_score, " +
 			"    IFNULL(MIN(g.score), 0) AS min_score " +
 			"FROM COURSE c " +
 			"LEFT JOIN ENROLLMENT e ON c.course_no = e.course_no " +
-			"LEFT JOIN GRADE g ON e.enrollment_no = g.enrollment_no " + // GRADE 테이블 조인 추가
+			"LEFT JOIN GRADE g ON e.enrollment_no = g.enrollment_no " +
 			"WHERE c.professor_no = #{userNo} " +
 			"  AND c.semester = #{semester} " +
 			"GROUP BY c.course_no, c.course_name, c.course_type " +

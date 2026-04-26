@@ -83,7 +83,7 @@
 .badge-APPROVED { color: #004595; }
 .badge-PENDING  { color: #27ae60; }
 .badge-CANCELED { color: #e74c3c; }
-.badge-REJECTED { color: #c0392b; }
+.badge-APPLIED { color: #c0392b; }
 
 /* ── 상태 필터 셀렉트 (헤더 안) ── */
 .status-filter-select {
@@ -226,14 +226,24 @@
             <button class="filter-btn active" id="btn-all"     onclick="filterCourseStatus('all')">전체</button>
             <button class="filter-btn"        id="btn-active"  onclick="filterCourseStatus('active')">진행중인 수업</button>
             <button class="filter-btn"        id="btn-pending" onclick="filterCourseStatus('pending')">대기중인 수업</button>
-            <span class="guide-text">교수가 개설 신청한 강의를 승인 또는 거절할 수 있습니다.</span>
         </div>
 
-        <!-- 오른쪽: 검색 -->
-        <div class="search-wrap">
-            <span style="font-size: 16px; color: #aaa;">🔍</span>
-            <input type="text" id="searchInput" placeholder="" onkeyup="searchTable()"/>
-            <button onclick="searchTable()">검색</button>
+        <!-- 오른쪽: 상태변경 + 검색 -->
+        <div style="display: flex; align-items: center; gap: 8px;">
+            <select id="bulkStatus" style="padding: 7px 14px; border-radius: 6px; border: 1.5px solid #d0d7f0; font-size: 14px; cursor: pointer; min-width: 130px; color: #333;">
+                <option value="">상태 선택</option>
+                <option value="APPROVED">승인</option>
+                <option value="APPLIED">신청</option>
+                <option value="PENDING">대기</option>
+                <option value="CANCELED">거절</option>
+            </select>
+            <button class="btn-confirm" onclick="applyBulkStatus()">확인</button>
+
+            <div class="search-wrap">
+                <span style="font-size: 16px; color: #aaa;">🔍</span>
+                <input type="text" id="searchInput" placeholder="" onkeyup="searchTable()"/>
+                <button onclick="searchTable()">검색</button>
+            </div>
         </div>
 
     </div>
@@ -245,9 +255,7 @@
                 <th style="width: 3%;"><input type="checkbox" id="checkAll" onclick="toggleAll(this)"/></th>
                           
                 <th style="width: 3%;">번호</th>
-                
-                 <th style="width: 8%;">학번</th>
-                
+
                 <th style="width: 7%;" class="sortable" onclick="sortTable('profName')" id="th-profName">
                     교수이름 <span class="sort-icon" id="icon-profName">▼</span>
                 </th>                
@@ -274,6 +282,7 @@
                         <option value="">전체</option>
                         <option value="APPROVED">승인</option>
                         <option value="PENDING">대기</option>
+                        <option value="APPLIED">신청</option>
                         <option value="CANCELED">거절</option>
                     </select>
                 </th>
@@ -298,9 +307,7 @@
                 
              <td class="cell-no">${(currentPage - 1) * 10 + status.count}</td>
              
-              <td>${course.course_code}</td>
-                
-               <td>${course.prof_name}</td> 
+               <td>${course.prof_name}</td>
                
                  <td style="text-align: left; padding-left: 10px;">${course.course_name}</td>
                 
@@ -323,7 +330,8 @@
                         <c:choose>
                             <c:when test="${course.status eq 'APPROVED'}">승인</c:when>
                             <c:when test="${course.status eq 'PENDING'}">대기</c:when>
-                            <c:when test="${course.status eq 'CANCELED'}">거절</c:when>
+                            <c:when test="${course.status eq 'APPLIED'}">신청</c:when>
+                            <c:when test="${course.status eq 'CANCLED'}">취소</c:when>
                             <c:otherwise>${course.status}</c:otherwise>
                         </c:choose>
                     </span>
@@ -354,6 +362,7 @@
         <select id="bulkStatus">
             <option value="">상태 선택</option>
             <option value="APPROVED">승인</option>
+            <option value="APPLIED">신청</option>
             <option value="PENDING">대기</option>
             <option value="CANCELED">거절</option>
         </select>
@@ -445,7 +454,7 @@
             let show = false;
             if (type === 'all')     show = true;
             if (type === 'active')  show = (s === 'APPROVED');
-            if (type === 'pending') show = (s === 'PENDING' || s === 'CANCELED');
+            if (type === 'pending') show = (s === 'PENDING' || s === 'CANCELED' || s ==='APPLIED');
             row.style.display = show ? '' : 'none';
         });
         reNumberRows();

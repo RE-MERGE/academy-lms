@@ -1,5 +1,6 @@
 package handler;
 
+import dto.user.UserConst;
 import exception.PostAccessDeniedException;
 import exception.UnauthorizedException;
 import org.springframework.http.HttpStatus;
@@ -13,6 +14,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.io.PrintWriter;
 
@@ -47,8 +49,17 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(UnauthorizedException.class)
     public void handleUnauthorized(UnauthorizedException ex, HttpServletRequest request, HttpServletResponse response) throws IOException, IOException {
 
-        String referer = request.getHeader("Referer");
-        String redirectURL = (referer != null && !referer.isEmpty()) ? referer : request.getContextPath() + "/home/home";
+
+        HttpSession session = request.getSession(false);
+        System.out.println("==== UnauthorizedException 처리 ====");
+        System.out.println("세션 존재: " + (session != null));
+        String prevUrl = null;
+
+        if (session != null) {
+            prevUrl = (String) session.getAttribute(UserConst.PREV_URL);
+        }
+
+        String redirectURL = (prevUrl != null) ? prevUrl : request.getContextPath() + "/home/dashboard";
 
         response.setContentType("text/html; charset=UTF-8");
         PrintWriter out = response.getWriter();

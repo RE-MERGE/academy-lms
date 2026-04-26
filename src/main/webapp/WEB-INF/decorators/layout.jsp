@@ -124,15 +124,18 @@
     	<img src="${pageContext.request.contextPath}/img/icon_Member Management.png" alt="회원관리 아이콘" width="50px" height="50px">
     	<span class="si-label">전체 회원 관리</span>
   	</a>
-  <a href="${pageContext.request.contextPath}/admin/courseList" class="sidebar-item">
+  	
+  <a href="${pageContext.request.contextPath}/admin/adminCourseList" class="sidebar-item">
     <img src="${pageContext.request.contextPath}/img/icon_Course Management.png" alt="수업관리 아이콘" width="50px" height="50px">
     <span class="si-label">전체 수업 관리</span>
   </a>
+  
+	<a href="${pageContext.request.contextPath}/admin/roomTimetable" class="sidebar-item">
+    <img src="${pageContext.request.contextPath}/img/icon_timetable.png" alt="수업관리 아이콘" width="43px" height="43px">
+    <span class="si-label">전체 시간표 조회</span>
+  </a>
+  
 	</c:if>
-	
-	
- 
-	
 
     </nav>
 <div class="flyout" id="course-flyout">

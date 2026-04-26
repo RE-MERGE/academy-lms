@@ -2,6 +2,7 @@ package config;
 
 import interceptor.AdminCheckInterceptor;
 import interceptor.LoginCheckInterceptor;
+import interceptor.SavePrevUrlInterceptor;
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.*;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
@@ -103,6 +104,7 @@ public class MvcConfig implements WebMvcConfigurer {
                 .addPathPatterns("/**")
                 .excludePathPatterns(
                         "/",
+                        "/admin/**",
                         "/css/**",
                         "/img/**",
                         "/js/**",
@@ -122,6 +124,10 @@ public class MvcConfig implements WebMvcConfigurer {
         //관리자 전용 권한 체크
         registry.addInterceptor(new AdminCheckInterceptor())
                 .order(2)
+                .addPathPatterns("/admin/**");
+
+        registry.addInterceptor(new SavePrevUrlInterceptor())
+                .order(3)
                 .addPathPatterns("/admin/**");
     }
 
@@ -158,9 +164,12 @@ public class MvcConfig implements WebMvcConfigurer {
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
 
         String uploadPath = "file:///C:/upload/profiles/";
+        String curriculumPath = "file:///C:/upload/curriculum/";
 
         registry.addResourceHandler("/upload/profiles/**")
                 .addResourceLocations(uploadPath);
+        registry.addResourceHandler("/upload/curriculum/**")
+        .addResourceLocations(curriculumPath);
 
         registry.addResourceHandler("/css/**").addResourceLocations("/css/");
         registry.addResourceHandler("/js/**").addResourceLocations("/js/");

@@ -464,7 +464,10 @@ html, body {
     border-right: 1px solid var(--gray-200);
     padding: 1.5rem 0;
     flex-shrink: 0;
+    height: 100vh;
+    overflow-y: auto;
 }
+
 
 .subject-sidebar-title {
     font-size: 1rem;
@@ -769,14 +772,24 @@ html, body {
   inset: 0;
   background: rgba(0,0,0,.35);
   backdrop-filter: blur(3px);
+  align-items: center;
+  justify-content: center;
+}
+.modal-body {
+	max-height: 400px;
+	max-width: 1000px;
+	width:100%; 
+	overflow-y: auto;
+	overflow-x: auto;
 }
 .modal-content {
   background: var(--white);
   border: 1px solid var(--gray-200);
   border-radius: var(--radius-xl);
-  margin: 10% auto;
+  margin: 5% auto;
   padding: 2rem;
-  width: 460px;
+  width: 40%;
+  max-width:90%;
   box-shadow: var(--shadow-lg);
   animation: fadeUp .2s cubic-bezier(.22,1,.36,1);
 }
@@ -813,6 +826,9 @@ html, body {
 }
 .modal-content button:hover { background: var(--primary-mid); }
 
+.modal.is-visible {
+    display: flex; 
+}
 /* ================================================================
    배경 (심플)
    ================================================================ */
@@ -866,6 +882,23 @@ html, body {
   background: var(--gray-50);
   border-color: var(--gray-300);
   color: var(--gray-900);
+}
+
+.btn-enroll-trigger {
+    padding: .4rem .8rem;
+    background: #f1f3f9; /* 연한 배경 */
+    color: var(--gray-700);
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius-sm);
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all .2s;
+}
+
+.btn-enroll-trigger:hover {
+    background: var(--primary);
+    color: var(--white);
+    border-color: var(--primary);
 }
 
 /* ================================================================

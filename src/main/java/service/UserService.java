@@ -3,13 +3,14 @@ package service;
 import dao.CourseDao;
 import dao.EnrollmentDao;
 import dao.UserDao;
-import dto.user.SessionUser;
-import dto.user.User;
-import dto.user.UserRole;
-import dto.user.UserStatus;
+import dto.user.*;
 import dto.user.mypage.MyPageData;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+
+import javax.validation.constraints.Email;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Pattern;
 
 @Service
 @RequiredArgsConstructor
@@ -19,9 +20,12 @@ public class UserService {
     private final CourseDao courseDao;
     private final EnrollmentDao enrollmentDao;
 
-
     public void join(User user) {
         dao.join(user);
+    }
+
+    public User selectUser(String userId) {
+        return dao.selectUser(userId);
     }
 
     public boolean withdraw(String userId, String password) {
@@ -67,4 +71,40 @@ public class UserService {
                 .build();
     }
 
+    public void updateStatus(String userId, UserStatus userStatus) {
+        dao.updateStatus(userId,userStatus);
+    }
+
+    public void resetLockCount(String userId) {
+        dao.resetLockCount(userId);
+
+    }
+
+    public void updateLockCount(String userId, int newLockCount) {
+        dao.updateLockCount(userId, newLockCount);
+    }
+
+    public String selectUserIdByEmail(String email) {
+        return dao.selectUserIdByEmail(email);
+    }
+
+    public String selectUserPassword(String userId, String email,  String phone) {
+        return dao.selectUserPassword(userId, email, phone);
+    }
+
+    public void updatePassword(String userId, String tempPassword) {
+        dao.updatePassword(userId, tempPassword);
+    }
+
+    public void updateProfileImg(String userId, String currentProfileImg) {
+        dao.updateProfileImg(userId, currentProfileImg);
+    }
+
+    public void updateInfo(UserEditForm userEditForm) {
+        dao.updateInfo(userEditForm);
+    }
+
+    public Integer getLastUserCode() {
+        return dao.getLastUserCode();
+    }
 }

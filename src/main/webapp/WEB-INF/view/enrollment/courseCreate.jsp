@@ -265,12 +265,8 @@
           <div class="form-label">시작 학기</div>
           <div class="form-field">
             <div class="inline-group">
-              <select class="form-select" id="semester" style="width:140px;">
-                <option value="2026-1">26년 1학기</option>
-                <option value="2026-2" selected>26년 2학기</option>
-                <option value="2027-1">27년 1학기</option>
-                <option value="2027-2">27년 2학기</option>
-              </select>
+              <span style="font-size:.88rem; font-weight:700; color:var(--gray-700);">${currentSemester}</span>
+              <input type="hidden" id="semester" value="${currentSemester}">
               <span class="inline-label">신청 교실</span>
               <select class="form-select" id="roomInfo" style="width:110px;" onchange="loadBlockedSlots()">
                 <option value="101호" selected>101호</option>
@@ -549,24 +545,26 @@ function submitForm() {
   var professorNo   = professorNoEl ? parseInt(professorNoEl.value) : 0;
   if (professorNoEl && !professorNo) { alert('교수번호를 입력해주세요.'); return; }
 
-  var payload = {
-    course_name:   courseName,
-    course_type:   courseType,
-    credits:       parseInt(credits),
-    semester:      semester,
-    room_info:     roomInfo,
-    day_of_week:   daySet.join(','),
-    start_time:    startTime,
-    end_time:      endTime,
-    max_students:  30,
-    status:        'PENDING',
-    professor_no:  professorNo
-  };
+  var formData = new FormData();
+  formData.append('course_name',  courseName);
+  formData.append('course_type',  courseType);
+  formData.append('credits',      parseInt(credits));
+  formData.append('semester',     semester);
+  formData.append('room_info',    roomInfo);
+  formData.append('day_of_week',  daySet.join(','));
+  formData.append('start_time',   startTime);
+  formData.append('end_time',     endTime);
+  formData.append('max_students', 30);
+  formData.append('status', '${sessionUser.role == "ADMIN" ? "APPROVED" : "APPLIED"}');
+  formData.append('professor_no', professorNo);
+
+  var pdfFile = document.getElementById('curriculumPdf').files[0];
+  if (pdfFile) formData.append('curriculumPdf', pdfFile);
 
   fetch(CTX_PATH + '/enrollment/create', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
-    body: JSON.stringify(payload)
+    headers: { 'X-Requested-With': 'XMLHttpRequest' },
+    body: formData
   })
   .then(function(r) { return r.json(); })
   .then(function(data) {

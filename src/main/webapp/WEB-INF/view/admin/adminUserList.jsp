@@ -167,13 +167,28 @@
     <!-- 상단 컨트롤 바 -->
     <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
         <div style="display: flex; align-items: center; gap: 8px;">
-            <button class="filter-btn active" id="btn-student" onclick="filterRole('student')">학생</button>
-            <button class="filter-btn" id="btn-professor" onclick="filterRole('professor')">교수</button>
+            <button class="filter-btn active" id="btn-all"       onclick="filterRole('all')">전체</button>
+            <button class="filter-btn"        id="btn-student"   onclick="filterRole('student')">학생</button>
+            <button class="filter-btn"        id="btn-professor" onclick="filterRole('professor')">교수</button>
         </div>
-        <div class="search-wrap">
-            <span style="font-size: 16px; color: #aaa;">🔍</span>
-            <input type="text" id="searchInput" placeholder="" onkeyup="searchTable()"/>
-            <button onclick="searchTable()">검색</button>
+
+        <div style="display: flex; align-items: center; gap: 8px;">
+            <div class="action-bar" style="margin: 0;">
+                <select id="bulkStatus">
+                    <option value="">🔎 상태 선택</option>
+                    <option value="ACTIVE">정상</option>
+                    <option value="INACTIVE">휴먼</option>
+                    <option value="LOCKED">정지</option>
+                    <option value="PENDING">대기</option>
+                    <option value="DELETE">탈퇴</option>
+                </select>
+                <button class="btn-confirm" onclick="applyBulkStatus()">확인</button>
+            </div>
+            <div class="search-wrap">
+                <span style="font-size: 16px; color: #aaa;">🔍</span>
+                <input type="text" id="searchInput" placeholder="" onkeyup="searchTable()"/>
+                <button onclick="searchTable()">검색</button>
+            </div>
         </div>
     </div>
 
@@ -223,13 +238,13 @@
                 data-role="${user.role}"
                 data-status="${user.status}"
                 data-name="${user.name}"
-                data-student-id="${user.userCode}"
+                data-student-id="${user.userNo}"
                 data-apply-date="${user.createdAt}">
 
                 <td><input type="checkbox" class="row-check" value="${user.userNo}"/></td>
                 <td class="cell-no">${(currentPage - 1) * 10 + status.count}</td>
                 <td>
-                    <a href="${pageContext.request.contextPath}/user/myPage?no=${user.userNo}"
+                    <a href="${pageContext.request.contextPath}/admin/userDetail/${user.userNo}"
                        style="color: #004595; text-decoration: underline; cursor: pointer;">
                         ${user.name}
                     </a>
@@ -268,18 +283,7 @@
         </c:if>
     </div>
 
-    <!-- 하단 액션 바 -->
-    <div class="action-bar">
-        <select id="bulkStatus">
-            <option value="">🔎 상태 선택</option>
-            <option value="ACTIVE">정상</option>
-            <option value="INACTIVE">휴먼</option>
-            <option value="LOCKED">정지</option>
-            <option value="PENDING">대기</option>
-            <option value="DELETE">탈퇴</option>
-        </select>
-        <button class="btn-confirm" onclick="applyBulkStatus()">확인</button>
-    </div>
+
 
 </div>
 <script>
@@ -328,43 +332,32 @@
 
     /* ── 통합 필터 실행 ── */
     // 현재 선택된 역할(Role)을 전역 변수로 관리합니다.
-    let currentActiveRole = 'student';
+    let currentActiveRole = 'all'; // 기본값 all로 변경
 
     function filterRole(role) {
-        currentActiveRole = role;
+        location.href = '?page=1&role=' + role;
+    }
 
-        // 버튼 UI 변경
-        document.getElementById('btn-student').classList.toggle('active', role === 'student');
-        document.getElementById('btn-professor').classList.toggle('active', role === 'professor');
+    function applyFilters() {
+        const targetRole   = currentActiveRole.toUpperCase();
+        const targetStatus = document.getElementById('statusFilter').value;
 
-        applyFilters();
+        document.querySelectorAll('.user-row').forEach(function(row) {
+            const rowRole   = row.getAttribute('data-role').trim().toUpperCase();
+            const rowStatus = row.getAttribute('data-status');
+
+            const roleMatch   = (targetRole === 'ALL' || rowRole === targetRole);
+            const statusMatch = !targetStatus || (rowStatus === targetStatus);
+
+            row.style.setProperty('display', (roleMatch && statusMatch) ? 'table-row' : 'none', 'important');
+        });
+        reNumberRows();
     }
 
     function filterStatus() {
         applyFilters();
     }
 
-    function applyFilters() {
-        const targetRole = currentActiveRole.toUpperCase();
-        const targetStatus = document.getElementById('statusFilter').value;
-        const rows = document.querySelectorAll('.user-row');
-
-        rows.forEach(function(row) {
-            const rowRole = row.getAttribute('data-role').trim().toUpperCase();
-            const rowStatus = row.getAttribute('data-status');
-
-            // 역할과 상태가 모두 맞아야 함
-            const roleMatch = (rowRole === targetRole);
-            const statusMatch = !targetStatus || (rowStatus === targetStatus);
-
-            if (roleMatch && statusMatch) {
-                row.style.setProperty('display', 'table-row', 'important');
-            } else {
-                row.style.setProperty('display', 'none', 'important');
-            }
-        });
-        reNumberRows();
-    }
 
     /* ── 검색 (검색어 필터도 추가) ── */
     function searchTable() {
@@ -389,8 +382,37 @@
 
     // 초기 실행
     document.addEventListener("DOMContentLoaded", function() {
-        filterRole('student');
+        var role = '${currentRole}';
+        document.getElementById('btn-all').classList.toggle('active', role === 'all');
+        document.getElementById('btn-student').classList.toggle('active', role === 'student');
+        document.getElementById('btn-professor').classList.toggle('active', role === 'professor');
     });
+
+    function applyBulkStatus() {
+        const status = document.getElementById('bulkStatus').value;
+        if (!status) { alert('변경할 상태를 선택해 주세요.'); return; }
+
+        const checked = Array.from(document.querySelectorAll('.row-check:checked')).map(cb => cb.value);
+        if (checked.length === 0) { alert('대상 회원을 선택해 주세요.'); return; }
+        if (!confirm(checked.length + '명의 상태를 변경하시겠습니까?')) return;
+
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '${pageContext.request.contextPath}/admin/updateUserStatus';
+
+        const inputStatus = document.createElement('input');
+        inputStatus.type = 'hidden'; inputStatus.name = 'status'; inputStatus.value = status;
+        form.appendChild(inputStatus);
+
+        checked.forEach(function(no) {
+            const inp = document.createElement('input');
+            inp.type = 'hidden'; inp.name = 'userNos'; inp.value = no;
+            form.appendChild(inp);
+        });
+
+        document.body.appendChild(form);
+        form.submit();
+    }
 </script>
 </body>
 </html>

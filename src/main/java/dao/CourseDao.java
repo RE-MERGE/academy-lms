@@ -3,6 +3,9 @@ package dao;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.ibatis.annotations.Insert;
+import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.annotations.Select;
 import org.mybatis.spring.SqlSessionTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
@@ -10,6 +13,7 @@ import org.springframework.stereotype.Repository;
 import dao.mapper.CourseMapper;
 
 import dto.Course;
+import dto.user.User;
 
 @Repository
 public class CourseDao {
@@ -86,6 +90,29 @@ public class CourseDao {
 	}
 	public int getCount(String semester, String type, String credits, String keyword, String status) {
 		return template.getMapper(cls).getCount(semester, type,credits, keyword, status);
+	}
+	public List<User> getStudentList(int userNo) {
+		return template.getMapper(cls).getStudentList(userNo);
+	}
+	public int getselectEnrollmentNo(int user_no, int course_no) {
+		return template.getMapper(cls).getselectEnrollmentNo(user_no,course_no);
+	}
+	public void insertMidterm(int enrollment_no, int midterm, String alphabet) {
+		template.getMapper(cls).insertMidterm(enrollment_no, midterm, alphabet);
+	}
+	public void insertFinal(int enrollment_no, int final_score, String alphabet) {
+		template.getMapper(cls).insertFinal(enrollment_no, final_score, alphabet);
+	}
+	public void insertAttendance(int enrollment_no, int attendance, String alphabet) {
+		template.getMapper(cls).insertAttendance(enrollment_no, attendance, alphabet);
+	}
+	
+	public void updateStatus(List<Integer> courseNos, String status) {
+		template.getMapper(cls).updateStatus(courseNos, status);
+	}
+	public void deleteCourses(List<Integer> courseNos) {
+		template.getMapper(cls).deleteCourses(courseNos);
+		
 	}
 	
 }

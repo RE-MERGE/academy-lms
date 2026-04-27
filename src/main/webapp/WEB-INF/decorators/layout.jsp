@@ -4,6 +4,10 @@
 <c:if test="${not empty errorMsg}">
     <script>alert("${errorMsg}");</script>
 </c:if>
+<%-- URI 추출 후 조건 체크 --%>
+<c:set var="uri" value="${requestScope['javax.servlet.forward.request_uri']}"/>
+<c:set var="ctx" value="${pageContext.request.contextPath}"/>
+<c:set var="showSubjectSidebar" value="${fn:contains(uri, '/board/list_subject') or fn:contains(uri, '/course/mainSubject')}"/>
 <!DOCTYPE html>
 <html lang="ko">
 
@@ -120,15 +124,18 @@
     	<img src="${pageContext.request.contextPath}/img/icon_Member Management.png" alt="회원관리 아이콘" width="50px" height="50px">
     	<span class="si-label">전체 회원 관리</span>
   	</a>
-  <a href="${pageContext.request.contextPath}/admin/courseList" class="sidebar-item">
+  	
+  <a href="${pageContext.request.contextPath}/admin/adminCourseList" class="sidebar-item">
     <img src="${pageContext.request.contextPath}/img/icon_Course Management.png" alt="수업관리 아이콘" width="50px" height="50px">
     <span class="si-label">전체 수업 관리</span>
   </a>
+  
+	<a href="${pageContext.request.contextPath}/admin/roomTimetable" class="sidebar-item">
+    <img src="${pageContext.request.contextPath}/img/icon_timetable.png" alt="수업관리 아이콘" width="43px" height="43px">
+    <span class="si-label">전체 시간표 조회</span>
+  </a>
+  
 	</c:if>
-	
-	
- 
-	
 
     </nav>
 <div class="flyout" id="course-flyout">
@@ -138,7 +145,7 @@
 	        	<!-- <li class="flyout-list">&nbsp;과목</li>-->
 	            	<c:forEach var="course" items="${courseList}">
 		                <li class="flyout-item">
-        <a href="${pageContext.request.contextPath}/course/mainSubject?no=${course.course_no}">
+        <a href="${pageContext.request.contextPath}/board/list_subject?course_no=${course.course_no}">
             ${course.course_name}
         </a>
         <c:set var="isFav" value="false"/>
@@ -155,7 +162,17 @@
 	        	</c:if>
 	   	 	</ul>
 		</div>
-
+      <c:if test="${showSubjectSidebar}">
+          <aside class="subject-sidebar">
+              <h2 class="subject-sidebar-title">${course.course_name}</h2>
+              <nav class="subject-nav">
+                  <a href="${ctx}/board/list_subject?course_no=${course.course_no}" class="subject-nav-item active">🏠 홈</a><hr>
+                  <a href="#" class="subject-nav-item">📊 성적</a><hr>
+                  <a href="#" class="subject-nav-item">💬 Q&A</a><hr>
+                  <a href="#" class="subject-nav-item">👥 학생 리스트</a>
+              </nav>
+          </aside>
+      </c:if>
     <!-- ── 페이지 본문 ── -->
     <main class="main-content">
       <sitemesh:write property="body"/>

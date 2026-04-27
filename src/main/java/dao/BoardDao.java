@@ -39,4 +39,8 @@ public class BoardDao {
     public List<PostList> getList(BoardListRequest dto) {
         return template.getMapper(cls).getList(dto);
     }
+
+    public void viewCount(int boardNo) {
+        template.getMapper(cls).viewCount(boardNo);
+    }
 }

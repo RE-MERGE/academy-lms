@@ -165,9 +165,12 @@ public class MvcConfig implements WebMvcConfigurer {
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
 
         String uploadPath = "file:///C:/upload/profiles/";
+        String curriculumPath = "file:///C:/upload/curriculum/";
 
         registry.addResourceHandler("/upload/profiles/**")
                 .addResourceLocations(uploadPath);
+        registry.addResourceHandler("/upload/curriculum/**")
+        .addResourceLocations(curriculumPath);
 
         registry.addResourceHandler("/css/**").addResourceLocations("/css/");
         registry.addResourceHandler("/js/**").addResourceLocations("/js/");

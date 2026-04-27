@@ -1,8 +1,8 @@
 package controller;
 
+import dto.Course;
 import dto.board.*;
 import dto.user.SessionUser;
-import dto.user.UserConst;
 import dto.user.UserRole;
 import dto.user.login.Login;
 import exception.PostAccessDeniedException;
@@ -13,17 +13,18 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.ModelAndView;
 import service.BoardService;
+import service.CourseService;
 
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.file.Files;
 import java.util.Map;
-import java.util.UUID;
 
 @Controller
 @RequestMapping("board")
@@ -31,6 +32,8 @@ public class BoardController {
 
     @Autowired
     BoardService boardService;
+    @Autowired
+    CourseService courseService;
 
     @GetMapping("write")
     public void writeForm(@Login SessionUser sessionUser, Model model, String boardType) {
@@ -48,7 +51,7 @@ public class BoardController {
     public String write(PostCreate board,
                         @Login SessionUser sessionUser) {
         boardService.insertPost(board, sessionUser.getUserNo());
-        return "redirect:/board/list?boardType=" + board.getBoardType();
+        return "redirect:/board/list?no=" + board.getCourseNo() + "&boardType=" + board.getBoardType();
     }
 
     @GetMapping("list")
@@ -59,7 +62,7 @@ public class BoardController {
                             @RequestParam(defaultValue = "title") String searchType,
                             Model model) {
 
-        Map<String, Object> data = boardService.getBoardList(boardType, keyword, searchType, page);
+        Map<String, Object> data = boardService.getBoardList(null, boardType, keyword, searchType, page);
 
         model.addAttribute("postList", data.get("postList"));
         model.addAllAttributes(((PageInfo) data.get("pageInfo")).toMap()); // 또는 개별 addAttribute
@@ -70,33 +73,47 @@ public class BoardController {
     }
 
     @GetMapping("detail")
-    public ModelAndView detail(int boardNo) {
-        ModelAndView mav = new ModelAndView();
+    public String detail(int boardNo, Integer courseNo, HttpServletRequest request, HttpServletResponse response, Model model) {
+        // 1. 해당 게시글용 쿠키 이름 생성
+        String cookieName = "alreadyViewed_" + boardNo;
+        Cookie[] cookies = request.getCookies();
+        boolean isFirstVisit = true;
+
+        //2. 쿠키 검사: 이 브라우저에서 방문 확인
+        if (cookies != null) {
+            for (Cookie c : cookies) {
+                if (c.getName().equals(cookieName)) {
+                    isFirstVisit = false; // 방문!
+                    break;
+                }
+            }
+        }
+
+        // 3. 첫 방문이면 DB올리고 쿠키 새로 생성
+        if (isFirstVisit) {
+            boardService.viewCount(boardNo);
+
+            Cookie newCookie = new Cookie(cookieName, "true");
+            newCookie.setMaxAge(60 * 60); // 1시간 유지
+            newCookie.setPath("/"); // 프로젝트 전체 경로에서 유효
+            response.addCookie(newCookie);
+        }
+
         PostDetail postDetail = boardService.detailPost(boardNo);
-        mav.addObject("post", postDetail);
-        return mav;
-    }
-    @GetMapping("fileDownload")
-    public void fileDownload(@RequestParam String fileUrl, HttpServletResponse response) throws IOException {
-        File file = new File("C:/upload/profiles/" + fileUrl);
-
-        response.setContentType("application/octet-stream");
-        response.setHeader("Content-Disposition",
-                "attachment; filename=\"" +
-                        URLEncoder.encode(fileUrl.substring(fileUrl.indexOf("_") + 1), "UTF-8") + "\"");
-
-        Files.copy(file.toPath(), response.getOutputStream());
+        model.addAttribute("post", postDetail);
+        model.addAttribute("courseNo", courseNo);
+        return "board/detail";
     }
 
     @GetMapping("update")
-    public ModelAndView update(@Login SessionUser sessionUser, int boardNo) {
+    public String update(@Login SessionUser sessionUser, int boardNo, Model model) {
         PostDetail postDetail = boardService.detailPost(boardNo);
         if (sessionUser.getRole() != UserRole.ADMIN && sessionUser.getUserNo() != postDetail.getWriterNo()) {
             throw new PostAccessDeniedException();
         }
         ModelAndView mav = new ModelAndView();
-        mav.addObject("post", postDetail);
-        return mav;
+        model.addAttribute("post", postDetail);
+        return "board/update";
     }
 
     @PostMapping("update")
@@ -109,5 +126,38 @@ public class BoardController {
     public String delete(String boardNo, String boardType, @Login SessionUser sessionUser) {
         boardService.deletePost(boardNo, sessionUser.getUserNo(), sessionUser.getRole());
         return "redirect:/board/list?boardType=" + boardType;
+    }
+
+    @GetMapping("list_subject")
+    public String list_subject(int course_no,
+                               @RequestParam(defaultValue = "1") int page,
+                               @RequestParam(defaultValue = "NOTICE") String boardType,
+                               @RequestParam(defaultValue = "") String keyword,
+                               @RequestParam(defaultValue = "title") String searchType,
+                               Model model) {
+        Course course = courseService.selectCourse(course_no);
+        String professorName = courseService.selectProfessorName(course_no);
+        Map<String, Object> data = boardService.getBoardList(course_no, boardType, keyword,
+                searchType, page);
+
+        model.addAttribute("postList", data.get("postList"));
+        model.addAttribute("course", course);
+        model.addAttribute("professorName", professorName);
+        model.addAllAttributes(((PageInfo) data.get("pageInfo")).toMap());
+        model.addAttribute("boardType", boardType);
+        return "board/list_subject";
+
+    }
+
+    @GetMapping("fileDownload")
+    public void fileDownload(@RequestParam String fileUrl, HttpServletResponse response) throws IOException {
+        File file = new File("C:/upload/profiles/" + fileUrl);
+
+        response.setContentType("application/octet-stream");
+        response.setHeader("Content-Disposition",
+                "attachment; filename=\"" +
+                        URLEncoder.encode(fileUrl.substring(fileUrl.indexOf("_") + 1), "UTF-8") + "\"");
+
+        Files.copy(file.toPath(), response.getOutputStream());
     }
 }

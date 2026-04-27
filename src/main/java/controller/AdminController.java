@@ -1,9 +1,8 @@
 package controller;
 
 
-import dao.UserDao;
 import dto.user.*;
-import dto.user.UserEditFormForAdmin;
+import dto.user.mypage.UserEditFormForAdmin;
 import dto.user.mypage.AdminCourseList;
 import dto.user.mypage.MyPageData;
 import dto.user.mypage.UserDetailForAdmin;
@@ -92,24 +91,23 @@ public class AdminController {
     public String editProfileForAdminForm(@PathVariable int userNo, Model model) {
 
         User targetUser = adminService.selectUser(userNo);
-        model.addAttribute(UserConst.DETAIL_USER, new UserDetailForAdmin(targetUser));
+        model.addAttribute(UserConst.EDIT_FORM, new UserEditFormForAdmin(targetUser));
 
         return "admin/editProfileForAdmin";
     }
 
     @PostMapping("editProfile/{userNo}")
     public String editProfileForAdmin(@PathVariable int userNo,
-                                      @Validated @ModelAttribute("userDetail") UserEditFormForAdmin userEditFormForAdmin,
+                                      @Validated @ModelAttribute("editForm") UserEditFormForAdmin userEditFormForAdmin,
                                       BindingResult bindingResult, Model model) {
 
         if (bindingResult.hasErrors()) {
-            model.addAttribute("userNo", userNo);
             return "admin/editProfileForAdmin";
         }
 
         adminService.updateUserFormAdmin(userNo, userEditFormForAdmin);
 
-        return "redirect:/admin/userDetail/" + userNo;
+        return "redirect:/admin/userDetail/" + userNo + "?saved=1";
     }
 
     private UserDetailForAdmin createdUserDetail(User selectUser) {

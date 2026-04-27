@@ -4,16 +4,13 @@ import dao.AdminDao;
 import dao.UserDao;
 import dto.user.AdminUserList;
 import dto.user.User;
-import dto.user.UserEditForm;
-import dto.user.UserEditFormForAdmin;
+import dto.user.mypage.UserEditFormForAdmin;
 import dto.user.mypage.AdminCourseList;
-import dto.user.mypage.UserDetailForAdmin;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
-import java.util.UUID;
 
 @Service
 public class AdminService {
@@ -64,20 +61,13 @@ public class AdminService {
         MultipartFile profileImg = userEditFormForAdmin.getProfileImg();
         String originalProfileName;
 
-        if (profileImg != null || !profileImg.isEmpty()) {
+        if (profileImg != null && !profileImg.isEmpty()) {
             originalProfileName = fileService.saveProfileImage(profileImg);
         } else {
             originalProfileName = userEditFormForAdmin.getCurrentProfileImg();
         }
 
         User targetUser = adminDao.selectUser(userNo);
-
-        targetUser.updateInfoForAdmin(
-                userEditFormForAdmin.getName(),
-                userEditFormForAdmin.getEmail(),
-                userEditFormForAdmin.getPhone(),
-                originalProfileName
-        );
 
         userEditFormForAdmin.setCurrentProfileImg(originalProfileName);
         userEditFormForAdmin.setUserId(targetUser.getUserId());

@@ -3,7 +3,7 @@ package dao.mapper;
 
 import dto.user.AdminUserList;
 import dto.user.User;
-import dto.user.UserEditFormForAdmin;
+import dto.user.mypage.UserEditFormForAdmin;
 import dto.user.mypage.AdminCourseList;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;

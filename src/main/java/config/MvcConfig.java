@@ -161,6 +161,8 @@ public class MvcConfig implements WebMvcConfigurer {
         resolvers.add(new LoginUserArgumentResolver());
     }
 
+
+
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
 

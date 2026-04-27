@@ -35,4 +35,12 @@ public class User {
         this.phone = phone;
         this.profileImg = profileImg;
     }
+
+    public boolean isNaverUser() {
+        return userId != null && userId.startsWith(UserConst.NAVER_LOGIN_USER);
+    }
+
+    public String getDisplayUserId() {
+        return isNaverUser() ? "네이버 로그인 회원입니다." : userId;
+    }
 }

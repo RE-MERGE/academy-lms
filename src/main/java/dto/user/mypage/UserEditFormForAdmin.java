@@ -1,6 +1,9 @@
-package dto.user;
+package dto.user.mypage;
 
-import lombok.AllArgsConstructor;
+import dto.user.User;
+import dto.user.UserPattern;
+import dto.user.UserRole;
+import dto.user.UserStatus;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -10,6 +13,7 @@ import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Getter
 @Setter
@@ -17,49 +21,44 @@ import java.time.LocalDate;
 public class UserEditFormForAdmin {
 
     private int userNo;
+
+    // 읽기전용
+    private int userCode;
+    private String userId;
+    private LocalDateTime createdAt;
+    private LocalDate lastLoginDate;
+    private int lockCount;
+
+    // 수정 가능
     private UserRole role;
     private UserStatus status;
-
-    //현재 보여줄 이미지
     private String currentProfileImg;
-
-    //마이페이지에서 이미지 변경시
     private MultipartFile profileImg;
-
-    private String userId;
-    private int userCode;
-    private LocalDate createdAt;      // 비밀번호 마지막 변경 시간
-    private LocalDate last_password_changed;
-    private int lockCount;           // 로그인 실패 횟수 (계정 잠금 해제용)
-    private LocalDate last_login;
 
     @NotBlank(message = "{error.required.name}")
     @Pattern(regexp = UserPattern.NAME_PATTERN, message = "{error.input.name}")
     private String name;
 
     @NotBlank(message = "{error.required.email}")
-    @Email(regexp = UserPattern.EMAIL_PATTERN, message = "{error.input.password}")
+    @Email(regexp = UserPattern.EMAIL_PATTERN, message = "{error.input.email}")
     private String email;
 
-    @NotBlank( message = "{error.required.phoneNo}")
+    @NotBlank(message = "{error.required.phoneNo}")
     @Pattern(regexp = UserPattern.PHONE_PATTERN, message = "{error.input.phone}")
     private String phone;
 
-    public UserEditFormForAdmin(){}
-
-    public UserEditFormForAdmin(String currentProfileImg, String userId, String name, String email, String phone) {
-        this.currentProfileImg = currentProfileImg;
-        this.userId = userId;
-        this.name = name;
-        this.email = email;
-        this.phone = phone;
-    }
-
-    public boolean isNaverUser() {
-        return userId != null && userId.startsWith(UserConst.NAVER_LOGIN_USER);
-    }
-
-    public String getDisplayUserId() {
-        return isNaverUser() ? "네이버 로그인 회원입니다." : userId;
+    public UserEditFormForAdmin(User user) {
+        this.userNo = user.getUserNo();
+        this.userCode = user.getUserCode();
+        this.userId = user.isNaverUser() ? user.getDisplayUserId() : user.getUserId();
+        this.createdAt = user.getCreatedAt();
+        this.lastLoginDate = user.getLastLoginAt();
+        this.lockCount = user.getLock_count();
+        this.role = user.getRole();
+        this.status = user.getStatus();
+        this.currentProfileImg = user.getProfileImg();
+        this.name = user.getName();
+        this.email = user.getEmail();
+        this.phone = user.getPhone();
     }
 }

@@ -118,7 +118,8 @@ public class MvcConfig implements WebMvcConfigurer {
                         "/user/joinForm",
                         "/user/join",
                         "/user/naverLogin",
-                        "/user/naverCallback"
+                        "/user/naverCallback",
+                        "/user/migratePw"
                 );
 
         //관리자 전용 권한 체크

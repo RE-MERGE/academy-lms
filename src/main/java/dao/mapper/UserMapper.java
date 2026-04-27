@@ -14,7 +14,22 @@ import java.util.Map;
 
 public interface UserMapper {
 
-    @Select("SELECT * FROM USERS")
+    @Select("SELECT " +
+            "  user_no AS userNo, " +
+            "  user_code AS userCode, " +
+            "  user_id AS userId, " +
+            "  password, " +
+            "  name, " +
+            "  email, " +
+            "  phone, " +
+            "  role, " +
+            "  status, " +
+            "  profile_img AS profileImg, " +
+            "  last_login AS lastLoginAt, " +
+            "  created_at AS createdAt, " +
+            "  lock_count, " +
+            "  last_password_changed " +
+            "FROM USERS")
     List<User> selectAllUsers();
 
     @Select("SELECT user_id FROM USERS WHERE email = #{userEmail}")
@@ -71,4 +86,9 @@ public interface UserMapper {
 
     @Update("UPDATE USERS SET lock_count=#{newLockCount} WHERE user_id = #{userId}")
     void updateLockcOunt(@Param("userId") String userId, @Param("newLockCount") int newLockCount);
+
+    @Update("UPDATE USERS SET last_login = now() WHERE user_id = #{userId}")
+    void updateLastLogin(String userId);
+
+
 }

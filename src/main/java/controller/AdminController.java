@@ -34,7 +34,6 @@ public class AdminController {
         int size = 10;
         int offset = (page - 1) * size;
 
-//        List<AdminUserList> allUserList = adminService.getAllUserList();
         List<AdminUserList> userList = adminService.getUserListPaged(offset, size, role);
 
         int totalCount = adminService.getTotalUserCount(role);

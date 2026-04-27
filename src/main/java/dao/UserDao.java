@@ -69,4 +69,8 @@ public class UserDao {
     public void updateLockCount(String userId, int newLockCount) {
         template.getMapper(cls).updateLockcOunt(userId, newLockCount);
     }
+
+    public void updateLastLogin(String userId) {
+        template.getMapper(cls).updateLastLogin(userId);
+    }
 }

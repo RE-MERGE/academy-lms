@@ -188,7 +188,15 @@
         <dependency>
             <groupId>com.sun.mail</groupId>
             <artifactId>javax.mail</artifactId>
-            <version>1.6.2</version> </dependency>
+            <version>1.6.2</version>
+        </dependency>
+
+        <!-- 회원가입용 설정 -->
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-crypto</artifactId>
+            <version>5.8.8</version>
+        </dependency>
 
     </dependencies>
     <build>

@@ -5,6 +5,7 @@ import dto.user.AdminUserList;
 import dto.user.SessionUser;
 import dto.user.User;
 import dto.user.UserConst;
+import dto.user.UserRole;
 import dto.user.login.Login;
 import dto.user.mypage.AdminCourseList;
 import dto.user.mypage.MyPageData;
@@ -17,7 +18,11 @@ import service.AdminService;
 import service.UserService;
 
 import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
+import service.CourseService;
 
 @Controller
 @RequestMapping("admin")
@@ -26,6 +31,7 @@ public class AdminController {
 
     private final AdminService adminService;
     private final UserService userService;
+    private final CourseService courseService;
 
     @GetMapping("userList")
     public String getUserList(@RequestParam(defaultValue = "1") int page,
@@ -44,7 +50,8 @@ public class AdminController {
         model.addAttribute("userList", userList);
         model.addAttribute("currentPage", page);
         model.addAttribute("totalPages", totalPages);
-
+        model.addAttribute("currentRole", role);
+        
         return "admin/adminUserList";
     }
 
@@ -110,10 +117,38 @@ public class AdminController {
 
         return year += semester += String.valueOf(month);
     }
-
     
     @GetMapping("roomTimetable")
     public String getRoomTimetable() {
         return "admin/roomTimetable";
     }
+    
+    @GetMapping("courselist")
+    @ResponseBody
+    public Map<String, Object> getEnrollmentList(
+        @RequestParam(defaultValue = "1") int page,
+        @RequestParam(defaultValue = "10") int size,
+        @RequestParam(defaultValue = "") String type,
+        @RequestParam(defaultValue = "") String credits,
+        @RequestParam(defaultValue = "") String keyword,
+        @RequestParam(defaultValue = "") String status,
+        @RequestParam(defaultValue = "") String semester,
+        @Login SessionUser sessionUser
+    ) {
+        Map<String, Object> result = new HashMap<>();
+        int offset = (page - 1) * size;
+        String effectiveStatus = status;
+        if (UserRole.STUDENT == sessionUser.getRole()) {
+            effectiveStatus = "APPROVED";
+        }
+       
+        
+        List<Map<String, Object>> courseList = courseService.getlist(semester, type, credits, keyword, effectiveStatus, offset, size);
+        int totalCount = courseService.getCount(semester, type, credits, keyword, effectiveStatus);
+        result.put("courses", courseList);
+        result.put("totalCount", courseList.size());
+        result.put("totalPages", (int) Math.ceil((double) totalCount / size));
+        return result;
+    }
+    
 }

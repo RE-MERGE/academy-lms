@@ -5,7 +5,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>강의 개설 신청 — re-merge LMS</title>
+  <title>강의 수정 — re-merge LMS</title>
   <link rel="stylesheet" href="${pageContext.request.contextPath}/css/main.css">
   <style>
     .create-page {
@@ -186,6 +186,13 @@
     }
     .btn-submit:hover { background: var(--primary-mid); transform: translateY(-1px); }
     .btn-submit:disabled { opacity: .5; cursor: not-allowed; transform: none; }
+    .btn-delete {
+      padding: .6rem 1.8rem; background: #fff1f2; color: #b91c1c;
+      border: 1px solid #fecdd3; border-radius: 999px;
+      font-family: 'Pretendard', 'Noto Sans KR', sans-serif;
+      font-size: .88rem; font-weight: 700; cursor: pointer; transition: all .16s;
+    }
+    .btn-delete:hover { background: #fee2e2; }
     .btn-cancel {
       padding: .6rem 1.8rem; background: #fff1f2; color: #b91c1c;
       border: 1px solid #fecdd3; border-radius: 999px;
@@ -202,12 +209,15 @@
 
       <div class="page-header">
         <div class="page-title">
-          <div class="page-title-icon">📝</div>
-          강의 개설 신청
+          <div class="page-title-icon">✏️</div>
+          강의 수정
         </div>
       </div>
 
       <div class="form-card">
+
+        <%-- 강의 번호 (수정용 hidden) --%>
+        <input type="hidden" id="courseNo" value="${param.courseNo}">
 
         <%-- 교수번호 (관리자 전용) --%>
         <c:if test="${sessionUser.role == 'ADMIN'}">
@@ -307,7 +317,8 @@
 
         <%-- 하단 버튼 --%>
         <div class="form-actions">
-          <button class="btn-submit" id="submitBtn" onclick="submitForm()">제출</button>
+          <button class="btn-submit" id="submitBtn" onclick="submitForm()">수정 완료</button>
+          <button class="btn-delete" id="deleteBtn" onclick="deleteCourse()">강의 삭제</button>
           <button class="btn-cancel" onclick="history.back()">취소</button>
         </div>
 
@@ -318,6 +329,7 @@
 
 <script>
 var CTX_PATH = '<%=request.getContextPath()%>';
+var COURSE_NO = parseInt('${param.courseNo}') || 0;
 
 var PERIODS = [
   { label:'1교시', start:'09:00', end:'10:00' },
@@ -332,24 +344,95 @@ var PERIODS = [
 ];
 var DAYS = ['월','화','수','목','금'];
 var selectedSlots  = [];
-var blockedSlots   = [];  /* 교실 사용 중 슬롯 */
-var myBlockedSlots = [];  /* 내 기존 강의 시간 충돌 슬롯 */
+var blockedSlots   = [];
+var myBlockedSlots = [];
+var originalCourseNo = COURSE_NO; /* 자신은 blocked에서 제외하기 위해 보관 */
 
 /* ================================================================
-   blocked 슬롯 계산 헬퍼 — loadBlockedSlots & submitForm 공용
-   [수정] p.start < endStr → p.end <= endStr 로 변경
-         (경계값 정확히 처리: "14:00~16:00" → 6,7교시만 막힘)
+   기존 강의 데이터 로드 (수정 시 폼 pre-fill)
+   GET /enrollment/courseDetail?courseNo=N
+   응답: { course_no, course_name, course_type, credits, semester,
+           room_info, day_of_week, start_time, end_time, curriculum_pdf, professor_no }
+================================================================ */
+function loadCourseData() {
+  if (!COURSE_NO) { alert('강의 번호가 없습니다.'); history.back(); return; }
+
+  fetch(CTX_PATH + '/enrollment/courseDetail?courseNo=' + COURSE_NO, {
+    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(data) {
+    var c = data.course || data; /* 서버 응답 구조에 맞게 */
+
+    /* 폼 필드 채우기 */
+    if (document.getElementById('courseName'))  document.getElementById('courseName').value  = c.course_name  || '';
+    if (document.getElementById('courseType'))  document.getElementById('courseType').value  = c.course_type  || '';
+    if (document.getElementById('credits'))     document.getElementById('credits').value     = c.credits      || 3;
+    if (document.getElementById('semester'))    document.getElementById('semester').value    = c.semester     || '';
+    if (document.getElementById('professorNo')) document.getElementById('professorNo').value = c.professor_no || '';
+
+    var roomEl = document.getElementById('roomInfo');
+    if (roomEl && c.room_info) {
+      roomEl.value = c.room_info;
+    }
+
+    /* PDF 파일명 표시 */
+    if (c.curriculum_pdf) {
+      var el = document.getElementById('pdfFileName');
+      el.textContent = c.curriculum_pdf;
+      el.classList.add('has-file');
+    }
+
+    /* 학기 텍스트 표시 */
+    var semesterDisplay = document.querySelector('.inline-group span[style]');
+    if (semesterDisplay && c.semester) semesterDisplay.textContent = c.semester;
+
+    /* blocked 로드 후 기존 요일/시간 선택 복원 */
+    loadBlockedSlots(function() {
+      restoreSlots(c.day_of_week, c.start_time, c.end_time);
+    });
+  })
+  .catch(function() {
+    /* 서버 연동 전 개발 환경 — blocked만 로드 */
+    loadBlockedSlots();
+  });
+}
+
+/* ================================================================
+   기존 요일/시간 슬롯 복원
+================================================================ */
+function restoreSlots(dayOfWeek, startTime, endTime) {
+  if (!dayOfWeek || !startTime || !endTime) return;
+  var days = dayOfWeek.split(',').map(function(d){ return d.trim(); });
+  var startStr = startTime.substring(0, 5);
+  var endStr   = endTime.substring(0, 5);
+
+  selectedSlots = [];
+  days.forEach(function(day) {
+    PERIODS.forEach(function(p, pIdx) {
+      if (p.start >= startStr && p.end <= endStr) {
+        selectedSlots.push({ day: day, periodIdx: pIdx });
+      }
+    });
+  });
+  renderGrid();
+  updateSummary();
+}
+
+/* ================================================================
+   blocked 슬롯 계산 헬퍼
 ================================================================ */
 function calcBlockedSlots(data) {
   var result = [];
   (data || []).forEach(function(course) {
+    /* 자기 자신 강의는 blocked에서 제외 */
+    if (course.course_no && course.course_no === originalCourseNo) return;
     (course.day_of_week || '').split(',').forEach(function(day) {
       day = day.trim();
       if (!day) return;
       var startStr = (course.start_time || '').substring(0, 5);
       var endStr   = (course.end_time   || '').substring(0, 5);
       PERIODS.forEach(function(p, pIdx) {
-        /* 교시의 시작·끝이 모두 [startStr, endStr] 안에 있어야 막힘 */
         if (p.start >= startStr && p.end <= endStr) {
           result.push({ day: day, periodIdx: pIdx });
         }
@@ -366,7 +449,6 @@ function renderGrid() {
   var grid = document.getElementById('ttGrid');
   grid.innerHTML = '';
 
-  /* 헤더 */
   grid.appendChild(document.createElement('div')).className = 'tt-head';
   DAYS.forEach(function(day) {
     var h = document.createElement('div');
@@ -375,7 +457,6 @@ function renderGrid() {
     grid.appendChild(h);
   });
 
-  /* 교시 행 */
   PERIODS.forEach(function(period, pIdx) {
     var pCell = document.createElement('div');
     pCell.className = 'tt-period';
@@ -399,17 +480,12 @@ function renderGrid() {
 }
 
 /* ================================================================
-   슬롯 토글
-   규칙:
-   1. 같은 요일 내에서는 연속된 교시만 선택 가능
-   2. 다른 요일은 이미 선택된 교시 범위와 동일해야 함
-      예) 월 1~3교시 선택 시 수요일도 1~3교시만 선택 가능
+   슬롯 토글 (courseCreate와 동일 로직)
 ================================================================ */
 function toggleSlot(day, pIdx) {
   var idx = selectedSlots.findIndex(function(s) { return s.day === day && s.periodIdx === pIdx; });
 
   if (idx >= 0) {
-    /* 해제 — 해당 요일의 중간 교시 해제 시 연속성 깨지면 막기 */
     var daySlots = selectedSlots.filter(function(s) { return s.day === day; })
                                 .map(function(s) { return s.periodIdx; }).sort(function(a,b){return a-b;});
     if (daySlots.length > 1) {
@@ -420,37 +496,24 @@ function toggleSlot(day, pIdx) {
       }
     }
     selectedSlots.splice(idx, 1);
-
   } else {
-    /* 추가 */
     var allSelected = selectedSlots;
-
     if (allSelected.length === 0) {
-      /* 첫 선택 — 내 강의 시간이면 막기 */
-      if (isMyBlockedSlot(day, pIdx)) {
-        alert('해당 시간에 이미 본인의 강의가 있습니다.');
-        return;
-      }
+      if (isMyBlockedSlot(day, pIdx)) { alert('해당 시간에 이미 본인의 강의가 있습니다.'); return; }
       selectedSlots.push({ day: day, periodIdx: pIdx });
-
     } else {
-      /* 이미 선택된 교시 범위 파악 */
-      var allPIdx = allSelected.map(function(s) { return s.periodIdx; });
+      var allPIdx  = allSelected.map(function(s) { return s.periodIdx; });
       var globalMin = Math.min.apply(null, allPIdx);
       var globalMax = Math.max.apply(null, allPIdx);
-
-      /* 같은 요일 선택 시 — 연속 체크 */
       var daySlots2 = allSelected.filter(function(s) { return s.day === day; })
                                  .map(function(s) { return s.periodIdx; }).sort(function(a,b){return a-b;});
 
       if (daySlots2.length > 0) {
         var dMin = daySlots2[0], dMax = daySlots2[daySlots2.length-1];
-        /* 연속되어야 함: 현재 선택 교시가 기존 범위 바로 앞뒤여야 함 */
         if (pIdx !== dMin - 1 && pIdx !== dMax + 1) {
           alert('같은 요일은 연속된 교시만 선택할 수 있습니다.');
           return;
         }
-        /* 다른 요일의 범위와도 일치해야 함 */
         var newMin = Math.min(dMin, pIdx), newMax = Math.max(dMax, pIdx);
         var otherDaySlots = allSelected.filter(function(s) { return s.day !== day; });
         if (otherDaySlots.length > 0) {
@@ -462,63 +525,37 @@ function toggleSlot(day, pIdx) {
             return;
           }
         }
-
-        /* ★ [핵심 수정] 범위가 넓어질 때 — 이미 선택된 다른 요일들에서
-           새로 추가되는 교시(pIdx)가 blocked인지 확인
-           예) 월 6~7교시 선택 상태에서 월 8교시 추가 시도 →
-               수요일도 8교시가 있어야 하는데 수 8교시가 blocked면 막기 */
         var otherDays = [];
         DAYS.forEach(function(d) {
-          if (d !== day && allSelected.some(function(s) { return s.day === d; })) {
-            otherDays.push(d);
-          }
+          if (d !== day && allSelected.some(function(s) { return s.day === d; })) otherDays.push(d);
         });
         var blockedOtherDay = null;
         for (var oi = 0; oi < otherDays.length; oi++) {
           if (isBlockedSlot(otherDays[oi], pIdx) || isMyBlockedSlot(otherDays[oi], pIdx)) {
-            blockedOtherDay = otherDays[oi];
-            break;
+            blockedOtherDay = otherDays[oi]; break;
           }
         }
         if (blockedOtherDay) {
           alert(blockedOtherDay + '요일 ' + PERIODS[pIdx].start + '~' + PERIODS[pIdx].end +
-                ' 교시가 이미 사용 중입니다.\n' +
-                '모든 요일의 시간 범위가 동일해야 하므로 이 교시는 추가할 수 없습니다.');
+                ' 교시가 이미 사용 중입니다.\n모든 요일의 시간 범위가 동일해야 하므로 이 교시는 추가할 수 없습니다.');
           return;
         }
-
       } else {
-        /* 새 요일 추가 시 — 기존 범위와 정확히 일치하는 교시만 허용 */
-
-        /* ★ [핵심 수정] DB는 start_time/end_time 하나뿐이므로
-           모든 요일이 동일한 시간 범위여야 함.
-           새 요일의 globalMin~globalMax 범위 중 blocked 교시가
-           단 하나라도 있으면 해당 요일은 추가 자체를 막음 */
         var hasBlockInRange = false;
         for (var chk = globalMin; chk <= globalMax; chk++) {
-          if (isBlockedSlot(day, chk) || isMyBlockedSlot(day, chk)) {
-            hasBlockInRange = true;
-            break;
-          }
+          if (isBlockedSlot(day, chk) || isMyBlockedSlot(day, chk)) { hasBlockInRange = true; break; }
         }
         if (hasBlockInRange) {
           alert(day + '요일 ' + PERIODS[globalMin].start + '~' + PERIODS[globalMax].end +
-                ' 범위 중 일부가 이미 사용 중입니다.\n' +
-                '이 요일은 선택할 수 없습니다.');
+                ' 범위 중 일부가 이미 사용 중입니다.\n이 요일은 선택할 수 없습니다.');
           return;
         }
-
         if (pIdx < globalMin || pIdx > globalMax) {
           alert('다른 요일은 이미 선택된 시간 범위(' + PERIODS[globalMin].start + '~' + PERIODS[globalMax].end + ')와 같아야 합니다.\n해당 범위의 교시를 선택하세요.');
           return;
         }
-        /* 해당 요일에 globalMin~globalMax 전체 채워야 하므로 순서대로 채우게 안내 */
-        if (pIdx !== globalMin) {
-          alert(PERIODS[globalMin].start + ' 교시부터 순서대로 선택해주세요.');
-          return;
-        }
+        if (pIdx !== globalMin) { alert(PERIODS[globalMin].start + ' 교시부터 순서대로 선택해주세요.'); return; }
       }
-
       selectedSlots.push({ day: day, periodIdx: pIdx });
     }
   }
@@ -526,16 +563,9 @@ function toggleSlot(day, pIdx) {
   updateSummary();
 }
 
-function isSelectedSlot(day, pIdx) {
-  return selectedSlots.some(function(s) { return s.day === day && s.periodIdx === pIdx; });
-}
-function isBlockedSlot(day, pIdx) {
-  return blockedSlots.some(function(s) { return s.day === day && s.periodIdx === pIdx; });
-}
-/* 내 기존 강의와 시간 겹침 */
-function isMyBlockedSlot(day, pIdx) {
-  return myBlockedSlots.some(function(s) { return s.day === day && s.periodIdx === pIdx; });
-}
+function isSelectedSlot(day, pIdx) { return selectedSlots.some(function(s) { return s.day === day && s.periodIdx === pIdx; }); }
+function isBlockedSlot(day, pIdx)   { return blockedSlots.some(function(s) { return s.day === day && s.periodIdx === pIdx; }); }
+function isMyBlockedSlot(day, pIdx) { return myBlockedSlots.some(function(s) { return s.day === day && s.periodIdx === pIdx; }); }
 
 /* ================================================================
    선택 요약
@@ -544,10 +574,7 @@ function updateSummary() {
   var el = document.getElementById('selectedSummary');
   if (!selectedSlots.length) { el.innerHTML = '선택된 시간이 없습니다.'; return; }
   var byDay = {};
-  selectedSlots.forEach(function(s) {
-    if (!byDay[s.day]) byDay[s.day] = [];
-    byDay[s.day].push(s.periodIdx);
-  });
+  selectedSlots.forEach(function(s) { if (!byDay[s.day]) byDay[s.day] = []; byDay[s.day].push(s.periodIdx); });
   var html = '';
   DAYS.forEach(function(day) {
     if (!byDay[day]) return;
@@ -559,22 +586,19 @@ function updateSummary() {
 }
 
 /* ================================================================
-   교실 선택 시 사용 중 슬롯 로드 (교실 + 내 강의 동시 조회)
+   교실 blocked 로드 (콜백 지원 — 데이터 복원 순서 보장)
 ================================================================ */
-function loadBlockedSlots() {
-  var room        = document.getElementById('roomInfo').value;
-  var semester    = document.getElementById('semester').value;
+function loadBlockedSlots(callback) {
+  var room     = document.getElementById('roomInfo').value;
+  var semester = document.getElementById('semester').value;
   var professorNoEl = document.getElementById('professorNo');
-  /* ADMIN이면 입력한 교수번호, 교수면 세션에서 받아온 번호 */
-  var professorNo = professorNoEl ? parseInt(professorNoEl.value) || 0
-                                  : parseInt('${sessionUser.userNo}');
+  var professorNo   = professorNoEl ? parseInt(professorNoEl.value) || 0
+                                    : parseInt('${sessionUser.userNo}');
 
   blockedSlots   = [];
   myBlockedSlots = [];
-  selectedSlots  = [];
-  if (!room) { renderGrid(); updateSummary(); return; }
+  if (!room) { renderGrid(); updateSummary(); if (callback) callback(); return; }
 
-  /* 교실 blocked + 내 강의 blocked 병렬 조회 */
   var roomFetch = fetch(CTX_PATH + '/enrollment/blocked?room=' + encodeURIComponent(room)
       + '&semester=' + encodeURIComponent(semester), {
     headers: { 'X-Requested-With': 'XMLHttpRequest' }
@@ -593,8 +617,9 @@ function loadBlockedSlots() {
       myBlockedSlots = calcBlockedSlots(results[1]);
       renderGrid();
       updateSummary();
+      if (callback) callback();
     })
-    .catch(function() { blockedSlots = []; myBlockedSlots = []; renderGrid(); });
+    .catch(function() { blockedSlots = []; myBlockedSlots = []; renderGrid(); if (callback) callback(); });
 }
 
 /* ================================================================
@@ -612,9 +637,40 @@ function updateFileName(input) {
 }
 
 /* ================================================================
-   폼 제출
-   [수정] 제출 직전 서버에서 최신 blocked 상태를 재조회하여
-          충돌 여부를 한 번 더 검증한 뒤 실제 POST 전송
+   강의 삭제
+================================================================ */
+function deleteCourse() {
+  if (!confirm('이 강의를 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.')) return;
+  var deleteBtn = document.getElementById('deleteBtn');
+  deleteBtn.disabled = true;
+  deleteBtn.textContent = '삭제 중...';
+
+  fetch(CTX_PATH + '/enrollment/courseDelete', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+    body: JSON.stringify({ courseNos: [COURSE_NO] })
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(data) {
+    if (data.success) {
+      alert('강의가 삭제되었습니다.');
+      location.href = CTX_PATH + '/enrollment/courseEnrollment';
+    } else {
+      alert('오류: ' + (data.message || '삭제에 실패했습니다.'));
+      deleteBtn.disabled = false;
+      deleteBtn.textContent = '강의 삭제';
+    }
+  })
+  .catch(function() {
+    alert('서버 오류가 발생했습니다.');
+    deleteBtn.disabled = false;
+    deleteBtn.textContent = '강의 삭제';
+  });
+}
+
+/* ================================================================
+   폼 제출 (PUT — 수정)
+   제출 직전 blocked 재검증 후 PUT /enrollment/courseUpdate
 ================================================================ */
 function submitForm() {
   var courseName = document.getElementById('courseName').value.trim();
@@ -641,6 +697,7 @@ function submitForm() {
   if (professorNoEl && !professorNo) { alert('교수번호를 입력해주세요.'); return; }
 
   var formData = new FormData();
+  formData.append('course_no',    COURSE_NO);
   formData.append('course_name',  courseName);
   formData.append('course_type',  courseType);
   formData.append('credits',      parseInt(credits));
@@ -650,20 +707,18 @@ function submitForm() {
   formData.append('start_time',   startTime);
   formData.append('end_time',     endTime);
   formData.append('max_students', 30);
-  formData.append('status', '${sessionUser.role == "ADMIN" ? "APPROVED" : "APPLIED"}');
   formData.append('professor_no', professorNo);
 
   var pdfFile = document.getElementById('curriculumPdf').files[0];
   if (pdfFile) formData.append('curriculumPdf', pdfFile);
 
-  /* ── STEP 1: 제출 직전 최신 blocked 상태 재검증 (교실 + 내 강의) ── */
+  /* 제출 직전 blocked 재검증 */
   var submitBtn = document.getElementById('submitBtn');
   submitBtn.disabled = true;
   submitBtn.textContent = '검증 중...';
 
-  var professorNoEl2 = document.getElementById('professorNo');
-  var professorNo2   = professorNoEl2 ? parseInt(professorNoEl2.value) || 0
-                                      : parseInt('${sessionUser.userNo}');
+  var professorNo2 = professorNoEl ? parseInt(professorNoEl.value) || 0
+                                   : parseInt('${sessionUser.userNo}');
 
   var roomFetch2 = fetch(CTX_PATH + '/enrollment/blocked?room=' + encodeURIComponent(roomInfo)
       + '&semester=' + encodeURIComponent(semester), {
@@ -682,7 +737,6 @@ function submitForm() {
     var freshBlocked   = calcBlockedSlots(results[0]);
     var freshMyBlocked = calcBlockedSlots(results[1]);
 
-    /* 교실 충돌 체크 */
     var roomConflict = selectedSlots.some(function(s) {
       return freshBlocked.some(function(b) { return b.day === s.day && b.periodIdx === s.periodIdx; });
     });
@@ -690,11 +744,10 @@ function submitForm() {
       alert('선택한 시간에 이미 다른 강의가 배정되었습니다.\n시간표를 새로고침하고 다시 선택해주세요.');
       blockedSlots = freshBlocked; myBlockedSlots = freshMyBlocked;
       selectedSlots = []; renderGrid(); updateSummary();
-      submitBtn.disabled = false; submitBtn.textContent = '제출';
+      submitBtn.disabled = false; submitBtn.textContent = '수정 완료';
       return;
     }
 
-    /* 내 강의 충돌 체크 */
     var myConflict = selectedSlots.some(function(s) {
       return freshMyBlocked.some(function(b) { return b.day === s.day && b.periodIdx === s.periodIdx; });
     });
@@ -702,12 +755,12 @@ function submitForm() {
       alert('선택한 시간이 본인의 기존 강의 시간과 겹칩니다.\n다른 시간을 선택해주세요.');
       blockedSlots = freshBlocked; myBlockedSlots = freshMyBlocked;
       selectedSlots = []; renderGrid(); updateSummary();
-      submitBtn.disabled = false; submitBtn.textContent = '제출';
+      submitBtn.disabled = false; submitBtn.textContent = '수정 완료';
       return;
     }
 
-    /* ── STEP 2: 충돌 없음 → 실제 POST 전송 ── */
-    fetch(CTX_PATH + '/enrollment/create', {
+    /* 충돌 없음 → 실제 수정 요청 */
+    fetch(CTX_PATH + '/enrollment/courseUpdate', {
       method: 'POST',
       headers: { 'X-Requested-With': 'XMLHttpRequest' },
       body: formData
@@ -715,28 +768,28 @@ function submitForm() {
     .then(function(r) { return r.json(); })
     .then(function(res) {
       if (res.success) {
-        alert('강의 개설 신청이 완료되었습니다.');
+        alert('강의 수정이 완료되었습니다.');
         location.href = CTX_PATH + '/enrollment/courseEnrollment';
       } else {
-        alert('오류: ' + (res.message || '신청에 실패했습니다.'));
+        alert('오류: ' + (res.message || '수정에 실패했습니다.'));
         submitBtn.disabled = false;
-        submitBtn.textContent = '제출';
+        submitBtn.textContent = '수정 완료';
       }
     })
     .catch(function() {
       alert('서버 오류가 발생했습니다.');
       submitBtn.disabled = false;
-      submitBtn.textContent = '제출';
+      submitBtn.textContent = '수정 완료';
     });
   })
   .catch(function() {
     alert('시간 충돌 검증 중 서버 오류가 발생했습니다.');
     submitBtn.disabled = false;
-    submitBtn.textContent = '제출';
+    submitBtn.textContent = '수정 완료';
   });
 }
 
-window.addEventListener('DOMContentLoaded', function() { loadBlockedSlots(); });
+window.addEventListener('DOMContentLoaded', function() { loadCourseData(); });
 </script>
 </body>
 </html>

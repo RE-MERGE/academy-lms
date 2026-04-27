@@ -179,4 +179,9 @@ public interface CourseMapper {
             "<foreach collection='list' item='no' open='(' separator=',' close=')'>#{no}</foreach>" +
             "</script>")
     void deleteCourses(List<Integer> courseNos);
+
+    @Select("SELECT * FROM COURSE "
+    		+ "WHERE professor_no = #{professorNo} "
+    		+ "  AND semester = #{semester}")
+	List<Course> getProfessorBlockedCourses(@Param("professorNo") int professorNo, @Param("semester") String semester);
 }

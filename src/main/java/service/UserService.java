@@ -107,4 +107,8 @@ public class UserService {
     public Integer getLastUserCode() {
         return dao.getLastUserCode();
     }
+
+	public int getProfNo(int code) {
+		return dao.getProfNo(code);
+	}
 }

@@ -114,5 +114,8 @@ public class CourseDao {
 		template.getMapper(cls).deleteCourses(courseNos);
 		
 	}
+	public List<Course> getProfessorBlockedCourses(int professorNo, String semester) {
+		return template.getMapper(cls).getProfessorBlockedCourses(professorNo, semester);
+	}
 	
 }

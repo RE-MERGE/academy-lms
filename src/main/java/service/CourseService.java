@@ -106,5 +106,9 @@ public class CourseService {
 		public void deleteCourses(List<Integer> courseNos) {
 		    coursedao.deleteCourses(courseNos);
 		}
+
+		public List<Course> getProfessorBlockedCourses(int professorNo, String semester) {
+			return coursedao.getProfessorBlockedCourses(professorNo,semester);
+		}
 		
 }

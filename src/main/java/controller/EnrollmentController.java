@@ -26,6 +26,7 @@ import dto.user.UserRole;
 import dto.user.login.Login;
 import service.CourseService;
 import service.EnrollmentService;
+import service.UserService;
 
 
 @Controller
@@ -35,6 +36,8 @@ public class EnrollmentController {
 	private CourseService courseService;
 	@Autowired
 	private EnrollmentService enrollmentService;
+	@Autowired
+	private UserService userService;
 	
 	public static final String UPLOAD_CURRICULUM_PDF_PATH = "C:/upload/curriculum/";
 	
@@ -79,7 +82,8 @@ public class EnrollmentController {
 	        if (!"ADMIN".equals(sessionUser.getRole().toString())) {
 	            course.setProfessor_no(sessionUser.getUserNo());
 	        } else {
-	            course.setProfessor_no(Integer.parseInt(params.get("professor_no")));
+	        	int profNo = userService.getProfNo(Integer.parseInt(params.get("professor_no")));
+	            course.setProfessor_no(profNo);
 	        }
 	        course.setStatus(params.get("status"));
 
@@ -249,5 +253,11 @@ public class EnrollmentController {
 	        }
 	    }
 	    return null;
+	}
+	
+	@GetMapping("professor-blocked")
+	@ResponseBody
+	public List<Course> professorBlocked(@RequestParam int professorNo, @RequestParam String semester) {
+	    return courseService.getProfessorBlockedCourses(professorNo, semester);
 	}
 }

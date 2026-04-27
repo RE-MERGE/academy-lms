@@ -386,6 +386,45 @@
     @keyframes spin { to { transform: rotate(360deg); } }
     @keyframes fadeUp { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
 
+    /* 강의 개설 버튼 */
+    .btn-create-course {
+      display: inline-flex;
+      align-items: center;
+      gap: .45rem;
+      padding: .55rem 1.3rem;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-mid) 100%);
+      color: var(--white);
+      border: none;
+      border-radius: 999px;
+      font-family: 'Pretendard', 'Noto Sans KR', sans-serif;
+      font-size: .88rem;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 3px 12px rgba(29,78,216,.35);
+      transition: all .18s;
+      letter-spacing: .01em;
+      white-space: nowrap;
+      position: relative;
+      overflow: hidden;
+    }
+    .btn-create-course::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: rgba(255,255,255,0);
+      transition: background .18s;
+    }
+    .btn-create-course:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(29,78,216,.45);
+    }
+    .btn-create-course:hover::before { background: rgba(255,255,255,.08); }
+    .btn-create-course:active { transform: translateY(0); box-shadow: 0 2px 8px rgba(29,78,216,.3); }
+    .btn-create-course .btn-icon {
+      font-size: 1rem;
+      line-height: 1;
+    }
+
     /* PDF 링크 */
     .pdf-link { display: inline-flex; align-items: center; gap: .25rem; font-size: .72rem; color: var(--primary); text-decoration: none; background: var(--primary-pale); padding: .2rem .5rem; border-radius: var(--radius-sm); border: 1px solid var(--primary-tint); white-space: nowrap; transition: all .14s; }
     .pdf-link:hover { background: var(--primary-tint); }
@@ -438,7 +477,7 @@
           <%-- 강의 개설 버튼: PROFESSOR / ADMIN 에게만 표시 --%>
           <c:if test="${user.role == 'PROFESSOR' || user.role == 'ADMIN'}">
             <button class="btn-create-course" onclick="location.href=CTX_PATH+'/enrollment/courseCreate'">
-              ＋ 강의 개설
+              <span class="btn-icon">✏️</span> 강의 개설
             </button>
           </c:if>
           <span class="semester-chip">${currentSemester}</span>
@@ -579,6 +618,7 @@
                     </c:when>
                     <c:when test="${user.role == 'ADMIN'}">
                       <th style="width:80px; text-align:center;">상태</th>
+                      <th style="width:70px; text-align:center;">수정</th>
                     </c:when>
                   </c:choose>
                 </tr>
@@ -617,6 +657,7 @@
                     <%-- PROFESSOR only: 수강인원 --%>
                     <c:if test="${user.role == 'PROFESSOR'}">
                       <th style="width:100px; text-align:center;">수강인원</th>
+                      <th style="width:110px; text-align:center;">관리</th>
                     </c:if>
                   </tr>
                 </thead>
@@ -771,7 +812,7 @@ function loadAllCourses(page) {
 function renderAllTable(courses) {
   const tbody = document.getElementById('allCourseBody');
   if (!courses.length) {
-    const colspan = USER_ROLE === 'ADMIN' ? 10 : USER_ROLE === 'PROFESSOR' ? 8 : 9;
+    const colspan = USER_ROLE === 'ADMIN' ? 11 : USER_ROLE === 'PROFESSOR' ? 8 : 9;
     tbody.innerHTML = `<tr><td colspan="\${colspan}">
       <div class="empty-state">
         <div class="empty-icon">📭</div>
@@ -796,7 +837,10 @@ function renderAllTable(courses) {
         <input type="checkbox" class="row-check" value="\${c.course_no}"
                onchange="onRowCheck(this, \${c.course_no})">
       </td>`;
-      lastCell = `<td style="text-align:center;">\${statusBadgeHtml(c.status)}</td>`;
+      lastCell = `<td style="text-align:center;">\${statusBadgeHtml(c.status)}</td>
+        <td style="text-align:center;">
+          <button class="btn-action status" onclick="editCourse(\${c.course_no})" title="강의 수정">✏️ 수정</button>
+        </td>`;
     } else if (USER_ROLE === 'STUDENT') {
       const applied   = enrolledSet.has(c.course_no);
       const isFull    = pct >= 100;
@@ -897,10 +941,16 @@ function renderMineTable() {
         <button class="btn-enroll cancel" onclick="cancelEnroll(\${c.course_no})">취소</button>
       </td>`;
     } else if (USER_ROLE === 'PROFESSOR') {
-      // 교수: 수강인원 표시
+      // 교수: 수강인원 표시 + 수정/삭제 버튼
       const enrolled = c.counts != null ? c.counts : 0;
       const max = c.max_students != null ? c.max_students : '-';
-      lastCell = `<td style="text-align:center;font-size:.82rem;font-weight:600;color:var(--gray-700);">\${enrolled} / \${max}</td>`;
+      lastCell = '<td style="text-align:center;font-size:.82rem;font-weight:600;color:var(--gray-700);">' + enrolled + ' / ' + max + '</td>'
+        + '<td style="text-align:center;">'
+        + '<div style="display:flex;align-items:center;justify-content:center;gap:.35rem;">'
+        + '<button class="btn-action status" onclick="editCourse(' + c.course_no + ')" title="강의 수정">✏️ 수정</button>'
+        + '<button class="btn-action delete" onclick="deleteCourse(' + c.course_no + ')" title="강의 삭제">🗑 삭제</button>'
+        + '</div>'
+        + '</td>';
     }
     return `<tr>
       <td style="text-align:center;color:var(--gray-400);">\${i+1}</td>
@@ -980,6 +1030,34 @@ function applyEnroll(courseNo) {
       loadMyCourses().finally(() => loadAllCourses());
     } else {
       showToast('❌ ' + (data.message || '신청에 실패했습니다.'), 'red');
+    }
+  })
+  .catch(() => showToast('⚠️ 서버 오류가 발생했습니다.', 'red'));
+}
+
+/* ================================================================
+   PROFESSOR: 강의 수정 / 삭제
+================================================================ */
+function editCourse(courseNo) {
+  location.href = CTX_PATH + '/enrollment/courseUpdate?courseNo=' + courseNo;
+}
+
+function deleteCourse(courseNo) {
+  const course = myCourses.find(c => c.course_no === courseNo);
+  const courseName = course ? course.course_name : '';
+  if (!confirm('"' + courseName + '" 강의를 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.')) return;
+  fetch(CTX_PATH + '/enrollment/courseDelete', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+    body: JSON.stringify({ courseNos: [courseNo] })
+  })
+  .then(r => r.json())
+  .then(data => {
+    if (data.success) {
+      showToast('🗑 강의가 삭제되었습니다.', 'red');
+      loadMyCourses().finally(() => loadAllCourses());
+    } else {
+      showToast('❌ ' + (data.message || '삭제에 실패했습니다.'), 'red');
     }
   })
   .catch(() => showToast('⚠️ 서버 오류가 발생했습니다.', 'red'));

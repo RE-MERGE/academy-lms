@@ -39,7 +39,6 @@ public class AdminController {
         int totalCount = adminService.getTotalUserCount(role);
         int totalPages = (int) Math.ceil((double) totalCount / size);
 
-
         model.addAttribute("userList", userList);
         model.addAttribute("currentPage", page);
         model.addAttribute("totalPages", totalPages);

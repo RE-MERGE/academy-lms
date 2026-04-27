@@ -26,53 +26,36 @@
 <input type="hidden" id="mainContextPath" value="${pageContext.request.contextPath}"/>
 <div style="display: flex; height: 100vh;">
 
-    <!-- 과목 사이드바 -->
-    <aside class="subject-sidebar">
-        <h2 class="subject-sidebar-title">${Course.course_name}</h2>
-        <nav class="subject-nav">   
-        
-            <a href="#" class="subject-nav-item active">
-            <img src="${pageContext.request.contextPath}/img/icon_home.png" 
-            alt="홈 아이콘" width="40px" height="40px">홈</a>
-            
-            
-		        <div class="sidebar-divider"></div>  
-		        <!-- 연한 구분순 <hr>  -->
+<%--    <!-- 과목 사이드바 -->--%>
+<%--    <aside class="subject-sidebar">--%>
+<%--        <h2 class="subject-sidebar-title">${Course.course_name}</h2>--%>
+<%--        <nav class="subject-nav">   --%>
+<%--        --%>
+<%--            <a href="#" class="subject-nav-item active">--%>
+<%--            <img src="${pageContext.request.contextPath}/img/icon_home.png" --%>
+<%--            alt="홈 아이콘" width="40px" height="40px">홈</a>--%>
+<%--            --%>
+<%--            <div class="sidebar-divider"></div>--%>
+<%--            <!-- 연한 구분순 <hr>  -->--%>
 
-
-            <a href="#" class="subject-nav-item">
-            <img src="${pageContext.request.contextPath}/img/icon_grades.png" 
-            alt="성적 아이콘" width="40px" height="40px">성적</a>
-       
-           
-           
-            <div class="sidebar-divider"></div> 
-            <!-- 연한 구분순 <hr>  -->
-            
-            
-            <a href="#" class="subject-nav-item">
-            <img src="${pageContext.request.contextPath}/img/icon_qna.png" 
-            alt="QNA" width="40px" height="40px">Q&A</a> 
-         
-         
-          
-              <div class="sidebar-divider"></div> 
-              <!-- 연한 구분순 <hr>  -->
-              
-              
-            <a href="#" class="subject-nav-item">
-            <img src="${pageContext.request.contextPath}/img/icon_studentList.png" 
-            alt="학생 아이콘" width="40px" height="40px">학생 리스트</a>
-            
-            
-        </nav>
-    </aside>
-
-    <!-- 메인 콘텐츠 -->
-    <main class="subject-main" id="mainContent">	
-    
-    </main>
-
+<%--            <a href="#" class="subject-nav-item">--%>
+<%--            <img src="${pageContext.request.contextPath}/img/icon_grades.png" --%>
+<%--            alt="성적 아이콘" width="40px" height="40px">성적</a>--%>
+<%--           --%>
+<%--            <div class="sidebar-divider"></div> --%>
+<%--            <!-- 연한 구분순 <hr>  -->--%>
+<%--            --%>
+<%--            <a href="#" class="subject-nav-item">--%>
+<%--            <img src="${pageContext.request.contextPath}/img/icon_qna.png" --%>
+<%--            alt="QNA" width="40px" height="40px">Q&A</a> --%>
+<%--         --%>
+<%--            <div class="sidebar-divider"></div>--%>
+<%--            <!-- 연한 구분순 <hr>  -->--%>
+<%--            <a href="#" class="subject-nav-item">--%>
+<%--            <img src="${pageContext.request.contextPath}/img/icon_studentList.png" --%>
+<%--            alt="학생 아이콘" width="40px" height="40px">학생 리스트</a>--%>
+<%--        </nav>--%>
+<%--    </aside>--%>
 </div>
 <script>
 function loadContent(page) {

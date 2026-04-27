@@ -92,8 +92,8 @@ public class BoardService {
     }
 
     public Map<String, Object> getBoardList(Integer courseNo, String boardType, String keyword,
-                                            String searchType, int page) {
-        int totalCount = boardDao.getTotalCount(boardType, keyword, searchType);
+                                            String searchType, int page, Integer writerNo) {
+        int totalCount = boardDao.getTotalCount(courseNo,boardType, keyword, searchType, writerNo);
         PageInfo pageInfo = new PageInfo(page, totalCount, PAGE_SIZE, BLOCK_SIZE);
 
         BoardListRequest dto = new BoardListRequest();
@@ -103,6 +103,7 @@ public class BoardService {
         dto.setSearchType(searchType);
         dto.setOffset(pageInfo.getOffset());
         dto.setPageSize(PAGE_SIZE);
+        dto.setWriterNo(writerNo);
 
         List<PostList> postList = boardDao.getList(dto);
 

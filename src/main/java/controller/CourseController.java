@@ -88,7 +88,11 @@ public class CourseController {
 	    mav.addObject("Course", courseDetail);
         mav.addObject("courseList", courseList); // 이게 있어야 함
         mav.addObject("profName",profName);
-        mav.setViewName("course/profScore");  // WEB-INF/views/course/profScore.jsp
+		//==================================================================================
+		mav.addObject("course", courseDetail); // BoardController에서 사용해야함.
+		//==================================================================================
+
+		mav.setViewName("course/profScore");  // WEB-INF/views/course/profScore.jsp
 	    return mav;
 	}
 	

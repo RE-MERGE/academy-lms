@@ -179,4 +179,7 @@ public interface CourseMapper {
             "<foreach collection='list' item='no' open='(' separator=',' close=')'>#{no}</foreach>" +
             "</script>")
     void deleteCourses(List<Integer> courseNos);
+
+    @Select("SELECT * FROM COURSE WHERE course_no=#{value}")
+    Course getBoardCourse(Integer courseNo);
 }

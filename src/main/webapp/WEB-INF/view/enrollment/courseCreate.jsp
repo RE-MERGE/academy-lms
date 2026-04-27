@@ -282,8 +282,12 @@
                 <option value="101호" selected>101호</option>
                 <option value="102호">102호</option>
                 <option value="103호">103호</option>
-                <option value="104호">104호</option>
-                <option value="105호">105호</option>
+                <option value="201호">201호</option>
+                <option value="202호">202호</option>
+                <option value="203호">203호</option>
+                <option value="301호">301호</option>
+                <option value="302호">302호</option>
+                <option value="303호">303호</option>
               </select>
             </div>
           </div>

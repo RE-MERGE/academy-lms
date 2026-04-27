@@ -497,7 +497,7 @@
           </div>
           <div class="credit-chip">
             <span class="credit-chip-icon">⏰</span>
-            신청 기간 <span class="val warn">2025.08.20 ~ 2025.08.26</span>
+            신청 기간 <span class="val warn">${enrollmentStart} ~ ${enrollmentEnd}</span>
           </div>
         </div>
       </c:if>

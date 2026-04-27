@@ -2,7 +2,10 @@ package controller;
 
 import java.io.File;
 import java.io.IOException;
+import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.TemporalAdjusters;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -220,10 +223,31 @@ public class EnrollmentController {
 	    return courseService.getBlockedCourses(room, semester);
 	}
 	@GetMapping("courseEnrollment")
-	public String course1(@Login SessionUser sessionUser,Model model) {
+	public String course1(@Login SessionUser sessionUser, Model model) {
 		model.addAttribute("user", sessionUser);
-		model.addAttribute("currentSemester","2026-1");
+		model.addAttribute("currentSemester", enrollment_semester());
+
+		// 수강신청 기간 계산
+		LocalDate[] period = enrollment_period();
+		DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy.MM.dd");
+		model.addAttribute("enrollmentStart", period[0].format(fmt));
+		model.addAttribute("enrollmentEnd",   period[1].format(fmt));
+
 		return "enrollment/courseEnrollment";
+	}
+
+	// 수강신청 기간: 1학기 → 2월 둘째주 월~일, 2학기 → 8월 둘째주 월~일
+	public static LocalDate[] enrollment_period() {
+		LocalDate now = LocalDate.now();
+		int month = now.getMonthValue() <= 6 ? 2 : 8;
+		int year  = now.getYear();
+
+		LocalDate secondMonday = LocalDate.of(year, month, 1)
+				.with(TemporalAdjusters.firstInMonth(DayOfWeek.MONDAY))
+				.plusWeeks(1);
+		LocalDate sunday = secondMonday.plusDays(13); // 2주 후 일요일
+
+		return new LocalDate[]{ secondMonday, sunday };
 	}
 	
 	@GetMapping("courselist")

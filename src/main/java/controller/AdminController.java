@@ -1,17 +1,17 @@
 package controller;
 
 
-import dto.user.AdminUserList;
-import dto.user.SessionUser;
-import dto.user.User;
-import dto.user.UserConst;
-import dto.user.login.Login;
+import dao.UserDao;
+import dto.user.*;
+import dto.user.UserEditFormForAdmin;
 import dto.user.mypage.AdminCourseList;
 import dto.user.mypage.MyPageData;
+import dto.user.mypage.UserDetailForAdmin;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import service.AdminService;
 import service.UserService;
@@ -74,23 +74,47 @@ public class AdminController {
     @GetMapping("userDetail/{userNo}")
     public String userDetail(@PathVariable int userNo, Model model) {
 
-        User selectUser = adminService.getSelectUser(userNo);
-        SessionUser targetUser = createdSessionUser(selectUser);
-
+        User selectUser = adminService.selectUser(userNo);
         String semester = getSemester();
+        UserDetailForAdmin targetUser = createdUserDetail(selectUser);
+
         MyPageData data = userService.getMyPageData(targetUser, semester);
 
         model.addAttribute("courseList", data.getCourseList());
         model.addAttribute("myGradeList", data.getGradeList());
         model.addAttribute("semester", semester);
-        model.addAttribute(UserConst.SESSION_USER, targetUser);
+        model.addAttribute(UserConst.DETAIL_USER, targetUser);
 
-        return "user/myPage";
+        return "admin/userDetail";
     }
 
-    private SessionUser createdSessionUser(User selectUser) {
-        SessionUser sessionUser = new SessionUser(selectUser);
-        return sessionUser;
+    @GetMapping("editProfile/{userNo}")
+    public String editProfileForAdminForm(@PathVariable int userNo, Model model) {
+
+        User targetUser = adminService.selectUser(userNo);
+        model.addAttribute(UserConst.DETAIL_USER, new UserDetailForAdmin(targetUser));
+
+        return "admin/editProfileForAdmin";
+    }
+
+    @PostMapping("editProfile/{userNo}")
+    public String editProfileForAdmin(@PathVariable int userNo,
+                                      @Validated @ModelAttribute("userDetail") UserEditFormForAdmin userEditFormForAdmin,
+                                      BindingResult bindingResult, Model model) {
+
+        if (bindingResult.hasErrors()) {
+            model.addAttribute("userNo", userNo);
+            return "admin/editProfileForAdmin";
+        }
+
+        adminService.updateUserFormAdmin(userNo, userEditFormForAdmin);
+
+        return "redirect:/admin/userDetail/" + userNo;
+    }
+
+    private UserDetailForAdmin createdUserDetail(User selectUser) {
+        UserDetailForAdmin userDetailForAdmin = new UserDetailForAdmin(selectUser);
+        return userDetailForAdmin;
     }
 
     private String getSemester() {
@@ -109,7 +133,7 @@ public class AdminController {
         return year += semester += String.valueOf(month);
     }
 
-    
+
     @GetMapping("roomTimetable")
     public String getRoomTimetable() {
         return "admin/roomTimetable";

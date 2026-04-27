@@ -1,5 +1,11 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
+
+<p class="course-time">
+    <i class="far fa-clock"></i>
+    ${fn:substring(course.start_time, 0, 5)} ~ ${fn:substring(course.end_time, 0, 5)}
+</p>
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -174,10 +180,13 @@
         <div class="profile-img-wrap">
             <c:choose>
                 <c:when test="${not empty sessionUser.profileImg}">
-                    <img src="${pageContext.request.contextPath}/upload/profiles/${sessionUser.profileImg}" alt="프로필 이미지" class="profile-img"/>
+                    <img src="${pageContext.request.contextPath}/upload/profiles/${sessionUser.profileImg}"
+                         class="profile-img"
+                         onerror="this.src='${pageContext.request.contextPath}/img/default-profile.png'"/>
                 </c:when>
                 <c:otherwise>
-                    <img src="${pageContext.request.contextPath}/img/default-profile.png" alt="프로필 이미지" class="profile-img"/>
+                    <img src="${pageContext.request.contextPath}/img/default-profile.png"
+                         class="profile-img"/>
                 </c:otherwise>
             </c:choose>
             <span class="profile-status">재학중</span>
@@ -195,7 +204,7 @@
                 </tr>
                 <tr>
                     <th>아이디</th>
-                    <td>${sessionUser.userId}</td>
+                    <td>${sessionUser.displayUserId}</td>
                 </tr>
                 <tr>
                     <th>이메일</th>
@@ -243,8 +252,16 @@
         </div>
 
         <div class="profile-actions">
-            <a href="${pageContext.request.contextPath}/user/editProfile" class="btn-action btn-action-primary">회원정보 수정</a>
-            <a href="${pageContext.request.contextPath}/user/updatePwForm" class="btn-action btn-action-outline">비밀번호 변경</a>
+<%--                <c:when test="${not empty adminViewUser}">--%>
+<%--                    &lt;%&ndash; 관리자가 조회 중일 때 &ndash;%&gt;--%>
+<%--                    <a href="${pageContext.request.contextPath}/admin/editUser/${adminViewUser.userNo}"--%>
+<%--                       class="btn-action btn-action-primary">회원정보 수정</a>--%>
+<%--                </c:when>--%>
+                    <%-- 본인이 볼 때 --%>
+                    <a href="${pageContext.request.contextPath}/user/editProfile"
+                       class="btn-action btn-action-primary">회원정보 수정</a>
+                    <a href="${pageContext.request.contextPath}/user/updatePwForm"
+                       class="btn-action btn-action-outline">비밀번호 변경</a>
         </div>
     </div>
 
@@ -315,7 +332,8 @@
                                     </c:otherwise>
                                 </c:choose>
                                 <p class="course-time">
-                                    <i class="far fa-clock"></i> ${course.start_time} ~ ${course.end_time}
+                                    <i class="far fa-clock"></i>
+                                        ${fn:substring(course.start_time, 0, 5)} ~ ${fn:substring(course.end_time, 0, 5)}
                                 </p>
                             </div>
                         </div>

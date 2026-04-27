@@ -58,20 +58,20 @@ public class UserController {
 
         //아이디가 중복인 경우
         if (dbUser != null) {
-            bindingResult.reject("{error.duplication.userId}");
+            bindingResult.rejectValue("userId","error.duplication.userId");
             return "user/joinForm";
         }
 
         //이메일이 중복인 경우
         if (userService.selectUserIdByEmail(userJoinForm.getEmail()) != null) {
-            bindingResult.reject("{error.duplication.email}");
+            bindingResult.rejectValue("email", "error.duplication.email");
             return "user/joinForm";
         }
 
         //비밀번호 값이 틀리거나, 없는 경우
         if (userJoinForm.getPassword() == null || userJoinForm.getPasswordConfirm() == null ||
                 !userJoinForm.getPassword().equals(userJoinForm.getPasswordConfirm())) {
-            bindingResult.reject("{error.mismatch.password}");
+            bindingResult.reject("password","error.mismatch.password");
             return "user/joinForm";
         }
 
@@ -93,7 +93,7 @@ public class UserController {
     @GetMapping("logout")
     public String logout(HttpSession session, Model model) {
         session.invalidate();
-        return "home/home";
+        return "redirect:/home/home";
     }
 
     @PostMapping("login")
@@ -221,26 +221,14 @@ public class UserController {
 
         String savedState = (String) session.getAttribute("naverState");
         if (!state.equals(savedState)) {
-            return "redirect:/user/login";
+            return "redirect:/home/home";
         }
 
         // 액세스 토큰 요청
-        String accessToken = naverLoginService.getAccessToken(code, state);
+        SessionUser sessionUser = naverLoginService.processNaverLogin(code, state);
+        session.setAttribute(UserConst.SESSION_USER, sessionUser);
 
-        // 사용자 정보 요청
-        Map<String, Object> userInfo = naverLoginService.getUserInfo(accessToken);
-
-        // 세션 저장
-        LoginUser loginUser = new LoginUser(
-                0,
-                (String) userInfo.get("id"),
-                (String) userInfo.get("name"),
-                UserRole.STUDENT,
-                (String) userInfo.get("profile_image")
-        );
-        session.setAttribute(UserConst.LOGIN_USER, loginUser);
-
-        return "redirect:/home/home";
+        return "redirect:/home/dashboard";
     }
 
     @GetMapping("editProfile")
@@ -268,10 +256,10 @@ public class UserController {
         User dbUser = userService.selectUser(sessionUser.getUserId());
 
         if (dbUser == null) {
-            return "rediredct:/home/home";
+            return "redirect:/home/home";
         }
 
-        if (!passwordEncoder.matches(userEditForm.getPassword(), dbUser.getPassword())) {
+        if (!sessionUser.isNaverUser() && !passwordEncoder.matches(userEditForm.getPassword(), dbUser.getPassword())) {
             bindingResult.rejectValue("password", "error.mismatch.password");
             return "user/editProfile";
         }
@@ -280,30 +268,23 @@ public class UserController {
             String newProfileImgName = fileService.saveProfileImage(userEditForm.getProfileImg());
             userEditForm.setCurrentProfileImg(newProfileImgName);
             userService.updateProfileImg(userEditForm.getUserId(), userEditForm.getCurrentProfileImg());
+        } else {
+            userEditForm.setCurrentProfileImg(sessionUser.getProfileImg());
         }
 
         userService.updateInfo(userEditForm);
 
-        SessionUser updatedUser = new SessionUser(
-                sessionUser.getUserNo(),
-                sessionUser.getUserCode(),
-                sessionUser.getUserId(),
-                userEditForm.getEmail(),
-                userEditForm.getPhone(),
-                userEditForm.getName(),
-                sessionUser.getRole(),
-                sessionUser.getStatus(),
-                userEditForm.getCurrentProfileImg(),
-                sessionUser.getLast_password_changed()
-        );
-
-        session.setAttribute(UserConst.SESSION_USER, updatedUser);
+        session.setAttribute(UserConst.SESSION_USER, new SessionUser(userService.selectUser(sessionUser.getUserId())));
 
         return "redirect:/user/myPage";
     }
 
     @GetMapping("updatePwForm")
     public String updatePwForm(Model model, @Login SessionUser sessionUser) {
+
+        if(sessionUser.isNaverUser()) {
+            return "redirect:/user/myPage";
+        }
 
         UpdatePwForm updatePwForm = new UpdatePwForm();
         updatePwForm.setUserId(sessionUser.getUserId());
@@ -313,16 +294,21 @@ public class UserController {
     }
 
     @PostMapping("updatePassword")
-    public String changePassword(@Validated UpdatePwForm updatePwForm, BindingResult bindingResult, HttpSession session) {
+    public String changePassword(@Validated UpdatePwForm updatePwForm,
+                                 BindingResult bindingResult, @Login SessionUser sessionUser,
+                                 HttpSession session) {
 
         if (bindingResult.hasErrors()) {
             return "user/updatePwForm";
         }
 
+        if(sessionUser.isNaverUser()) {
+            return "redirect:/user/myPage";
+        }
+
         User dbUser = userService.selectUser(updatePwForm.getUserId());
 
         //입력한 비밀번호와 현재 비밀번호가 일치하지 않으면
-
         if (!passwordEncoder.matches(updatePwForm.getCurrentPassword(), dbUser.getPassword())) {
             bindingResult.rejectValue("currentPassword", "error.mismatch.password");
             return "user/updatePwForm";
@@ -335,9 +321,8 @@ public class UserController {
         }
 
         userService.updatePassword(updatePwForm.getUserId(), passwordEncoder.encode(updatePwForm.getNewPassword()));
-        User updatePwUser = userService.selectUser(updatePwForm.getUserId());
 
-        session.setAttribute(UserConst.SESSION_USER, new SessionUser(updatePwUser));
+        session.setAttribute(UserConst.SESSION_USER, new SessionUser(userService.selectUser(updatePwForm.getUserId())));
 
         return "redirect:/user/myPage";
 
@@ -352,7 +337,14 @@ public class UserController {
         }
 
         try {
-            boolean isDeleted = userService.withdraw(sessionUser.getUserId(), password);
+            boolean isDeleted;
+
+            if (sessionUser.isNaverUser()) {
+                userService.updateStatus(sessionUser.getUserId(), UserStatus.DELETE);
+                isDeleted = true;
+            } else {
+                isDeleted = userService.withdraw(sessionUser.getUserId(), password);
+            }
 
             if (!isDeleted) {
                 rttr.addFlashAttribute("error", "pw");
@@ -381,30 +373,6 @@ public class UserController {
             }
         }
     }
-
-//    @GetMapping("adminUserList")
-//    public String adminUserList(Model model) {
-//        model.addAttribute("userList", new ArrayList<>());
-//        model.addAttribute("currentPage", 1);
-//        return "user/adminUserList";
-//    }
-//
-//
-//    @GetMapping("adminCourseList") // 빈껍데기 컨트롤러 기능X
-//    public String adminCourseList(@RequestParam(defaultValue = "1") int page, Model model) {
-//        model.addAttribute("courseList", new ArrayList<>());
-//        model.addAttribute("currentPage", page);
-//        model.addAttribute("totalPages", 1);
-//        return "user/adminCourseList";
-//    }
-//
-//    @GetMapping("gradeManage")
-//    public String gradeManage(@RequestParam(defaultValue = "1") int page, Model model) {
-//        model.addAttribute("studentList", new ArrayList<>());
-//        model.addAttribute("currentPage", page);
-//        model.addAttribute("totalPages", 1);
-//        return "user/gradeManage";
-//    }
 
     private String getSemester() {
 

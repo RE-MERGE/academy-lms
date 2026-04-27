@@ -57,7 +57,7 @@
 
         <div class="avatar">${fn:substring(sessionScope.sessionUser.name, 0, 1)}</div>
         <div class="header-user-info">
-          <span class="user-id">${sessionScope.sessionUser.userId}</span>
+          <span class="user-id">${sessionScope.sessionUser.displayUserId}</span>
           <span class="user-name">${sessionScope.sessionUser.name}</span>
         </div>
 
@@ -125,7 +125,7 @@
     	<span class="si-label">전체 회원 관리</span>
   	</a>
   	
-  <a href="${pageContext.request.contextPath}/admin/adminCourseList" class="sidebar-item">
+  <a href="${pageContext.request.contextPath}/admin/courseList" class="sidebar-item">
     <img src="${pageContext.request.contextPath}/img/icon_Course Management.png" alt="수업관리 아이콘" width="50px" height="50px">
     <span class="si-label">전체 수업 관리</span>
   </a>

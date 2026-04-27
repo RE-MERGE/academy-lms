@@ -5,21 +5,14 @@ import dao.EnrollmentDao;
 import dao.UserDao;
 import dto.user.*;
 import dto.user.mypage.MyPageData;
+import dto.user.mypage.UserDetailForAdmin;
 import exception.LoginFailException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
-import javax.validation.constraints.Email;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.Pattern;
-import java.io.File;
-import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -34,7 +27,6 @@ public class UserService {
     public void join(User user) {
 
         dao.join(user);
-
     }
 
     public User selectUser(String userId) {
@@ -64,6 +56,18 @@ public class UserService {
         };
     }
 
+    public MyPageData getMyPageData(UserDetailForAdmin userDetailForAdmin, String semester) {
+        int userNo = userDetailForAdmin.getUserNo();
+        UserRole role = userDetailForAdmin.getRole();
+
+        return switch (role) {
+            case STUDENT -> buildStudentData(userNo, semester);
+            case PROFESSOR -> buildProfessorData(userNo, semester);
+            case ADMIN -> buildAdminData(semester);
+        };
+    }
+
+
     private MyPageData buildStudentData(int userNo, String semester) {
         return MyPageData.builder()
                 .courseList(courseDao.getStudentMyCourseMap(userNo, semester))
@@ -82,19 +86,6 @@ public class UserService {
                 .courseList(courseDao.getListWithProfessorName(semester))
                 .gradeList(enrollmentDao.getAllStudentGrades())
                 .build();
-    }
-
-    public void updateStatus(String userId, UserStatus userStatus) {
-        dao.updateStatus(userId,userStatus);
-    }
-
-    public void resetLockCount(String userId) {
-        dao.resetLockCount(userId);
-
-    }
-
-    public void updateLockCount(String userId, int newLockCount) {
-        dao.updateLockCount(userId, newLockCount);
     }
 
     public String selectUserIdByEmail(String email) {
@@ -117,8 +108,8 @@ public class UserService {
         dao.updateInfo(userEditForm);
     }
 
-    public Integer getLastUserCode() {
-        return dao.getLastUserCode();
+    public void updateStatus(String userId, UserStatus delete) {
+        dao.updateStatus(userId, delete);
     }
 
     public SessionUser login(String userId, String password) {

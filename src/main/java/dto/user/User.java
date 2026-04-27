@@ -1,5 +1,6 @@
 package dto.user;
 
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -28,4 +29,10 @@ public class User {
     private int lock_count;         //로그인 시도 횟수
     private LocalDate last_password_changed;
 
+    public void updateInfoForAdmin(String name, String email, String phone, String profileName) {
+        this.name = name;
+        this.email = email;
+        this.phone = phone;
+        this.profileImg = profileImg;
+    }
 }

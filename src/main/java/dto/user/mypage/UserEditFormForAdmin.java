@@ -14,14 +14,24 @@ import java.time.LocalDate;
 @Getter
 @Setter
 @ToString
-public class UserEditForm {
+public class UserEditFormForAdmin {
 
-    //현재 이미지 보여줄거
+    private int userNo;
+    private UserRole role;
+    private UserStatus status;
+
+    //현재 보여줄 이미지
     private String currentProfileImg;
 
-    //마이페이지에서 이미지 변경시,
+    //마이페이지에서 이미지 변경시
     private MultipartFile profileImg;
+
     private String userId;
+    private int userCode;
+    private LocalDate createdAt;      // 비밀번호 마지막 변경 시간
+    private LocalDate last_password_changed;
+    private int lockCount;           // 로그인 실패 횟수 (계정 잠금 해제용)
+    private LocalDate last_login;
 
     @NotBlank(message = "{error.required.name}")
     @Pattern(regexp = UserPattern.NAME_PATTERN, message = "{error.input.name}")
@@ -31,25 +41,25 @@ public class UserEditForm {
     @Email(regexp = UserPattern.EMAIL_PATTERN, message = "{error.input.password}")
     private String email;
 
-
     @NotBlank( message = "{error.required.phoneNo}")
     @Pattern(regexp = UserPattern.PHONE_PATTERN, message = "{error.input.phone}")
     private String phone;
 
-    //최소 8자 이상, 영문자와 숫자 최소 1개씩 포함
-    @NotBlank(message = "{error.required.password}")
-    private String password;
+    public UserEditFormForAdmin(){}
 
-    private LocalDate updatedAt;      // 비밀번호 마지막 변경 시간
-
-    public UserEditForm(){}
-
-    public UserEditForm(String currentProfileImg, String userId, String name, String email, String phone, String password) {
+    public UserEditFormForAdmin(String currentProfileImg, String userId, String name, String email, String phone) {
         this.currentProfileImg = currentProfileImg;
         this.userId = userId;
         this.name = name;
         this.email = email;
         this.phone = phone;
-        this.password = password;
+    }
+
+    public boolean isNaverUser() {
+        return userId != null && userId.startsWith(UserConst.NAVER_LOGIN_USER);
+    }
+
+    public String getDisplayUserId() {
+        return isNaverUser() ? "네이버 로그인 회원입니다." : userId;
     }
 }

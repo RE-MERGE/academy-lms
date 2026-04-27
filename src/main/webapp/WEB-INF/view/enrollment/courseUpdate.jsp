@@ -408,17 +408,15 @@ function loadCourseData() {
 ================================================================ */
 function restoreSlots(dayOfWeek, startTime, endTime) {
   if (!dayOfWeek || !startTime || !endTime) return;
-  var days = dayOfWeek.split(',').map(function(d){ return d.trim(); });
+  var day      = dayOfWeek.trim();
   var startStr = startTime.substring(0, 5);
   var endStr   = endTime.substring(0, 5);
 
   selectedSlots = [];
-  days.forEach(function(day) {
-    PERIODS.forEach(function(p, pIdx) {
-      if (p.start >= startStr && p.end <= endStr) {
-        selectedSlots.push({ day: day, periodIdx: pIdx });
-      }
-    });
+  PERIODS.forEach(function(p, pIdx) {
+    if (p.start >= startStr && p.end <= endStr) {
+      selectedSlots.push({ day: day, periodIdx: pIdx });
+    }
   });
   renderGrid();
   updateSummary();
@@ -491,75 +489,33 @@ function toggleSlot(day, pIdx) {
   var idx = selectedSlots.findIndex(function(s) { return s.day === day && s.periodIdx === pIdx; });
 
   if (idx >= 0) {
-    var daySlots = selectedSlots.filter(function(s) { return s.day === day; })
-                                .map(function(s) { return s.periodIdx; }).sort(function(a,b){return a-b;});
-    if (daySlots.length > 1) {
-      var minP = daySlots[0], maxP = daySlots[daySlots.length-1];
-      if (pIdx !== minP && pIdx !== maxP) {
-        alert('연속된 시간 중 중간 교시는 해제할 수 없습니다.\n끝 교시부터 해제하세요.');
-        return;
-      }
+    /* 해제 — 끝 교시(min/max)만 해제 가능 */
+    var pIdxList = selectedSlots.map(function(s) { return s.periodIdx; }).sort(function(a,b){return a-b;});
+    if (pIdxList.length > 1 && pIdx !== pIdxList[0] && pIdx !== pIdxList[pIdxList.length-1]) {
+      alert('연속된 시간 중 중간 교시는 해제할 수 없습니다.\n끝 교시부터 해제하세요.');
+      return;
     }
     selectedSlots.splice(idx, 1);
+
   } else {
-    var allSelected = selectedSlots;
-    if (allSelected.length === 0) {
+    /* 추가 */
+    if (selectedSlots.length === 0) {
+      /* 첫 선택 */
       if (isMyBlockedSlot(day, pIdx)) { alert('해당 시간에 이미 본인의 강의가 있습니다.'); return; }
       selectedSlots.push({ day: day, periodIdx: pIdx });
-    } else {
-      var allPIdx  = allSelected.map(function(s) { return s.periodIdx; });
-      var globalMin = Math.min.apply(null, allPIdx);
-      var globalMax = Math.max.apply(null, allPIdx);
-      var daySlots2 = allSelected.filter(function(s) { return s.day === day; })
-                                 .map(function(s) { return s.periodIdx; }).sort(function(a,b){return a-b;});
 
-      if (daySlots2.length > 0) {
-        var dMin = daySlots2[0], dMax = daySlots2[daySlots2.length-1];
-        if (pIdx !== dMin - 1 && pIdx !== dMax + 1) {
-          alert('같은 요일은 연속된 교시만 선택할 수 있습니다.');
-          return;
-        }
-        var newMin = Math.min(dMin, pIdx), newMax = Math.max(dMax, pIdx);
-        var otherDaySlots = allSelected.filter(function(s) { return s.day !== day; });
-        if (otherDaySlots.length > 0) {
-          var otherPIdx = otherDaySlots.map(function(s) { return s.periodIdx; });
-          var otherMin  = Math.min.apply(null, otherPIdx);
-          var otherMax  = Math.max.apply(null, otherPIdx);
-          if (newMin !== otherMin || newMax !== otherMax) {
-            alert('다른 요일과 같은 시간 범위여야 합니다.\n(' + PERIODS[otherMin].start + '~' + PERIODS[otherMax].end + ')');
-            return;
-          }
-        }
-        var otherDays = [];
-        DAYS.forEach(function(d) {
-          if (d !== day && allSelected.some(function(s) { return s.day === d; })) otherDays.push(d);
-        });
-        var blockedOtherDay = null;
-        for (var oi = 0; oi < otherDays.length; oi++) {
-          if (isBlockedSlot(otherDays[oi], pIdx) || isMyBlockedSlot(otherDays[oi], pIdx)) {
-            blockedOtherDay = otherDays[oi]; break;
-          }
-        }
-        if (blockedOtherDay) {
-          alert(blockedOtherDay + '요일 ' + PERIODS[pIdx].start + '~' + PERIODS[pIdx].end +
-                ' 교시가 이미 사용 중입니다.\n모든 요일의 시간 범위가 동일해야 하므로 이 교시는 추가할 수 없습니다.');
-          return;
-        }
-      } else {
-        var hasBlockInRange = false;
-        for (var chk = globalMin; chk <= globalMax; chk++) {
-          if (isBlockedSlot(day, chk) || isMyBlockedSlot(day, chk)) { hasBlockInRange = true; break; }
-        }
-        if (hasBlockInRange) {
-          alert(day + '요일 ' + PERIODS[globalMin].start + '~' + PERIODS[globalMax].end +
-                ' 범위 중 일부가 이미 사용 중입니다.\n이 요일은 선택할 수 없습니다.');
-          return;
-        }
-        if (pIdx < globalMin || pIdx > globalMax) {
-          alert('다른 요일은 이미 선택된 시간 범위(' + PERIODS[globalMin].start + '~' + PERIODS[globalMax].end + ')와 같아야 합니다.\n해당 범위의 교시를 선택하세요.');
-          return;
-        }
-        if (pIdx !== globalMin) { alert(PERIODS[globalMin].start + ' 교시부터 순서대로 선택해주세요.'); return; }
+    } else {
+      /* 같은 요일, 연속 교시만 허용 */
+      var selectedDay = selectedSlots[0].day;
+      if (day !== selectedDay) {
+        alert('요일은 하나만 선택할 수 있습니다.\n다른 요일을 선택하려면 먼저 선택을 초기화하세요.');
+        return;
+      }
+      var pIdxList2 = selectedSlots.map(function(s) { return s.periodIdx; }).sort(function(a,b){return a-b;});
+      var dMin = pIdxList2[0], dMax = pIdxList2[pIdxList2.length-1];
+      if (pIdx !== dMin - 1 && pIdx !== dMax + 1) {
+        alert('연속된 교시만 선택할 수 있습니다.');
+        return;
       }
       selectedSlots.push({ day: day, periodIdx: pIdx });
     }
@@ -689,10 +645,7 @@ function submitForm() {
   if (!roomInfo)              { alert('강의 교실을 선택해주세요.'); return; }
   if (!selectedSlots.length)  { alert('요일 및 시간을 선택해주세요.'); return; }
 
-  var daySet = [];
-  DAYS.forEach(function(day) {
-    if (selectedSlots.some(function(s) { return s.day === day; })) daySet.push(day);
-  });
+  var daySet = selectedSlots[0].day;  /* 요일 하나 */
   var pIdxList  = selectedSlots.map(function(s) { return s.periodIdx; }).sort(function(a,b){return a-b;});
   var startTime = PERIODS[pIdxList[0]].start + ':00';
   var endTime   = PERIODS[pIdxList[pIdxList.length-1]].end + ':00';
@@ -708,7 +661,7 @@ function submitForm() {
   formData.append('credits',      parseInt(credits));
   formData.append('semester',     semester);
   formData.append('room_info',    roomInfo);
-  formData.append('day_of_week',  daySet.join(','));
+  formData.append('day_of_week',  daySet);
   formData.append('start_time',   startTime);
   formData.append('end_time',     endTime);
   formData.append('max_students', 30);

@@ -70,7 +70,7 @@ public class UserDao {
         template.getMapper(cls).updateLockcOunt(userId, newLockCount);
     }
 
-	public int getProfNo(int code) {
+	public Integer getProfNo(int code) {
 		
 		return template.getMapper(cls).getProfNo(code);
 	}

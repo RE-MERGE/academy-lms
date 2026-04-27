@@ -86,7 +86,13 @@ public class EnrollmentController {
 	        if (!"ADMIN".equals(sessionUser.getRole().toString())) {
 	            course.setProfessor_no(sessionUser.getUserNo());
 	        } else {
-	        	int profNo = userService.getProfNo(Integer.parseInt(params.get("professor_no")));
+	        	Integer profNo = userService.getProfNo(Integer.parseInt(params.get("professor_no")));
+	        	if(profNo == null) {
+	        		 result.put("success", false);
+	     	        result.put("message","해당 교수는 존재하지 않습니다.");
+	     	        return result;
+	        	}
+	        	
 	            course.setProfessor_no(profNo);
 	        }
 	        course.setStatus(params.get("status"));
@@ -181,7 +187,7 @@ public class EnrollmentController {
 	            if (userCode != null && !userCode.trim().isEmpty()) {
 	                try {
 	                    Integer profNo = userService.getProfNo(Integer.parseInt(userCode.trim()));
-	                    if (profNo <= 0) {
+	                    if (profNo == null||profNo <= 0) {
 	                        result.put("success", false);
 	                        result.put("message", "해당 사번의 교수를 찾을 수 없습니다: [" + userCode + "]");
 	                        return result;

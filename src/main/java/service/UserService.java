@@ -111,4 +111,8 @@ public class UserService {
 	public int getProfNo(int code) {
 		return dao.getProfNo(code);
 	}
+
+	public int getUserCodeByProfNo(int professor_no) {
+		return dao.getUserCode(professor_no);
+	}
 }

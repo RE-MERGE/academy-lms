@@ -43,7 +43,13 @@ public class EnrollmentController {
 	
 	@GetMapping("courseCreate")
 	public String courseCreate(Model model) {
-	    LocalDate now = LocalDate.now();
+	    
+
+	    model.addAttribute("currentSemester", enrollment_semester());
+	    return "enrollment/courseCreate";
+	}
+	private static String enrollment_semester() {
+		LocalDate now = LocalDate.now();
 	    int month = now.getMonthValue();
 	    int year = now.getYear();
 	    String term;
@@ -53,9 +59,7 @@ public class EnrollmentController {
 	    } else {
 	        term = "2";
 	    }
-
-	    model.addAttribute("currentSemester", year + "-" + term);
-	    return "enrollment/courseCreate";
+	    return year + "-" + term;
 	}
 	
 	
@@ -98,6 +102,112 @@ public class EnrollmentController {
 	    }
 	    return result;
 	}
+	
+	@GetMapping("courseUpdate")
+	public String courseUpdatePage(@RequestParam int courseNo, @Login SessionUser sessionUser, Model model) {
+	    if (sessionUser.getRole() != UserRole.PROFESSOR && sessionUser.getRole() != UserRole.ADMIN) {
+	        return "redirect:/enrollment/courseEnrollment";
+	    }
+	    model.addAttribute("currentSemester", enrollment_semester());
+	    return "enrollment/courseUpdate";
+	}
+	
+	@GetMapping("courseDetail")
+	@ResponseBody
+	public Map<String, Object> courseDetail(@RequestParam int courseNo, @Login SessionUser sessionUser) {
+	    Map<String, Object> result = new HashMap<>();
+	    try {
+	        Course course = courseService.findByCourseNo(courseNo);
+	        if (sessionUser.getRole() == UserRole.PROFESSOR && course.getProfessor_no() != sessionUser.getUserNo()) {
+	            result.put("success", false);
+	            result.put("message", "본인 강의만 조회할 수 있습니다.");
+	            return result;
+	        }
+	        // ADMIN 수정 폼에서 사번으로 pre-fill할 수 있도록 user_code 추가
+	        if (sessionUser.getRole() == UserRole.ADMIN && course.getProfessor_no() > 0) {
+	            try {
+	                int professorUserCode = userService.getUserCodeByProfNo(course.getProfessor_no());
+	                result.put("professor_user_code", professorUserCode > 0 ? String.valueOf(professorUserCode) : "");
+	            } catch (Exception e) {
+	                result.put("professor_user_code", "");
+	            }
+	        }
+	        result.put("success", true);
+	        result.put("course", course);
+	    } catch (Exception e) {
+	        result.put("success", false);
+	        result.put("message", e.getMessage());
+	    }
+	    return result;
+	}
+	
+	@PostMapping("courseUpdate")
+	@ResponseBody
+	public Map<String, Object> updateCourse(
+	        @RequestParam Map<String, String> params,
+	        @RequestParam(required = false) MultipartFile curriculumPdf,
+	        @Login SessionUser sessionUser) {
+
+	    Map<String, Object> result = new HashMap<>();
+	    
+	    try {
+	        int courseNo = Integer.parseInt(params.get("course_no"));
+	        Course existing = courseService.findByCourseNo(courseNo);
+	        if (sessionUser.getRole() == UserRole.PROFESSOR) {
+	            
+	            if (existing == null || existing.getProfessor_no() != sessionUser.getUserNo()) {
+	                result.put("success", false);
+	                result.put("message", "본인 강의만 수정할 수 있습니다.");
+	                return result;
+	            }
+	        }
+
+	        Course course = new Course();
+	        course.setCourse_no(courseNo);
+	        course.setCourse_name(params.get("course_name"));
+	        course.setCourse_type(params.get("course_type"));
+	        course.setCredits(Integer.parseInt(params.get("credits")));
+	        course.setSemester(params.get("semester"));
+	        course.setRoom_info(params.get("room_info"));
+	        course.setDay_of_week(params.get("day_of_week"));
+	        course.setStart_time(params.get("start_time"));
+	        course.setEnd_time(params.get("end_time"));
+	        course.setMax_students(Integer.parseInt(params.get("max_students")));
+	        course.setProfessor_no(existing.getProfessor_no());
+
+	        // ADMIN: user_code → professor_no 변환
+	        if (UserRole.ADMIN == sessionUser.getRole()) {
+	            String userCode = params.get("user_code");
+	            if (userCode != null && !userCode.trim().isEmpty()) {
+	                try {
+	                    Integer profNo = userService.getProfNo(Integer.parseInt(userCode.trim()));
+	                    if (profNo <= 0) {
+	                        result.put("success", false);
+	                        result.put("message", "해당 사번의 교수를 찾을 수 없습니다: [" + userCode + "]");
+	                        return result;
+	                    }
+	                    course.setProfessor_no(profNo);
+	                } catch (Exception e) {
+	                    result.put("success", false);
+	                    result.put("message", "교수 조회 중 오류: " + e.getMessage());
+	                    return result;
+	                }
+	            }
+	            // user_code가 비어있으면 professor_no 변경 없이 기존 유지
+	        }
+
+	        String pdfName = saveCurriculumPdf(curriculumPdf, params.get("semester"));
+	        if (pdfName != null) course.setCurriculum_pdf(pdfName);
+
+	        int success = courseService.updateCourse(course);
+	        result.put("success", success > 0);
+	    } catch (Exception e) {
+	        result.put("success", false);
+	        result.put("message", e.getMessage());
+	    }
+	    return result;
+	}
+	
 	@GetMapping("blocked")
 	@ResponseBody
 	public List<Course> blocked(@RequestParam String room, @RequestParam String semester) {
@@ -220,10 +330,22 @@ public class EnrollmentController {
 	}
 	@PostMapping("courseDelete")
 	@ResponseBody
-	public Map<String, Object> deleteCourses(@RequestBody Map<String, List<Integer>> body) {
+	public Map<String, Object> deleteCourses(@RequestBody Map<String, List<Integer>> body, @Login SessionUser sessionUser) {
 	    Map<String, Object> result = new HashMap<>();
+	    
+	    
 	    try {
 	        List<Integer> courseNos = body.get("courseNos");
+	        if (sessionUser.getRole().equals("PROFESSOR")) {
+		        for (int courseNo : courseNos) {
+		        	Course existing = courseService.findByCourseNo(courseNo);
+		            if (existing == null || existing.getProfessor_no() != sessionUser.getUserNo()) {
+		            	 result.put("success", false);
+		     	        result.put("message", "내 강의만 삭제 가능합니다.");
+		     	        return result;
+		            }
+		        }
+		    }
 	        courseService.deleteCourses(courseNos);
 	        result.put("success", true);
 	        result.put("message", "삭제되었습니다.");

@@ -117,5 +117,8 @@ public class CourseDao {
 	public List<Course> getProfessorBlockedCourses(int professorNo, String semester) {
 		return template.getMapper(cls).getProfessorBlockedCourses(professorNo, semester);
 	}
+	public int updateCourse(Course course) {
+		return template.getMapper(cls).updateCourse(course);
+	}
 	
 }

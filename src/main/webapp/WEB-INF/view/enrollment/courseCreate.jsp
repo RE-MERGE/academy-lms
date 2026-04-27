@@ -77,7 +77,7 @@
       outline: none;
       border-color: var(--primary-light);
       box-shadow: 0 0 0 3px rgba(59,130,246,.12);
-    }
+    } 
     .form-input { width: 100%; max-width: 400px; }
     .form-select {
       appearance: none; -webkit-appearance: none;

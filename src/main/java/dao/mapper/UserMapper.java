@@ -72,6 +72,9 @@ public interface UserMapper {
     @Update("UPDATE USERS SET lock_count=#{newLockCount} WHERE user_id = #{userId}")
     void updateLockcOunt(@Param("userId") String userId, @Param("newLockCount") int newLockCount);
 
-    @Select("SELECT professor_no FROM USERS WHERE user_code = #{value}")
+    @Select("SELECT user_no FROM USERS WHERE user_code = #{value}")
 	int getProfNo(int code);
+
+    @Select("SELECT user_code FROM USERS WHERE user_no = #{value}")
+	int getUserCode(int professor_no);
 }

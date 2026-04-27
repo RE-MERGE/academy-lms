@@ -110,5 +110,13 @@ public class CourseService {
 		public List<Course> getProfessorBlockedCourses(int professorNo, String semester) {
 			return coursedao.getProfessorBlockedCourses(professorNo,semester);
 		}
+
+		public Course findByCourseNo(int courseNo) {
+			return coursedao.findByCourseNo(courseNo);
+		}
+
+		public int updateCourse(Course course) {
+			return coursedao.updateCourse(course);
+		}
 		
 }

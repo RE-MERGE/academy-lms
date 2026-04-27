@@ -219,16 +219,16 @@
         <%-- 강의 번호 (수정용 hidden) --%>
         <input type="hidden" id="courseNo" value="${param.courseNo}">
 
-        <%-- 교수번호 (관리자 전용) --%>
-        <c:if test="${sessionUser.role == 'ADMIN'}">
-        <div class="form-row">
-          <div class="form-label">교수번호</div>
-          <div class="form-field">
-            <input type="number" class="form-input" id="professorNo" placeholder="교수번호를 입력하세요" style="max-width:200px;">
-            <div class="hint">관리자 전용 — 강의를 개설할 교수의 번호를 입력하세요</div>
-          </div>
-        </div>
-        </c:if>
+        <%-- 교수 사번: ADMIN만 표시 --%>
+		<c:if test="${sessionUser.role.toString() == 'ADMIN'}">
+  			<div class="form-row">
+    		<div class="form-label">교수 사번</div>
+    		<div class="form-field">
+      		<input type="text" class="form-input" id="userCode" placeholder="교수 사번을 입력하세요" style="max-width:200px;">
+      		<div class="hint">변경 시 해당 교수로 담당 교수가 변경됩니다</div>
+    		</div>
+  			</div>
+		</c:if>
 
         <%-- 개설 과목명 --%>
         <div class="form-row">
@@ -362,6 +362,7 @@ function loadCourseData() {
   })
   .then(function(r) { return r.json(); })
   .then(function(data) {
+    console.log('[courseDetail 응답]', JSON.stringify(data)); // 디버그
     var c = data.course || data; /* 서버 응답 구조에 맞게 */
 
     /* 폼 필드 채우기 */
@@ -369,7 +370,11 @@ function loadCourseData() {
     if (document.getElementById('courseType'))  document.getElementById('courseType').value  = c.course_type  || '';
     if (document.getElementById('credits'))     document.getElementById('credits').value     = c.credits      || 3;
     if (document.getElementById('semester'))    document.getElementById('semester').value    = c.semester     || '';
-    if (document.getElementById('professorNo')) document.getElementById('professorNo').value = c.professor_no || '';
+    /* ADMIN: professor_user_code는 data 최상위에 위치 (course 객체 밖) */
+    if (document.getElementById('userCode')) {
+      console.log('[userCode 세팅]', data.professor_user_code); // 디버그
+      document.getElementById('userCode').value = data.professor_user_code || '';
+    }
 
     var roomEl = document.getElementById('roomInfo');
     if (roomEl && c.room_info) {
@@ -591,9 +596,9 @@ function updateSummary() {
 function loadBlockedSlots(callback) {
   var room     = document.getElementById('roomInfo').value;
   var semester = document.getElementById('semester').value;
-  var professorNoEl = document.getElementById('professorNo');
-  var professorNo   = professorNoEl ? parseInt(professorNoEl.value) || 0
-                                    : parseInt('${sessionUser.userNo}');
+  var userCodeEl2 = document.getElementById('userCode');
+  /* professor-blocked 조회는 professorNo가 필요하므로, ADMIN 입력 중에는 skip */
+  var professorNo   = parseInt('${sessionUser.userNo}');
 
   blockedSlots   = [];
   myBlockedSlots = [];
@@ -692,9 +697,9 @@ function submitForm() {
   var startTime = PERIODS[pIdxList[0]].start + ':00';
   var endTime   = PERIODS[pIdxList[pIdxList.length-1]].end + ':00';
 
-  var professorNoEl = document.getElementById('professorNo');
-  var professorNo   = professorNoEl ? parseInt(professorNoEl.value) : 0;
-  if (professorNoEl && !professorNo) { alert('교수번호를 입력해주세요.'); return; }
+  var userCodeEl = document.getElementById('userCode');
+  var userCode   = userCodeEl ? userCodeEl.value.trim() : '';
+  if (userCodeEl && !userCode) { alert('교수 사번을 입력해주세요.'); return; }
 
   var formData = new FormData();
   formData.append('course_no',    COURSE_NO);
@@ -707,7 +712,7 @@ function submitForm() {
   formData.append('start_time',   startTime);
   formData.append('end_time',     endTime);
   formData.append('max_students', 30);
-  formData.append('professor_no', professorNo);
+  if (userCodeEl) formData.append('user_code', userCode);
 
   var pdfFile = document.getElementById('curriculumPdf').files[0];
   if (pdfFile) formData.append('curriculumPdf', pdfFile);
@@ -717,8 +722,8 @@ function submitForm() {
   submitBtn.disabled = true;
   submitBtn.textContent = '검증 중...';
 
-  var professorNo2 = professorNoEl ? parseInt(professorNoEl.value) || 0
-                                   : parseInt('${sessionUser.userNo}');
+  /* professor-blocked 재검증: ADMIN은 user_code만 있어 professorNo 불명이므로 세션 기준 */
+  var professorNo2 = parseInt('${sessionUser.userNo}');
 
   var roomFetch2 = fetch(CTX_PATH + '/enrollment/blocked?room=' + encodeURIComponent(roomInfo)
       + '&semester=' + encodeURIComponent(semester), {

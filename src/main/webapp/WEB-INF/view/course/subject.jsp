@@ -25,6 +25,114 @@
 .attendance-table th { padding: 12px; border: 1px solid #003a7d; }
 .attendance-table tbody { text-align: center; background-color: #f8faff; }
 .attendance-table td { padding: 15px; border: 1px solid #d0d7f0; }
+
+.custom-modal {
+    display: none; 
+    position: fixed; 
+    z-index: 1000; 
+    left: 0; top: 0;
+    width: 100%; height: 100%;
+    background-color: rgba(0,0,0,0.5);
+}
+/* 모달 박스 */
+.modal-content {
+    background-color: #fff;
+    margin: 15% auto;
+    padding: 20px;
+    width: 50%;
+    border-radius: 8px;
+}
+	/* 닫기 버튼 */
+.close-btn {
+    float: right;
+    font-size: 24px;
+    cursor: pointer;
+}
+.btn-attendance {
+    background-color: #fff;
+    color: #4f46e5; /* 세련된 인디고 블루 */
+    border: 1.5px solid #4f46e5;
+    padding: 6px 14px;
+    border-radius: 20px; /* 둥근 캡슐 형태 */
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-attendance:hover {
+    background-color: #4f46e5;
+    color: #fff;
+    box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+}
+
+/* 모달 배경 (Overlay) */
+.modern-modal {
+    display: none;
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0,0,0,0.5);
+    z-index: 1000;
+    justify-content: center;
+    align-items: center;
+}
+
+/* 모달 컨테이너 */
+.modal-container {
+    position: relative;
+    background-color: #fff;
+    margin: 5% auto;
+    padding: 0;
+    width: 700px;        /* 400px → 700px */
+    max-width: 90vw;     /* 화면 너비 90% 초과 방지 */
+    max-height: 80vh;    /* 높이 제한 */
+    overflow-y: auto;    /* 내용 많으면 스크롤 */
+    border-radius: 16px;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    animation: slideDown 0.3s ease-out;
+}
+
+/* 헤더, 바디, 푸터 */
+.modal-header {
+    padding: 20px;
+    border-bottom: 1px solid #f3f4f6;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-header h3 { margin: 0; font-size: 18px; color: #111827; }
+
+.modal-body { padding: 20px; color: #4b5563; }
+
+.modal-footer {
+    padding: 15px 20px;
+    text-align: right;
+    background-color: #f9fafb;
+    border-bottom-left-radius: 16px;
+    border-bottom-right-radius: 16px;
+}
+
+/* 확인 버튼 */
+.btn-confirm {
+    background-color: #111827;
+    color: white;
+    border: none;
+    padding: 8px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+/* 닫기 애니메이션 */
+@keyframes slideDown {
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* 닫기 버튼 (X) */
+.close-btn { font-size: 28px; cursor: pointer; color: #9ca3af; }
+.close-btn:hover { color: #111827; }
 </style>
 <link rel="stylesheet" href="${pageContext.request.contextPath}/css/main.css"/>
 </head>
@@ -73,8 +181,8 @@
     <span style="margin-left: 10px; color: #666;">${Course.credits}학점</span>
 </div>
         <div style="margin-top: 10px; color: #888; font-size: 13px; line-height: 1.5;">
-            <p style="margin: 0;">23359-01</p>
-            <p style="margin: 0;">203관(서라벌홀) 817호 &lt;강의실&gt;</p>
+            <p style="margin: 0;">${Course.course_type }</p>
+            <p style="margin: 0;">&lt;강의실&gt; ${Course.room_info} </p>
         </div>
     </div>
 
@@ -97,12 +205,13 @@
 
 <hr style="border: 0; border-top: 2px solid #ccc; margin: 0;">
 
+<c:if test="${sessionScope.sessionUser.role == 'STUDENT'}">
 <div style="text-align: right; padding: 15px 0; font-size: 16px;">
-    출석 <span id="count-present" style="color: blue; font-weight: bold;">0</span>회 / 
-    지각 <span id="count-late" style="color: orange; font-weight: bold;">0</span>회 / 
-    결석 <span id="count-absent" style="color: red; font-weight: bold;">0</span>회
+    출석 <span style="color: blue; font-weight: bold;">${presentCount}</span>회 / 
+    지각 <span style="color: orange; font-weight: bold;">${lateCount}</span>회 / 
+    결석 <span style="color: red; font-weight: bold;">${absentCount}</span>회
 </div>
-
+</c:if>
 <table class="attendance-table">
     <thead>
         <tr>
@@ -121,21 +230,80 @@
 	        <td class="cell-time">
 	            ${Course.start_time} ~ ${Course.end_time}
 	        </td>
-	        <td class="cell-status">
-	            <select class="status-select" onchange="updateCounts()"
-                    style="padding: 6px 12px; border-radius: 6px; border: 1px solid #d0d7f0; font-size: 14px; cursor: pointer;">
-                    <option value="NONE">강의 예정</option>
-                    <option value="PRESENT">✔ 출석</option>
-                    <option value="LATE">⏰ 지각</option>
-                    <option value="ABSENT">✖ 결석</option>
-                    <option value="EXCUSED">📋 자퇴</option>
-                </select>
-	        </td>
-	    </tr>
-	</c:forEach>
-
+	<c:choose>
+    <c:when test="${sessionScope.sessionUser.role == 'PROFESSOR' or sessionScope.sessionUser.role == 'ADMIN'}">
+        <%-- 교수용 --%>
+        <td>
+            <button type="button" class="btn-attendance" 
+		        data-week="${i}"
+		        onclick="openModal('modal', this.getAttribute('data-week'))">
+		   		<i class="fas fa-check-circle"></i> 출석확인
+			</button>
+        </td>
+    </c:when>
+    <c:otherwise>
+        <%-- 학생용 --%>
+        <td class="cell-status">
+        <c:set var="idx" value="${i - 1}"/>
+            <c:if test="${idx < AttendanceList.size()}">
+            <c:set var="s" value="${AttendanceList[idx]}"/>
+                <c:choose>
+                    <c:when test="${s.status == 'PRESENT'}">출석완료</c:when>
+                    <c:when test="${s.status == 'LATE'}">지각</c:when>
+                    <c:when test="${s.status == 'ABSENT'}">결석</c:when>
+                    <c:otherwise>강의 예정</c:otherwise>
+                </c:choose>
+                </c:if>
+                <c:if test="${idx >= AttendanceList.size()}">
+                        강의 예정
+                </c:if>
+        </td>
+    </c:otherwise>
+</c:choose>
+</tr>
+</c:forEach>
 </tbody>
 </table>
+<div id="modal" class="modern-modal">
+    <div class="modal-container">
+        <div class="modal-header">
+            <h3>출석 현황 상세보기</h3>
+            <span class="close-btn" onclick="closeModal('modal')">&times;</span>
+        </div>
+        <div class="modal-body">
+    <table style="width: 100%; border-collapse: collapse;">
+        <thead>
+            <tr style="background-color: #004595; color: white;">
+                <th style="padding: 10px; border: 1px solid #003a7d;">이름</th>
+                <th style="padding: 10px; border: 1px solid #003a7d;">학번</th>
+                <th style="padding: 10px; border: 1px solid #003a7d;">이메일</th>
+                <th style="padding: 10px; border: 1px solid #003a7d;">출결 상태</th>
+            </tr>
+        </thead>
+        <tbody>
+            <c:forEach var="student" items="${studentList}">
+                <tr style="text-align: center; background-color: #f8faff;">
+                    <td style="padding: 12px; border: 1px solid #d0d7f0;">${student.name}</td>
+                    <td style="padding: 12px; border: 1px solid #d0d7f0;">${student.userCode}</td>
+                    <td style="padding: 12px; border: 1px solid #d0d7f0;">${student.email}</td>
+                    <td style="padding: 12px; border: 1px solid #d0d7f0;">
+                        <select class="attendance-select" data-userno="${student.userNo}" 
+                        style="padding: 6px 12px; border-radius: 6px; border: 1px solid #d0d7f0;">
+                            <option value="PRESENT">출석</option>
+                            <option value="LATE">지각</option>
+                            <option value="ABSENT">결석</option>
+                        </select>
+                    </td>
+                </tr>
+            </c:forEach>
+        </tbody>
+    </table>
+</div>
+        <div class="modal-footer">
+            <button class="btn-confirm" onclick="saveAttendance()">확인</button>
+        </div>
+    </div>
+</div>
 <script>
     function toggleDropdown() {
         const dropdown = document.getElementById('courseDropdown');
@@ -160,15 +328,73 @@
     });
     
     function updateCounts() {
-    	let present = 0, late = 0, absent = 0;
-    	document.querySelectorAll('.status-select').forEach(function(select) {
-    		if(select.value === 'PRESENT') present++;
-    		else if(select.value === 'LATE') late++;
-    		else if(select.value === 'ABSENT') absent++;
-    	});
-    	document.getElementById('count-present').textContent = present;
-    	document.getElementById('count-late').textContent = late;
-    	document.getElementById('count-absent').textContent = absent;
+        let present = 0, late = 0, absent = 0;
+        document.querySelectorAll('.attendance-select').forEach(function(select) {
+            if (select.value === 'PRESENT') present++;
+            else if (select.value === 'LATE') late++;
+            else if (select.value === 'ABSENT') absent++;
+        });
+        document.getElementById('count-present').textContent = present;
+        document.getElementById('count-late').textContent = late;
+        document.getElementById('count-absent').textContent = absent;
+    }
+    
+    function openModal(id, week) {
+        document.getElementById(id).dataset.week = week;
+        document.getElementById(id).style.display = "flex";
+        document.body.style.overflow = "hidden";
+        document.querySelectorAll('.attendance-select').forEach(function(select) {
+            select.addEventListener('change', updateCounts);
+        });
+        updateCounts();  // 모달 열릴 때 초기 카운트
+    }
+
+    function closeModal(id) {
+        document.getElementById(id).style.display = "none";
+        document.body.style.overflow = "auto";
+    }
+
+    window.onclick = function(event) {
+        if (event.target.className === 'modern-modal') {
+            event.target.style.display = "none";
+            document.body.style.overflow = "auto";
+        }
+    }
+    
+    function saveAttendance() {
+        const courseNo = "${Course.course_no}";
+        const contextPath = "${pageContext.request.contextPath}";
+        const today = new Date().toISOString().split('T')[0];
+        const week = document.getElementById("modal").dataset.week;
+        const rows = document.querySelectorAll(".attendance-select");
+        const attendanceList = [];
+
+        rows.forEach(function(select) {  // ← 화살표 함수 대신 일반 함수
+            const item = {
+                user_no: select.dataset.userno,
+                course_no: courseNo,
+                attendance_date: today,
+                week: week,
+                status: select.value
+            };
+            attendanceList.push(item);
+        });
+
+        fetch(contextPath + "/course/saveAttendance", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(attendanceList)
+        })
+        .then(res => res.text())
+        .then(result => {
+            if (result === "ok") {
+                alert("출결 저장 완료!");
+                closeModal('modal');
+            } else {
+                alert("저장 실패!");
+            }
+        })
+        .catch(err => console.error("저장 오류:", err));
     }
 </script>
 </body>  

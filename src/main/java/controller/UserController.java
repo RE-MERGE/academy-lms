@@ -20,9 +20,11 @@ import service.FileService;
 import service.NaverLoginService;
 import service.UserService;
 
+import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 

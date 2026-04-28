@@ -1,12 +1,14 @@
 package controller;
 
 
+import dao.UserDao;
 import dto.user.*;
 import dto.user.mypage.UserEditFormForAdmin;
 import dto.user.mypage.AdminCourseList;
 import dto.user.mypage.MyPageData;
 import dto.user.mypage.UserDetailForAdmin;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -15,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 import service.AdminService;
 import service.UserService;
 
+import javax.annotation.PostConstruct;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -25,6 +28,8 @@ public class AdminController {
 
     private final AdminService adminService;
     private final UserService userService;
+    private final UserDao userDao;
+    private final BCryptPasswordEncoder bCryptPasswordEncoder;
 
     @GetMapping("userList")
     public String getUserList(@RequestParam(defaultValue = "1") int page,
@@ -87,25 +92,28 @@ public class AdminController {
         return "admin/userDetail";
     }
 
-    @GetMapping("editProfile/{userNo}")
+    @GetMapping("editProfileForAdmin/{userNo}")
     public String editProfileForAdminForm(@PathVariable int userNo, Model model) {
 
         User targetUser = adminService.selectUser(userNo);
-        model.addAttribute(UserConst.EDIT_FORM, new UserEditFormForAdmin(targetUser));
+        model.addAttribute(UserConst.DETAIL_USER , new UserEditFormForAdmin(targetUser));
 
         return "admin/editProfileForAdmin";
     }
 
-    @PostMapping("editProfile/{userNo}")
+    @PostMapping("editProfileForAdmin/{userNo}")
     public String editProfileForAdmin(@PathVariable int userNo,
-                                      @Validated @ModelAttribute("editForm") UserEditFormForAdmin userEditFormForAdmin,
+                                      @Validated UserDetailForAdmin userDetailForAdmin,
                                       BindingResult bindingResult, Model model) {
 
         if (bindingResult.hasErrors()) {
+            User targetUser = adminService.selectUser(userNo);
+            model.addAttribute(UserConst.DETAIL_USER , new UserEditFormForAdmin(targetUser));
+
             return "admin/editProfileForAdmin";
         }
 
-        adminService.updateUserFormAdmin(userNo, userEditFormForAdmin);
+        adminService.updateUserFormAdmin(userNo, userDetailForAdmin);
 
         return "redirect:/admin/userDetail/" + userNo + "?saved=1";
     }

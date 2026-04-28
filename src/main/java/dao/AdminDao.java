@@ -3,6 +3,7 @@ package dao;
 import dao.mapper.AdminMapper;
 import dto.user.AdminUserList;
 import dto.user.User;
+import dto.user.mypage.UserDetailForAdmin;
 import dto.user.mypage.UserEditFormForAdmin;
 import dto.user.mypage.AdminCourseList;
 import org.mybatis.spring.SqlSessionTemplate;
@@ -49,7 +50,7 @@ public class AdminDao {
         return template.getMapper(cls).getTotalUserCount(role);
     }
 
-    public void updateInfoFormAdmin(int userNo, UserEditFormForAdmin userEditFormForAdmin) {
-         template.getMapper(cls).updateInfoForAdmin(userNo, userEditFormForAdmin);
+    public void updateInfoFormAdmin(int userNo, UserDetailForAdmin userDetailForAdmin) {
+         template.getMapper(cls).updateInfoForAdmin(userNo, userDetailForAdmin);
     }
 }

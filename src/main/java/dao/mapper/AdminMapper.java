@@ -3,6 +3,7 @@ package dao.mapper;
 
 import dto.user.AdminUserList;
 import dto.user.User;
+import dto.user.mypage.UserDetailForAdmin;
 import dto.user.mypage.UserEditFormForAdmin;
 import dto.user.mypage.AdminCourseList;
 import org.apache.ibatis.annotations.Param;
@@ -101,14 +102,14 @@ public interface AdminMapper {
     int getTotalUserCount(String role);
 
     @Update({
-            "UPDATE USERS",
-            "SET name = #{name},",
-            "    email = #{email},",
-            "    phone = #{phone},",
-            "    role = #{role},",
-            "    status = #{status},",
-            "    profile_img = #{currentProfileImg}", // 서비스에서 새 파일명 또는 기존명을 currentProfileImg에 세팅했다고 가정
+            "UPDATE USERS " +
+            "SET name = #{userDetail.name}," +
+            "    email = #{userDetail.email}," +
+            "    phone = #{userDetail.phone}," +
+            "    role = #{userDetail.role}," +
+            "    status = #{userDetail.status}," +
+            "    profile_img = #{userDetail.currentProfileImg} " + // 서비스에서 새 파일명 또는 기존명을 currentProfileImg에 세팅했다고 가정
             "WHERE user_no = #{userNo}"
     })
-    void updateInfoForAdmin(int userNo, UserEditFormForAdmin userEditFormForAdmin);
+    void updateInfoForAdmin(@Param("userNo") int userNo, @Param("userDetail") UserDetailForAdmin userDetailForAdmin);
 }

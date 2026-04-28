@@ -375,7 +375,7 @@
     <h2 class="edit-title">회원정보 수정</h2>
 
     <form id="editProfileForm"
-          action="${pageContext.request.contextPath}/admin/editProfile/${userNo}"
+          action="${pageContext.request.contextPath}/admin/editProfileForAdmin/${userDetail.userNo}"
           method="post"
           enctype="multipart/form-data">
 
@@ -385,9 +385,9 @@
         <div class="edit-profile-img-section">
             <div class="edit-img-preview-wrap">
                 <c:choose>
-                    <c:when test="${not empty userDetail.profileImg}">
+                    <c:when test="${not empty userDetail.currentProfileImg}">
                         <img id="previewImg"
-                             src="${pageContext.request.contextPath}/upload/profiles/${userDetail.profileImg}"
+                             src="${pageContext.request.contextPath}/upload/profiles/${userDetail.currentProfileImg}"
                              class="edit-img-preview"
                              onerror="this.src='${pageContext.request.contextPath}/img/default-profile.png'"/>
                     </c:when>
@@ -428,7 +428,7 @@
 
                 <div class="form-group">
                     <label class="form-label">아이디</label>
-                    <input type="text" class="form-input" value="${userDetail.displayUserId}" readonly/>
+                    <input type="text" class="form-input" value="${userDetail.userId}" readonly/>
                     <span class="form-hint">변경 불가 항목입니다.</span>
                 </div>
 

@@ -29,8 +29,27 @@ public class CourseService {
     	return coursedao.selectCourse(no);
 	}
 
-	public int insertCourse(Course course) {
-		return coursedao.insertCourse(course);
+	public Map<String,Object> insertCourse (Course course) {
+		Map<String, Object> result = new HashMap<String, Object>();
+		if (coursedao.hasRoomConflict(course) > 0) {
+			result.put("success", false);
+			result.put("message", "해당 강의실에 시간이 겹치는 강의가 있습니다");
+			return result;
+		}
+		if (coursedao.hasProfessorConflict(course) > 0) {
+			result.put("success", false);
+			result.put("message", "교수님의 다른 강의와 시간이 겹칩니다.");
+			return result;
+		}
+		 if(coursedao.insertCourse(course)>0) {
+			 result.put("success", true);
+			 result.put("message", "강의 개설에 성공했습니다");
+			 
+		 }else {
+			 result.put("success", false);
+			 result.put("message", "강의 개설에 실패했습니다.");
+		 }
+		 return result;
 	}
 
 	public List<Course> getBlockedCourses(String room, String semester) {
@@ -121,8 +140,27 @@ public class CourseService {
 			return coursedao.findByCourseNo(courseNo);
 		}
 
-		public int updateCourse(Course course) {
-			return coursedao.updateCourse(course);
+		public Map<String, Object> updateCourse(Course course) {
+			Map<String, Object> result = new HashMap<String, Object>();
+			if (coursedao.hasRoomConflictExcludeSelf(course) > 0) {
+				result.put("success", false);
+				result.put("message", "해당 강의실에 시간이 겹치는 강의가 있습니다");
+				return result;
+			}
+			if (coursedao.hasProfessorConflictExcludeSelf(course) > 0) {
+				result.put("success", false);
+				result.put("message", "교수님의 다른 강의와 시간이 겹칩니다.");
+				return result;
+			}
+			 if(coursedao.updateCourse(course)>0) {
+				 result.put("success", true);
+				 result.put("message", "강의 수정에 성공했습니다");
+				 
+			 }else {
+				 result.put("success", false);
+				 result.put("message", "강의 수정에 실패했습니다.");
+			 }
+			 return result;
 		}
 		
 		public Map<String, Object> selectGradeMap(Integer courseNo, Integer userNo) {

@@ -26,7 +26,7 @@ public class SupabaseStorageService {
     public String uploadPdf(MultipartFile file, String semester) throws Exception {
         if (file == null || file.isEmpty()) return null;
 
-        String fileName = UUID.randomUUID() + "_" + file.getOriginalFilename();
+        String fileName = "file_" + System.currentTimeMillis() + ".pdf";
         String path = semester + "/" + fileName;
 
         HttpClient client = HttpClient.newHttpClient();

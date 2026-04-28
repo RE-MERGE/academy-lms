@@ -141,4 +141,8 @@ public class CourseService {
 	public Course getBoardCourse(Integer courseNo) {
 		return coursedao.getBoardCourse(courseNo);
 	}
+
+	public List<Course> getFavoriteCourses(int userNo) {
+		return coursedao.getFavoriteCourse(userNo);
+	}
 }

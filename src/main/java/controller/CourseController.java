@@ -8,8 +8,12 @@ import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpSession;
 
+import dto.user.grade.MyGrade;
+import dto.user.login.Login;
+import dto.user.mypage.MyPageData;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -25,6 +29,7 @@ import dto.user.User;
 import dto.user.UserConst;
 import dto.user.UserRole;
 import service.CourseService;
+import service.UserService;
 
 @Controller
 @RequestMapping("course")
@@ -32,6 +37,8 @@ public class CourseController {
 
 	@Autowired
 	CourseService courseService;
+	@Autowired
+	UserService userService;
 
 	@GetMapping("subject")
 	public ModelAndView getSubject(@RequestParam(value="no", defaultValue="1") int no, HttpSession session) {
@@ -202,4 +209,17 @@ public class CourseController {
 		mav.setViewName("course/home");
 		return mav;
 	}
+	
+	@GetMapping("score")
+	public void score(@Login SessionUser sessionUser, Integer courseNo, Model model){
+		List<User> studentList = courseService.selectStudentList(courseNo);
+		Course course = courseService.selectCourse(courseNo);
+		MyPageData data = userService.getMyPageData(sessionUser, userService.getSemester());
+		model.addAttribute("course", course);
+		model.addAttribute("myGrade", data.getGradeList());
+		model.addAttribute("studentList", studentList);
+	}
+//	@GetMapping("*")
+//	public void getCourse(Course course) {
+//	}
 }

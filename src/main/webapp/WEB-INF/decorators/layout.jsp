@@ -14,7 +14,9 @@
            fn:contains(uri, '/course/mainSubject') or
            fn:contains(uri, '/board/subjectHome') or
            fn:contains(uri, '/course/profScore') or
-           fn:contains(uri, '/board/list_qna')
+           fn:contains(uri, '/course/stuScore') or
+           fn:contains(uri, '/board/list_qna') or
+           fn:contains(uri, '/course/score')
            }"/>
 
 <!DOCTYPE html>
@@ -118,46 +120,58 @@
         </nav>
 
         <div class="flyout" id="course-flyout">
-            <h3 class="flyout-title">${course.course_name}</h3>
+            <h3 class="flyout-title">즐겨찾기</h3>
             <ul class="flyout-list">
-                <c:if test="${not empty courseList}">
-                    <c:forEach var="courseItem" items="${courseList}">
-                        <li class="flyout-item">
-                            <a href="${ctx}/board/subjectHome?courseNo=${courseItem.course_no}">
-                                    ${courseItem.course_name}
-                            </a>
-                            <c:set var="isFav" value="false"/>
-                            <c:forEach var="fno" items="${favoriteNos}">
-                                <c:if test="${fno == courseItem.course_no}"><c:set var="isFav" value="true"/></c:if>
-                            </c:forEach>
-                            <button class="fav-btn ${isFav ? 'active' : ''}" onclick="toggleFavorite(event, this, ${courseItem.course_no})">
-                                    ${isFav ? '★' : '☆'}
-                            </button>
-                        </li>
-                    </c:forEach>
-                </c:if>
+                <c:choose>
+                    <c:when test="${not empty favoriteCourseList}">
+                        <c:forEach var="courseItem" items="${favoriteCourseList}">
+                            <li class="flyout-item">
+                                <a href="${ctx}/board/subjectHome?courseNo=${courseItem.course_no}">
+                                        ${courseItem.course_name}
+                                </a>
+                                <button class="fav-btn active" onclick="toggleFavorite(event, this, ${courseItem.course_no})">★</button>
+                            </li>
+                        </c:forEach>
+                    </c:when>
+                    <c:otherwise>
+                        <li class="flyout-item">즐겨찾기한 과목이 없습니다.</li>
+                    </c:otherwise>
+                </c:choose>
             </ul>
+            <div class="sidebar-divider"></div>
+            <a href="${ctx}/course/home" class="flyout-all-link">전체 과목 보기 →</a>
         </div>
 
-        <c:if test="${showSubjectSidebar}">
-            <aside class="subject-sidebar">
-                <h2 class="subject-sidebar-title">${course.course_name}</h2>
-                <nav class="subject-nav">
-                    <a href="${ctx}/board/subjectHome?courseNo=${course.course_no}" class="subject-nav-item active">
-                        <img src="${ctx}/img/icon_home.png" alt="홈" width="40px" height="40px">홈</a>
-                    <div class="sidebar-divider"></div>
-                    <a href="${ctx}/course/profScore" class="subject-nav-item">
-                        <img src="${ctx}/img/icon_grades.png" alt="성적" width="40px" height="40px">성적</a>
-                    <div class="sidebar-divider"></div>
-                    <a href="${ctx}/board/list_qna?boardType=QNA&courseNo=${course.course_no}" class="subject-nav-item">
-                        <img src="${ctx}/img/icon_qna.png" alt="QNA" width="40px" height="40px">Q&A</a>
-                    <div class="sidebar-divider"></div>
-                    <a href="#" class="subject-nav-item">
-                        <img src="${ctx}/img/icon_studentList.png" alt="학생" width="40px" height="40px">학생 리스트</a>
-                </nav>
-            </aside>
-        </c:if>
 
+            <c:if test="${showSubjectSidebar}">
+                <!-- 과목 사이드바 -->
+                <aside class="subject-sidebar">
+                    <h2 class="subject-sidebar-title">${course.course_name}</h2>
+                    <nav class="subject-nav">
+                        <a href="${ctx}/board/subjectHome?courseNo=${course.course_no}"
+                           class="subject-nav-item ${fn:contains(uri,'/subjectHome') or fn:contains(uri,'/mainSubject') ? 'active' : ''}">
+                            <img src="${ctx}/img/icon_home.png" alt="홈" width="40px" height="40px">홈
+                        </a>
+                        <div class="sidebar-divider"></div>
+
+                        <a href="${ctx}/course/score?courseNo=${course.course_no}"
+                           class="subject-nav-item ${fn:contains(uri,'/score') ? 'active' : ''}">
+                            <img src="${ctx}/img/icon_grades.png" alt="성적" width="40px" height="40px">성적
+                        </a>
+                        <div class="sidebar-divider"></div>
+
+                        <a href="${ctx}/board/list_qna?boardType=QNA&courseNo=${course.course_no}"
+                           class="subject-nav-item ${fn:contains(uri,'/list_qna') ? 'active' : ''}">
+                            <img src="${ctx}/img/icon_qna.png" alt="QNA" width="40px" height="40px">Q&A
+                        </a>
+                        <div class="sidebar-divider"></div>
+
+                        <a href="#" class="subject-nav-item">
+                            <img src="${ctx}/img/icon_studentList.png" alt="학생 리스트" width="40px" height="40px">학생 리스트
+                        </a>
+                    </nav>
+                </aside>
+            </c:if>
         <main class="main-content">
             <sitemesh:write property="body"/>
         </main>

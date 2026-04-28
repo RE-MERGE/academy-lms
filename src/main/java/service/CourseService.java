@@ -155,4 +155,8 @@ public class CourseService {
 	    return new HashSet<>(coursedao.getFavoriteCourseNos(userNo));
 	}
 
+
+	public List<Course> getFavoriteCourses(int userNo) {
+		return coursedao.getFavoriteCourse(userNo);
+	}
 }

@@ -192,8 +192,23 @@ public class UserService {
         return joinUser;
     }
 
-
     public void updateLastLogin(String userId) {
         dao.updateLastLogin(userId);
+    }
+
+    public String getSemester() {
+
+        String year = String.valueOf(LocalDate.now().getYear());
+        int month = LocalDate.now().getMonthValue();
+
+        String semester = "-";
+
+        if (month <= 6) {
+            month = 1;
+        } else {
+            month = 2;
+        }
+
+        return year += semester += String.valueOf(month);
     }
 }

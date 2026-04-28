@@ -67,6 +67,14 @@ public class UserDao {
     }
 
     public void updateLockCount(String userId, int newLockCount) {
-        template.getMapper(cls).updateLockcOunt(userId, newLockCount);
+        template.getMapper(cls).updateLockCount(userId, newLockCount);
+    }
+
+    public void updateLastLogin(String userId) {
+        template.getMapper(cls).updateLastLogin(userId);
+    }
+
+    public User selectUserByNaverId(String naverId) {
+        return template.getMapper(cls).selectUserByNaverId(naverId);
     }
 }

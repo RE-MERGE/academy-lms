@@ -42,7 +42,6 @@ public class UserEditForm {
 
     private LocalDate updatedAt;      // 비밀번호 마지막 변경 시간
 
-
     public UserEditForm(){}
 
     public UserEditForm(String currentProfileImg, String userId, String name, String email, String phone, String password) {

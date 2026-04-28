@@ -32,40 +32,40 @@
 
 <div class="layout-root">
 
-    <!-- ── 헤더 ── -->
-    <div class="header-wrapper">
-        <div class="header-topbar"></div>
-        <header class="lms-header">
+  <!-- ── 헤더 ── -->
+  <div class="header-wrapper">
+    <div class="header-topbar"></div>
+    <header class="lms-header">
 
-            <!-- 로고 -->
-            <a href="${pageContext.request.contextPath}/home/dashboard" class="lms-logo-wrap">
-                <div class="lms-logo-text">
-                    <span class="lms-logo-main">re<span>·</span>merge</span>
-                    <span class="lms-logo-sub">Learning Management System</span>
-                </div>
-            </a>
+      <!-- 로고 -->
+      <a href="${pageContext.request.contextPath}/home/dashboard" class="lms-logo-wrap">
+        <div class="lms-logo-text">
+          <span class="lms-logo-main">re<span>·</span>merge</span>
+          <span class="lms-logo-sub">Learning Management System</span>
+        </div>
+      </a>
 
-            <!-- 우측 유저 영역 -->
-            <div class="header-user">
+      <!-- 우측 유저 영역 -->
+      <div class="header-user">
 
-                <span class="header-semester">2026학년도 1학기</span>
+        <span class="header-semester">2026학년도 1학기</span>
 
-                <c:choose>
-                    <c:when test="${sessionScope.sessionUser.role == 'ADMIN'}">
-                        <span class="user-role-badge role-admin">관리자</span>
-                    </c:when>
-                    <c:when test="${sessionScope.sessionUser.role == 'PROFESSOR'}">
-                        <span class="user-role-badge role-teacher">강사</span>
-                    </c:when>
-                    <c:otherwise>
-                        <span class="user-role-badge role-student">학생</span>
-                    </c:otherwise>
-                </c:choose>
+        <c:choose>
+          <c:when test="${sessionScope.sessionUser.role == 'ADMIN'}">
+            <span class="user-role-badge role-admin">관리자</span>
+          </c:when>
+          <c:when test="${sessionScope.sessionUser.role == 'PROFESSOR'}">
+            <span class="user-role-badge role-teacher">강사</span>
+          </c:when>
+          <c:otherwise>
+            <span class="user-role-badge role-student">학생</span>
+          </c:otherwise>
+        </c:choose>
 
-                <div class="avatar">${fn:substring(sessionScope.sessionUser.name, 0, 1)}</div>
-                <div class="header-user-info">
-                    <span class="user-id">${sessionScope.sessionUser.userId}</span>
-                    <span class="user-name">${sessionScope.sessionUser.name}</span>
+        <div class="avatar">${fn:substring(sessionScope.sessionUser.name, 0, 1)}</div>
+        <div class="header-user-info">
+          <span class="user-id">${sessionScope.sessionUser.displayUserId}</span>
+          <span class="user-name">${sessionScope.sessionUser.name}</span>
                 </div>
 
 
@@ -243,7 +243,7 @@
     	<span class="si-label">전체 회원 관리</span>
   	</a>
   	
-  <a href="${pageContext.request.contextPath}/admin/adminCourseList" class="sidebar-item">
+  <a href="${pageContext.request.contextPath}/admin/courseList" class="sidebar-item">
     <img src="${pageContext.request.contextPath}/img/icon_Course Management.png" alt="수업관리 아이콘" width="50px" height="50px">
     <span class="si-label">전체 수업 관리</span>
   </a>

@@ -1,5 +1,7 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -191,7 +193,7 @@
                     학번 <span class="sort-icon" id="icon-studentId">▼</span>
                 </th>
                 <th style="width: 13%;" class="sortable" onclick="sortTable('applyDate')" id="th-applyDate">
-                    학번 신청일 <span class="sort-icon" id="icon-applyDate">▼</span>
+                    회원 가입 신청일 <span class="sort-icon" id="icon-applyDate">▼</span>
                 </th>
             </tr>
         </thead>

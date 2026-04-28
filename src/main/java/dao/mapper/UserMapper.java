@@ -7,14 +7,27 @@ import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.Update;
-import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
-import java.util.Map;
 
 public interface UserMapper {
 
-    @Select("SELECT * FROM USERS")
+    @Select("SELECT " +
+            "  user_no AS userNo, " +
+            "  user_code AS userCode, " +
+            "  user_id AS userId, " +
+            "  password, " +
+            "  name, " +
+            "  email, " +
+            "  phone, " +
+            "  role, " +
+            "  status, " +
+            "  profile_img AS profileImg, " +
+            "  last_login AS lastLoginAt, " +
+            "  created_at AS createdAt, " +
+            "  lock_count, " +
+            "  last_password_changed " +
+            "FROM USERS")
     List<User> selectAllUsers();
 
     @Select("SELECT user_id FROM USERS WHERE email = #{userEmail}")
@@ -53,7 +66,8 @@ public interface UserMapper {
             "SET " +
             "  name = #{name}, " +
             "  email = #{email}, " +
-            "  phone = #{phone} " +
+            "  phone = #{phone}, " +
+            " profile_img = #{currentProfileImg} " +
             "WHERE user_id = #{userId}")
     void updateInfo(UserEditForm userEditForm);
 
@@ -65,10 +79,31 @@ public interface UserMapper {
     @Update("UPDATE USERS SET status=#{status} WHERE user_id=#{userId}")
     void updateStatus(@Param("userId") String userId, @Param("status") UserStatus userStatus);
 
-
     @Update("UPDATE USERS SET lock_count=0 WHERE user_id = #{userId}")
     void resetLockCount(String userId);
 
     @Update("UPDATE USERS SET lock_count=#{newLockCount} WHERE user_id = #{userId}")
-    void updateLockcOunt(@Param("userId") String userId, @Param("newLockCount") int newLockCount);
+    void updateLockCount(@Param("userId") String userId, @Param("newLockCount") int newLockCount);
+
+    @Update("UPDATE USERS SET last_login = now() WHERE user_id = #{userId}")
+    void updateLastLogin(String userId);
+
+    @Select("SELECT " +
+            "  user_no AS userNo, " +
+            "  user_code AS userCode, " +
+            "  user_id AS userId, " +
+            "  password, " +
+            "  name, " +
+            "  email, " +
+            "  phone, " +
+            "  role, " +
+            "  status, " +
+            "  profile_img AS profileImg, " +
+            "  last_login AS lastLoginAt, " +
+            "  created_at AS createdAt, " +
+            "  lock_count, " +
+            "  last_password_changed " +
+            "FROM USERS " +
+            "WHERE user_id=#{naverId}")
+            User selectUserByNaverId(String naverId);
 }

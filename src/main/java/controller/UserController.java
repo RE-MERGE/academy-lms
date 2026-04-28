@@ -5,27 +5,24 @@ import dto.user.*;
 import dto.user.login.Login;
 import dto.user.login.UpdatePwForm;
 import dto.user.mypage.MyPageData;
+import exception.LoginFailException;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.mail.MailSender;
 import org.springframework.mail.SimpleMailMessage;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import service.FileService;
 import service.NaverLoginService;
 import service.UserService;
 
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
-import java.io.File;
-import java.io.IOException;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.Map;
 import java.util.UUID;
 
@@ -38,6 +35,8 @@ public class UserController {
     private final NaverLoginConfig naverLoginConfig;
     private final NaverLoginService naverLoginService;
     private final MailSender mailSender;
+    private final BCryptPasswordEncoder passwordEncoder;
+    private final FileService fileService;
 
     @GetMapping("joinForm")
     public String joinForm(Model model) {
@@ -46,7 +45,8 @@ public class UserController {
     }
 
     @PostMapping("join")
-    public String join(@Validated UserJoinForm userJoinForm, BindingResult bindingResult) {
+    public String join(@Validated UserJoinForm userJoinForm, BindingResult bindingResult,
+                       RedirectAttributes rttr) {
 
         validatePasswordMatch(userJoinForm, bindingResult);
 
@@ -58,26 +58,27 @@ public class UserController {
 
         //아이디가 중복인 경우
         if (dbUser != null) {
-            bindingResult.reject("{error.duplication.userId}");
+            bindingResult.rejectValue("userId","error.duplication.userId");
             return "user/joinForm";
         }
 
         //이메일이 중복인 경우
-        if (dbUser != null && userJoinForm.getEmail().equals(dbUser.getEmail())) {
-            bindingResult.reject("{error.duplication.email}");
+        if (userService.selectUserIdByEmail(userJoinForm.getEmail()) != null) {
+            bindingResult.rejectValue("email", "error.duplication.email");
             return "user/joinForm";
         }
 
         //비밀번호 값이 틀리거나, 없는 경우
         if (userJoinForm.getPassword() == null || userJoinForm.getPasswordConfirm() == null ||
                 !userJoinForm.getPassword().equals(userJoinForm.getPasswordConfirm())) {
-            bindingResult.reject("{error.mismatch.password}");
+            bindingResult.reject("password","error.mismatch.password");
             return "user/joinForm";
         }
 
-        User joinUser = createUser(userJoinForm);
+        User joinUser = userService.createUser(userJoinForm);
 
         userService.join(joinUser);
+        rttr.addFlashAttribute("msg", "회원가입이 완료됐습니다. 관리자 승인 후 이용 가능합니다");
 
         return "redirect:/home/home";
 
@@ -92,48 +93,28 @@ public class UserController {
     @GetMapping("logout")
     public String logout(HttpSession session, Model model) {
         session.invalidate();
-        model.addAttribute(UserConst.LOGIN_FORM, new LoginForm());
-        return "home/home";
+        return "redirect:/home/home";
     }
 
     @PostMapping("login")
     public String login(@Valid LoginForm loginForm, BindingResult bindingResult,
-                        Model model, HttpSession session, @RequestParam(defaultValue = "/home/dashboard") String redirectURL) {
+                         HttpSession session, @RequestParam(defaultValue = "/home/dashboard") String redirectURL) {
 
         if (bindingResult.hasErrors()) {
             return "home/home";
         }
 
-        User dbUser = userService.selectUser(loginForm.getUserId());
+        try {
+            SessionUser sessionUser = userService.login(loginForm.getUserId(), loginForm.getPassword());
+            userService.updateLastLogin(loginForm.getUserId());
+            session.setAttribute(UserConst.SESSION_USER, sessionUser);
+            return "redirect:" + redirectURL;
 
-        if (dbUser == null) {
-            bindingResult.reject("error.loginFail");
-        }
-
-        if(!loginForm.getPassword().equals(dbUser.getPassword())) {
-            int newLockCount = dbUser.getLock_count() + 1;
-
-            if (newLockCount >= 5) {
-                userService.updateStatus(loginForm.getUserId(), UserStatus.LOCKED);
-                userService.resetLockCount(loginForm.getUserId());
-                bindingResult.reject("error.status.locked");
-            } else {
-                userService.updateLockCount(loginForm.getUserId(), newLockCount);
-                bindingResult.reject("error.loginFail");
-            }
+        } catch (LoginFailException e) {
+            bindingResult.reject(e.getErrorCode());
             return "home/home";
         }
 
-        //활동 가능한 상태의 아이디가 아니라면,
-        if (dbUser.getStatus() != UserStatus.ACTIVE) {
-            bindingResult.reject("error.status.notActive");
-            return "home/home";
-        }
-
-        dbUser.setLock_count(0);
-        SessionUser sessionUser = createSessionUser(dbUser);
-        session.setAttribute(UserConst.SESSION_USER, sessionUser);
-        return "redirect:" + redirectURL;
     }
 
     @GetMapping("myPage")
@@ -197,7 +178,7 @@ public class UserController {
 
         String tempPassword = UUID.randomUUID().toString().substring(0, 8);
 
-        userService.updatePassword(findPwForm.getUserId(), tempPassword);
+        userService.updatePassword(findPwForm.getUserId(), passwordEncoder.encode(tempPassword));
 
         try {
             sentTempPasswordEmail(findPwForm.getEmail(), tempPassword);
@@ -240,30 +221,18 @@ public class UserController {
 
         String savedState = (String) session.getAttribute("naverState");
         if (!state.equals(savedState)) {
-            return "redirect:/user/login";
+            return "redirect:/home/home";
         }
 
         // 액세스 토큰 요청
-        String accessToken = naverLoginService.getAccessToken(code, state);
+        SessionUser sessionUser = naverLoginService.processNaverLogin(code, state);
+        session.setAttribute(UserConst.SESSION_USER, sessionUser);
 
-        // 사용자 정보 요청
-        Map<String, Object> userInfo = naverLoginService.getUserInfo(accessToken);
-
-        // 세션 저장
-        LoginUser loginUser = new LoginUser(
-                0,
-                (String) userInfo.get("id"),
-                (String) userInfo.get("name"),
-                UserRole.STUDENT,
-                (String) userInfo.get("profile_image")
-        );
-        session.setAttribute(UserConst.LOGIN_USER, loginUser);
-
-        return "redirect:/home/home";
+        return "redirect:/home/dashboard";
     }
 
     @GetMapping("editProfile")
-    public String editForm(Model model, UserEditForm userEditForm, @Login SessionUser sessionUser) {
+    public String editForm(Model model, @Login SessionUser sessionUser) {
 
         model.addAttribute("userEditForm", new UserEditForm(
                 sessionUser.getProfileImg(),
@@ -287,42 +256,35 @@ public class UserController {
         User dbUser = userService.selectUser(sessionUser.getUserId());
 
         if (dbUser == null) {
-            return "rediredct:/home/home";
+            return "redirect:/home/home";
         }
 
-        if (!userEditForm.getPassword().equals(dbUser.getPassword())) {
+        if (!sessionUser.isNaverUser() && !passwordEncoder.matches(userEditForm.getPassword(), dbUser.getPassword())) {
             bindingResult.rejectValue("password", "error.mismatch.password");
             return "user/editProfile";
         }
 
         if (userEditForm.getProfileImg() != null && !userEditForm.getProfileImg().isEmpty()) {
-            String newProfileImgName = saveProfileImage(userEditForm.getProfileImg());
+            String newProfileImgName = fileService.saveProfileImage(userEditForm.getProfileImg());
             userEditForm.setCurrentProfileImg(newProfileImgName);
             userService.updateProfileImg(userEditForm.getUserId(), userEditForm.getCurrentProfileImg());
+        } else {
+            userEditForm.setCurrentProfileImg(sessionUser.getProfileImg());
         }
 
         userService.updateInfo(userEditForm);
 
-        SessionUser updatedUser = new SessionUser(
-                sessionUser.getUserNo(),
-                sessionUser.getUserCode(),
-                sessionUser.getUserId(),
-                userEditForm.getEmail(),
-                userEditForm.getPhone(),
-                userEditForm.getName(),
-                sessionUser.getRole(),
-                sessionUser.getStatus(),
-                userEditForm.getCurrentProfileImg(),
-                sessionUser.getLast_password_changed()
-        );
-
-        session.setAttribute(UserConst.SESSION_USER, updatedUser);
+        session.setAttribute(UserConst.SESSION_USER, new SessionUser(userService.selectUser(sessionUser.getUserId())));
 
         return "redirect:/user/myPage";
     }
 
     @GetMapping("updatePwForm")
     public String updatePwForm(Model model, @Login SessionUser sessionUser) {
+
+        if(sessionUser.isNaverUser()) {
+            return "redirect:/user/myPage";
+        }
 
         UpdatePwForm updatePwForm = new UpdatePwForm();
         updatePwForm.setUserId(sessionUser.getUserId());
@@ -332,37 +294,35 @@ public class UserController {
     }
 
     @PostMapping("updatePassword")
-    public String changePassword(@Validated UpdatePwForm updatePwForm, BindingResult bindingResult, HttpSession session, Model model) {
+    public String changePassword(@Validated UpdatePwForm updatePwForm,
+                                 BindingResult bindingResult, @Login SessionUser sessionUser,
+                                 HttpSession session) {
 
         if (bindingResult.hasErrors()) {
             return "user/updatePwForm";
         }
 
+        if(sessionUser.isNaverUser()) {
+            return "redirect:/user/myPage";
+        }
+
         User dbUser = userService.selectUser(updatePwForm.getUserId());
 
         //입력한 비밀번호와 현재 비밀번호가 일치하지 않으면
-        if (!updatePwForm.getCurrentPassword().equals(dbUser.getPassword())) {
+        if (!passwordEncoder.matches(updatePwForm.getCurrentPassword(), dbUser.getPassword())) {
             bindingResult.rejectValue("currentPassword", "error.mismatch.password");
             return "user/updatePwForm";
         }
 
-        //변경하려는 비밀번호와, 확인 비밀번호값이 다르다면
-        if (!updatePwForm.getNewPassword().equals(updatePwForm.getNewPasswordConfirm())) {
-            bindingResult.rejectValue("newPassword", "error.mismatch.password");
-            bindingResult.rejectValue("newPasswordConfirm", "error.mismatch.password");
-            return "user/updatePwForm";
-        }
-
         //변경하고자 하는 비밃번호가 기존에 사용하던 비밀번호라면
-        if (dbUser.getPassword().equals(updatePwForm.getNewPassword())) {
+        if (passwordEncoder.matches(updatePwForm.getNewPassword(), dbUser.getPassword())) {
             bindingResult.rejectValue("currentPassword", "error.duplication.password");
             return "user/updatePwForm";
         }
 
-        userService.updatePassword(updatePwForm.getUserId(), updatePwForm.getNewPassword());
-        User updatePwUser = userService.selectUser(updatePwForm.getUserId());
+        userService.updatePassword(updatePwForm.getUserId(), passwordEncoder.encode(updatePwForm.getNewPassword()));
 
-        session.setAttribute(UserConst.SESSION_USER, new SessionUser(updatePwUser));
+        session.setAttribute(UserConst.SESSION_USER, new SessionUser(userService.selectUser(updatePwForm.getUserId())));
 
         return "redirect:/user/myPage";
 
@@ -377,7 +337,14 @@ public class UserController {
         }
 
         try {
-            boolean isDeleted = userService.withdraw(sessionUser.getUserId(), password);
+            boolean isDeleted;
+
+            if (sessionUser.isNaverUser()) {
+                userService.updateStatus(sessionUser.getUserId(), UserStatus.DELETE);
+                isDeleted = true;
+            } else {
+                isDeleted = userService.withdraw(sessionUser.getUserId(), password);
+            }
 
             if (!isDeleted) {
                 rttr.addFlashAttribute("error", "pw");
@@ -396,60 +363,6 @@ public class UserController {
 
     }
 
-    private static LoginUser toLoginUser(User user) {
-
-        LoginUser loginUser = new LoginUser(
-                user.getUserNo(),
-                user.getUserId(),
-                user.getName(),
-                user.getRole(),
-                user.getProfileImg()
-        );
-        return loginUser;
-    }
-
-    private User toUser(UserJoinForm userJoinForm) {
-
-        User user = new User();
-        user.setName(userJoinForm.getName());
-        user.setUserId(userJoinForm.getUserId());
-        user.setPassword(userJoinForm.getPassword());
-        user.setEmail(userJoinForm.getEmail());
-        user.setPhone(userJoinForm.getPhone());
-        user.setRole(UserRole.valueOf(userJoinForm.getRole()));
-        user.setCreatedAt(LocalDateTime.now());
-        user.setUpdatedAt(LocalDate.now());
-        user.setStatus(UserStatus.PENDING);
-        user.setLock_count(0);
-
-        user.setProfileImg(saveProfileImage(userJoinForm.getProfileImg()));
-        return user;
-    }
-
-    private static String saveProfileImage(MultipartFile file) {
-
-        if (file != null && !file.isEmpty()) {
-            File saveForder = new File(UserConst.UPLOAD_PROFILES_IMG_PATH);
-
-            if (!saveForder.exists()) {
-                saveForder.mkdirs();
-            }
-
-            String originalFilename = file.getOriginalFilename();
-            String saveFileName = UUID.randomUUID().toString() + "_" + originalFilename;
-
-            try {
-                file.transferTo(new File(UserConst.UPLOAD_PROFILES_IMG_PATH, saveFileName));
-                return saveFileName;
-            } catch (IOException e) {
-                e.printStackTrace();
-                return UserConst.DEFAULT_PROFILE_IMG;
-            }
-        } else {
-            return UserConst.DEFAULT_PROFILE_IMG;
-        }
-    }
-
     private static void validatePasswordMatch(UserJoinForm userJoinForm, BindingResult bindingResult) {
 
         if(bindingResult.hasFieldErrors("passwordConfirm")) return;
@@ -459,85 +372,6 @@ public class UserController {
                 bindingResult.rejectValue("passwordConfirm", "error.mismatch.password", null);
             }
         }
-    }
-
-    private static SessionUser createSessionUser(User dbUser) {
-        SessionUser sessionUser = new SessionUser(dbUser);
-        return sessionUser;
-    }
-
-    private int getUserCode() {
-
-        int currentYear = LocalDate.now().getYear();
-        Integer lastUserCode = userService.getLastUserCode();
-
-        if (lastUserCode == null) {
-            return currentYear * 10000 + 1;
-        }
-
-        int lastYear = lastUserCode / 10000;
-
-        if (currentYear > lastYear) {
-            return currentYear * 10000 + 1;
-        } else {
-            return lastUserCode + 1;
-        }
-
-    }
-
-    private User createUser(UserJoinForm userJoinForm) {
-        String profileImage = "";
-
-        if (userJoinForm.getProfileImg() != null && !userJoinForm.getProfileImg().isEmpty()) {
-            profileImage = saveProfileImage(userJoinForm.getProfileImg());
-        }
-
-        int findUserCode = getUserCode();
-
-        User joinUser = new User();
-        joinUser.setUserCode(findUserCode);
-        joinUser.setUserId(userJoinForm.getUserId());
-        joinUser.setPassword(userJoinForm.getPassword());
-        joinUser.setName(userJoinForm.getName());
-        joinUser.setEmail(userJoinForm.getEmail());
-        joinUser.setPhone(userJoinForm.getPhone());
-        joinUser.setRole(UserRole.valueOf(userJoinForm.getRole().toUpperCase()));
-        joinUser.setStatus(UserStatus.PENDING);
-        joinUser.setProfileImg(profileImage);
-        joinUser.setCreatedAt(LocalDateTime.now());
-        joinUser.setLast_password_changed(LocalDate.now());
-        joinUser.setLock_count(0);
-        joinUser.setLastLoginAt(LocalDate.now());
-        joinUser.setUpdatedAt(LocalDate.now());
-
-        return joinUser;
-    }
-
-    @GetMapping("adminUserList")
-    public String adminUserList(Model model) {
-        model.addAttribute("userList", new ArrayList<>());
-        model.addAttribute("currentPage", 1);
-        return "user/adminUserList";
-    }
-
-
-    @GetMapping("adminCourseList") // 빈껍데기 컨트롤러 기능X
-    public String adminCourseList(@RequestParam(defaultValue = "1") int page, Model model) {
-        model.addAttribute("courseList", new ArrayList<>());
-        model.addAttribute("currentPage", page);
-        model.addAttribute("totalPages", 1);
-        return "user/adminCourseList";
-    }
-
-
-
-
-    @GetMapping("gradeManage")
-    public String gradeManage(@RequestParam(defaultValue = "1") int page, Model model) {
-        model.addAttribute("studentList", new ArrayList<>());
-        model.addAttribute("currentPage", page);
-        model.addAttribute("totalPages", 1);
-        return "user/gradeManage";
     }
 
     private String getSemester() {

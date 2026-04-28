@@ -55,7 +55,7 @@
             .grade-table--admin td:nth-child(4) { width: 20%; }
 
             .grade-table--admin th:nth-child(5),
-            .grade-table--admin td:nth-child(5) { width: 15%; }
+            .grade-table--admin td:nth-child(5) { width: 11%; }
 
             /* --- 시간표 CSS --- */
             .mp-tt-wrap {
@@ -271,7 +271,7 @@
 
             <div class="profile-actions">
                 <a href="${pageContext.request.contextPath}/user/editProfile" class="btn-action btn-action-primary">회원정보 수정</a>
-                <a href="${pageContext.request.contextPath}/user/updatePwForm" class="btn-action btn-action-outline">비밀번호 변경</a>
+<%--                <a href="${pageContext.request.contextPath}/user/updatePwForm" class="btn-action btn-action-outline">비밀번호 변경</a>--%>
             </div>
         </div>
 

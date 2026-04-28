@@ -7,6 +7,7 @@ import lombok.Setter;
 @Setter
 public class BoardListRequest {
     private Integer courseNo;
+    private Integer writerNo;
     private String boardType;
     private String keyword;
     private String searchType;

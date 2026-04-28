@@ -58,7 +58,7 @@ button:hover {
 <h1>${Course.course_name}</h1>
 
 
-<form >
+<form>
 <input type="hidden" id="courseNo" value="${Course.course_no}"/>
 <input type="hidden" id="contextPath" value="${pageContext.request.contextPath}"/>
     <table class="attendance-table">

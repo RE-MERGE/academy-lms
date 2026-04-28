@@ -19,7 +19,7 @@ public class CourseService {
 		return coursedao.list();
 	}
 	
-	public Course selectCourse(int no) {
+	public Course selectCourse(Integer no) {
     	return coursedao.selectCourse(no);
 	}
 
@@ -106,5 +106,8 @@ public class CourseService {
 		public void deleteCourses(List<Integer> courseNos) {
 		    coursedao.deleteCourses(courseNos);
 		}
-		
+	// BoardController 에서 사용!
+	public Course getBoardCourse(Integer courseNo) {
+		return coursedao.getBoardCourse(courseNo);
+	}
 }

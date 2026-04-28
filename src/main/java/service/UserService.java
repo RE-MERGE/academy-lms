@@ -211,7 +211,6 @@ public class UserService {
         return joinUser;
     }
 
-
     public void updateLastLogin(String userId) {
         dao.updateLastLogin(userId);
     }

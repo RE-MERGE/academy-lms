@@ -1,4 +1,4 @@
-<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <!DOCTYPE html>
 <html lang="ko">
@@ -41,33 +41,78 @@
             font-variant-numeric: tabular-nums;
         }
 
+        /* 관리자 전용: 5컬럼 균등 분배 */
+        .grade-table--admin th:nth-child(1),
+        .grade-table--admin td:nth-child(1) { width: 30%; }
+
+        .grade-table--admin th:nth-child(2),
+        .grade-table--admin td:nth-child(2) { width: 15%; }
+
+        .grade-table--admin th:nth-child(3),
+        .grade-table--admin td:nth-child(3) { width: 20%; }
+
+        .grade-table--admin th:nth-child(4),
+        .grade-table--admin td:nth-child(4) { width: 20%; }
+
+        .grade-table--admin th:nth-child(5),
+        .grade-table--admin td:nth-child(5) { width: 15%; }
+
         /* --- 시간표 CSS --- */
         .mp-tt-wrap {
-            width: 90%; margin: auto;
-            background: #fff; border: 1px solid #ddd;
-            border-radius: 10px; overflow: hidden;
-            padding: 12px; box-sizing: border-box;
+            width: 90%;
+            margin: auto;
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            overflow: hidden;
+            padding: 12px;
+            box-sizing: border-box;
         }
+
         .tt-grid-header {
             display: grid;
             grid-template-columns: 50px repeat(5, 1fr);
-            gap: 3px; margin-bottom: 4px;
+            gap: 3px;
+            margin-bottom: 4px;
         }
+
         .tt-day {
-            text-align: center; font-size: 14px; font-weight: 700;
-            border-radius: 6px; color: #fff; background: #1E3A8A; min-height: 70px;
-            height: 34px; display: flex; align-items: center; justify-content: center;
+            text-align: center;
+            font-size: 14px;
+            font-weight: 700;
+            border-radius: 6px;
+            color: #fff;
+            background: #1E3A8A;
+            min-height: 70px;
+            height: 34px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
-        .tt-body { display: flex; flex-direction: column; gap: 3px; }
+
+        .tt-body {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+        }
+
         .tt-row {
             display: grid;
             grid-template-columns: 50px repeat(5, 1fr);
-            gap: 3px; min-height: 80px;
+            gap: 3px;
+            min-height: 80px;
         }
+
         .tt-period {
-            font-size: 10px; color: #888; font-weight: 600;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            font-size: 10px;
+            color: #888;
+            font-weight: 600;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
         }
+
         .tt-cell {
             border-radius: 5px; font-size: 14px; font-weight: 600; min-height: 70px;
             display: flex; align-items: center; justify-content: center;
@@ -183,13 +228,10 @@
         <div class="profile-img-wrap">
             <c:choose>
                 <c:when test="${not empty sessionUser.profileImg}">
-                    <img src="${pageContext.request.contextPath}/upload/profiles/${sessionUser.profileImg}"
-                         class="profile-img"
-                         onerror="this.src='${pageContext.request.contextPath}/img/default-profile.png'"/>
+                    <img src="${pageContext.request.contextPath}/upload/profiles/${sessionUser.profileImg}" alt="프로필 이미지" class="profile-img"/>
                 </c:when>
                 <c:otherwise>
-                    <img src="${pageContext.request.contextPath}/img/default-profile.png"
-                         class="profile-img"/>
+                    <img src="${pageContext.request.contextPath}/img/default-profile.png" alt="프로필 이미지" class="profile-img"/>
                 </c:otherwise>
             </c:choose>
 
@@ -208,7 +250,7 @@
                 </tr>
                 <tr>
                     <th>아이디</th>
-                    <td>${sessionUser.displayUserId}</td>
+                    <td>${sessionUser.userId}</td>
                 </tr>
                 <tr>
                     <th>이메일</th>
@@ -228,7 +270,8 @@
         </div>
 
         <%-- 비밀번호 변경 알림 모달 --%>
-        <div id="pwAlertModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.45); z-index:9999; justify-content:center; align-items:center;">
+        <div id="pwAlertModal"
+             style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.45); z-index:9999; justify-content:center; align-items:center;">
             <div style="background:#fff; border-radius:16px; padding:36px 40px; max-width:400px; width:90%; box-shadow:0 8px 32px rgba(0,0,0,0.2); text-align:center;">
                 <div style="font-size:48px; margin-bottom:16px;">🔐</div>
                 <h3 style="font-size:1.2rem; font-weight:700; color:#1e3a8a; margin-bottom:10px;">비밀번호 변경 안내</h3>
@@ -291,20 +334,20 @@
                         <div class="course-card">
                             <c:choose>
                                 <c:when test="${course.course_type eq 'MAJOR_REQUIRED'}">
-                                    <c:set var="badgeText" value="전공필수" />
-                                    <c:set var="badgeClass" value="badge-red" />
+                                    <c:set var="badgeText" value="전공필수"/>
+                                    <c:set var="badgeClass" value="badge-red"/>
                                 </c:when>
                                 <c:when test="${course.course_type eq 'MAJOR_ELECTIVE'}">
-                                    <c:set var="badgeText" value="전공선택" />
-                                    <c:set var="badgeClass" value="badge-green" />
+                                    <c:set var="badgeText" value="전공선택"/>
+                                    <c:set var="badgeClass" value="badge-green"/>
                                 </c:when>
                                 <c:when test="${course.course_type eq 'GENERAL_REQUIRED'}">
-                                    <c:set var="badgeText" value="일반필수" />
-                                    <c:set var="badgeClass" value="badge-yellow" />
+                                    <c:set var="badgeText" value="일반필수"/>
+                                    <c:set var="badgeClass" value="badge-yellow"/>
                                 </c:when>
                                 <c:otherwise>
-                                    <c:set var="badgeText" value="일반선택" />
-                                    <c:set var="badgeClass" value="badge-blue" />
+                                    <c:set var="badgeText" value="일반선택"/>
+                                    <c:set var="badgeClass" value="badge-blue"/>
                                 </c:otherwise>
                             </c:choose>
 
@@ -415,7 +458,8 @@
         <c:choose>
             <c:when test="${not empty myGradeList}">
                 <div class="grade-table-wrap">
-                    <table class="grade-table">
+                    <%-- ↓ 여기만 수정: 관리자일 때 grade-table--admin 클래스 추가 --%>
+                    <table class="grade-table ${sessionUser.role == 'ADMIN' ? 'grade-table--admin' : ''}">
                         <thead>
                         <tr>
                             <th>과목명</th>
@@ -473,7 +517,7 @@
                                     <c:otherwise>
                                         <td>
                                             <span class="type-badge ${grade.examType eq 'MIDTERM' ? 'badge-indigo' : 'badge-purple'}">
-                                                    ${grade.examType eq 'MIDTERM' ? '중간고사' : '기말고사'}
+                                                ${grade.examType eq 'MIDTERM' ? '중간고사' : '기말고사'}
                                             </span>
                                         </td>
                                         <td style="font-weight: 700;">${grade.score}</td>

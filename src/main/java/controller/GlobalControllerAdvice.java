@@ -5,6 +5,7 @@ import java.util.List;
 
 import javax.servlet.http.HttpSession;
 
+import dto.user.login.Login;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -18,18 +19,16 @@ public class GlobalControllerAdvice {
 	
 	@Autowired
 	CourseService courseService;
-	
-	@ModelAttribute("courseList")
-	public List<Course> courseList() {
-	    List<Course> list = courseService.selectAllCourses();
-	    System.out.println("courseList size: " + list.size()); // 추가
-	    list.forEach(c -> System.out.println(c.getCourse_name())); // 추가
-	    return list;
+
+	@ModelAttribute("favoriteCourseList")
+	public List<Course> favoriteCourseList(@Login SessionUser sessionUser) {
+		if (sessionUser == null) return new ArrayList<>();
+		return courseService.getFavoriteCourses(sessionUser.getUserNo()); // 즐겨찾기 과목만
 	}
+
 	@ModelAttribute("favoriteNos")
-	public List<Integer> favoriteNos(HttpSession session) {
-	    SessionUser user = (SessionUser) session.getAttribute("sessionUser");
-	    if (user == null) return new ArrayList<>();
-	    return courseService.getFavoriteCourseNos(user.getUserNo());
+	public List<Integer> favoriteNos(@Login SessionUser sessionUser) {
+		if (sessionUser == null) return new ArrayList<>();
+		return courseService.getFavoriteCourseNos(sessionUser.getUserNo());
 	}
 }

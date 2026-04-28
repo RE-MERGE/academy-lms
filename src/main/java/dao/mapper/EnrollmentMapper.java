@@ -42,7 +42,8 @@ public interface EnrollmentMapper {
             "    c.course_name AS courseName, " +
             "    c.course_type AS courseType," +
             "    g.score AS score," +
-            "    g.type AS examType " +
+            "    g.type AS examType, " +
+            "    g.alphabet AS alphabet " +
             "FROM ENROLLMENT e " +
             "JOIN COURSE c ON e.course_no = c.course_no " +
             "JOIN GRADE g ON e.enrollment_no = g.enrollment_no " +

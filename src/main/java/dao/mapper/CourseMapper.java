@@ -202,4 +202,10 @@ public interface CourseMapper {
 
     @Select("SELECT * FROM COURSE WHERE course_no=#{value}")
     Course getBoardCourse(Integer courseNo);
+
+    @Select("SELECT c.* " +
+            "FROM COURSE c " +
+            "JOIN FAVORITE f ON c.course_no = f.course_no " +
+            "WHERE f.user_no = #{userNo}")
+    List<Course> getFavoriteCourse(int userNo);
 }

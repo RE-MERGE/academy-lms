@@ -3,9 +3,6 @@ package dao;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.ibatis.annotations.Insert;
-import org.apache.ibatis.annotations.Param;
-import org.apache.ibatis.annotations.Select;
 import org.mybatis.spring.SqlSessionTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
@@ -127,5 +124,9 @@ public class CourseDao {
 	
 	public Course getBoardCourse(Integer courseNo) {
 		return template.getMapper(cls).getBoardCourse(courseNo);
+	}
+
+	public List<Course> getFavoriteCourse(int userNo) {
+		return template.getMapper(cls).getFavoriteCourse(userNo);
 	}
 }

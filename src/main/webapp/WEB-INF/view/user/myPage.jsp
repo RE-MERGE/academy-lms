@@ -1,4 +1,4 @@
-<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 
@@ -26,8 +26,8 @@
         /* 모든 셀의 중앙 정렬 및 패딩 설정 */
         .grade-table th,
         .grade-table td {
-            text-align: center;      /* 가로 중앙 정렬 */
-            vertical-align: middle;  /* 세로 중앙 정렬 */
+            text-align: center; /* 가로 중앙 정렬 */
+            vertical-align: middle; /* 세로 중앙 정렬 */
             padding: 15px 10px;
             border-bottom: 1px solid #eee;
         }
@@ -38,10 +38,30 @@
         }
 
         /* 열 너비 비율 설정 (합계 100%) */
-        .grade-table th:nth-child(1), .grade-table td:nth-child(1) { width: 25%; text-align: center; } /* 과목명 */
-        .grade-table th:nth-child(2), .grade-table td:nth-child(2) { width: 25%; text-align: center;} /* 수강인원/구분 */
-        .grade-table th:nth-child(3), .grade-table td:nth-child(3) { width: 25%; text-align: center; } /* 평균점수/시험유형 */
-        .grade-table th:nth-child(4), .grade-table td:nth-child(4) { width: 25%; text-align: center;} /* 최고-최저/점수 */
+        .grade-table th:nth-child(1), .grade-table td:nth-child(1) {
+            width: 25%;
+            text-align: center;
+        }
+
+        /* 과목명 */
+        .grade-table th:nth-child(2), .grade-table td:nth-child(2) {
+            width: 25%;
+            text-align: center;
+        }
+
+        /* 수강인원/구분 */
+        .grade-table th:nth-child(3), .grade-table td:nth-child(3) {
+            width: 25%;
+            text-align: center;
+        }
+
+        /* 평균점수/시험유형 */
+        .grade-table th:nth-child(4), .grade-table td:nth-child(4) {
+            width: 25%;
+            text-align: center;
+        }
+
+        /* 최고-최저/점수 */
 
         /* 숫자 데이터 강조 (선택 사항) */
         .grade-table td {
@@ -110,17 +130,42 @@
             box-sizing: border-box;
         }
 
-        .subject-amber { background-color: #fff4e0; color: #d4a017; border-left: 4px solid #d4a017; }
-        .subject-blue { background-color: #e3f2fd; color: #1976d2; border-left: 4px solid #1976d2; }
-        .subject-purple { background-color: #f3e5f5; color: #7b1fa2; border-left: 4px solid #7b1fa2; }
-        .subject-green { background-color: #e8f5e9; color: #388e3c; border-left: 4px solid #388e3c; }
-        .subject-rose { background-color: #ffebee; color: #c2185b; border-left: 4px solid #c2185b; }
+        .subject-amber {
+            background-color: #fff4e0;
+            color: #d4a017;
+            border-left: 4px solid #d4a017;
+        }
+
+        .subject-blue {
+            background-color: #e3f2fd;
+            color: #1976d2;
+            border-left: 4px solid #1976d2;
+        }
+
+        .subject-purple {
+            background-color: #f3e5f5;
+            color: #7b1fa2;
+            border-left: 4px solid #7b1fa2;
+        }
+
+        .subject-green {
+            background-color: #e8f5e9;
+            color: #388e3c;
+            border-left: 4px solid #388e3c;
+        }
+
+        .subject-rose {
+            background-color: #ffebee;
+            color: #c2185b;
+            border-left: 4px solid #c2185b;
+        }
 
         .badge-orange {
             background-color: #fff3cd;
             color: #e67e22;
             border: 1px solid #e67e22;
         }
+
         .grade-badge, .course-badge {
             display: inline-block;
             padding: 3px 8px;
@@ -129,47 +174,115 @@
             font-weight: 600;
             margin-top: 4px;
         }
+
         /* --- 시간표 CSS --- */
         .mp-tt-wrap {
-            width: 90%; margin: auto;
-            background: #fff; border: 1px solid #ddd;
-            border-radius: 10px; overflow: hidden;
-            padding: 12px; box-sizing: border-box;
+            width: 90%;
+            margin: auto;
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            overflow: hidden;
+            padding: 12px;
+            box-sizing: border-box;
         }
+
         .tt-grid-header {
             display: grid;
             grid-template-columns: 50px repeat(5, 1fr);
-            gap: 3px; margin-bottom: 4px;
+            gap: 3px;
+            margin-bottom: 4px;
         }
+
         .tt-day {
-            text-align: center; font-size: 14px; font-weight: 700;
-            border-radius: 6px; color: #fff; background: #1E3A8A; min-height: 70px;
-            height: 34px; display: flex; align-items: center; justify-content: center;
+            text-align: center;
+            font-size: 14px;
+            font-weight: 700;
+            border-radius: 6px;
+            color: #fff;
+            background: #1E3A8A;
+            min-height: 70px;
+            height: 34px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
-        .tt-body { display: flex; flex-direction: column; gap: 3px; }
+
+        .tt-body {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+        }
+
         .tt-row {
             display: grid;
             grid-template-columns: 50px repeat(5, 1fr);
-            gap: 3px; min-height: 80px;
+            gap: 3px;
+            min-height: 80px;
         }
-        .tt-period {
-            font-size: 10px; color: #888; font-weight: 600;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-        }
-        .tt-cell {
-            border-radius: 5px; font-size: 14px; font-weight: 600;  min-height: 70px;
-            display: flex; align-items: center; justify-content: center;
-            text-align: center; line-height: 1.3; padding: 4px 2px; color: #fff;
-        }
-        .tt-cell.empty { background: #f1f5f9; }
-        .mp-c1 { background: #AEE2FF; color: #0369a1; border: 1.5px solid #0369a1; }
-        .mp-c2 { background: #FFCEEE; color: #be185d; border: 1.5px solid #be185d; }
-        .mp-c3 { background: #FFF6D2; color: #a16207; border: 1.5px solid #a16207; }
-        .mp-c4 { background: #DED9FF; color: #5b21b6; border: 1.5px solid #5b21b6; }
-        .mp-c5 { background: #D6FFDE; color: #166534; border: 1.5px solid #166534; }
-        .mp-tabs-full .mypage-tab { flex: 1; text-align: center; }
-    </style>
 
+        .tt-period {
+            font-size: 10px;
+            color: #888;
+            font-weight: 600;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .tt-cell {
+            border-radius: 5px;
+            font-size: 14px;
+            font-weight: 600;
+            min-height: 70px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            line-height: 1.3;
+            padding: 4px 2px;
+            color: #fff;
+        }
+
+        .tt-cell.empty {
+            background: #f1f5f9;
+        }
+
+        .mp-c1 {
+            background: #AEE2FF;
+            color: #0369a1;
+            border: 1.5px solid #0369a1;
+        }
+
+        .mp-c2 {
+            background: #FFCEEE;
+            color: #be185d;
+            border: 1.5px solid #be185d;
+        }
+
+        .mp-c3 {
+            background: #FFF6D2;
+            color: #a16207;
+            border: 1.5px solid #a16207;
+        }
+
+        .mp-c4 {
+            background: #DED9FF;
+            color: #5b21b6;
+            border: 1.5px solid #5b21b6;
+        }
+
+        .mp-c5 {
+            background: #D6FFDE;
+            color: #166534;
+            border: 1.5px solid #166534;
+        }
+
+        .mp-tabs-full .mypage-tab {
+            flex: 1;
+            text-align: center;
+        }
     </style>
 </head>
 <body>
@@ -224,7 +337,8 @@
         </div>
 
         <%-- 비밀번호 변경 알림 모달 --%>
-        <div id="pwAlertModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.45); z-index:9999; justify-content:center; align-items:center;">
+        <div id="pwAlertModal"
+             style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.45); z-index:9999; justify-content:center; align-items:center;">
             <div style="background:#fff; border-radius:16px; padding:36px 40px; max-width:400px; width:90%; box-shadow:0 8px 32px rgba(0,0,0,0.2); text-align:center;">
                 <div style="font-size:48px; margin-bottom:16px;">🔐</div>
                 <h3 style="font-size:1.2rem; font-weight:700; color:#1e3a6e; margin-bottom:10px;">비밀번호 변경 안내</h3>
@@ -252,22 +366,22 @@
         </div>
 
         <div class="profile-actions">
-<%--                <c:when test="${not empty adminViewUser}">--%>
-<%--                    &lt;%&ndash; 관리자가 조회 중일 때 &ndash;%&gt;--%>
-<%--                    <a href="${pageContext.request.contextPath}/admin/editUser/${adminViewUser.userNo}"--%>
-<%--                       class="btn-action btn-action-primary">회원정보 수정</a>--%>
-<%--                </c:when>--%>
-                    <%-- 본인이 볼 때 --%>
-                    <a href="${pageContext.request.contextPath}/user/editProfile"
-                       class="btn-action btn-action-primary">회원정보 수정</a>
-                    <a href="${pageContext.request.contextPath}/user/updatePwForm"
-                       class="btn-action btn-action-outline">비밀번호 변경</a>
+            <%--                <c:when test="${not empty adminViewUser}">--%>
+            <%--                    &lt;%&ndash; 관리자가 조회 중일 때 &ndash;%&gt;--%>
+            <%--                    <a href="${pageContext.request.contextPath}/admin/editUser/${adminViewUser.userNo}"--%>
+            <%--                       class="btn-action btn-action-primary">회원정보 수정</a>--%>
+            <%--                </c:when>--%>
+            <%-- 본인이 볼 때 --%>
+            <a href="${pageContext.request.contextPath}/user/editProfile"
+               class="btn-action btn-action-primary">회원정보 수정</a>
+            <a href="${pageContext.request.contextPath}/user/updatePwForm"
+               class="btn-action btn-action-outline">비밀번호 변경</a>
         </div>
     </div>
 
     <div class="mypage-tabs">
         <button class="mypage-tab active" onclick="switchTab('courses')">
-            ${sessionUser.role == 'ADMIN' ? '전체 개설 과목' : (sessionUser.role == 'PROFESSOR' ? '강의 중인 과목' : '수강 중인 과목')}        </button>
+            ${sessionUser.role == 'ADMIN' ? '전체 개설 과목' : (sessionUser.role == 'PROFESSOR' ? '강의 중인 과목' : '수강 중인 과목')} </button>
 
         <c:choose>
             <c:when test="${sessionUser.role == 'PROFESSOR'}">
@@ -302,20 +416,20 @@
                         <div class="course-card">
                             <c:choose>
                                 <c:when test="${course.course_type eq 'MAJOR_REQUIRED'}">
-                                    <c:set var="badgeText" value="전공필수" />
-                                    <c:set var="badgeClass" value="badge-red" />
+                                    <c:set var="badgeText" value="전공필수"/>
+                                    <c:set var="badgeClass" value="badge-red"/>
                                 </c:when>
                                 <c:when test="${course.course_type eq 'MAJOR_ELECTIVE'}">
-                                    <c:set var="badgeText" value="전공선택" />
-                                    <c:set var="badgeClass" value="badge-green" />
+                                    <c:set var="badgeText" value="전공선택"/>
+                                    <c:set var="badgeClass" value="badge-green"/>
                                 </c:when>
                                 <c:when test="${course.course_type eq 'GENERAL_REQUIRED'}">
-                                    <c:set var="badgeText" value="일반필수" />
-                                    <c:set var="badgeClass" value="badge-yellow" />
+                                    <c:set var="badgeText" value="일반필수"/>
+                                    <c:set var="badgeClass" value="badge-yellow"/>
                                 </c:when>
                                 <c:otherwise>
-                                    <c:set var="badgeText" value="일반선택" />
-                                    <c:set var="badgeClass" value="badge-blue" />
+                                    <c:set var="badgeText" value="일반선택"/>
+                                    <c:set var="badgeClass" value="badge-blue"/>
                                 </c:otherwise>
                             </c:choose>
 
@@ -333,7 +447,8 @@
                                 </c:choose>
                                 <p class="course-time">
                                     <i class="far fa-clock"></i>
-                                        ${fn:substring(course.start_time, 0, 5)} ~ ${fn:substring(course.end_time, 0, 5)}
+                                        ${fn:substring(course.start_time, 0, 5)}
+                                    ~ ${fn:substring(course.end_time, 0, 5)}
                                 </p>
                             </div>
                         </div>
@@ -371,12 +486,20 @@
                             <tr>
                                 <td>
                                     <div style="font-weight: bold; margin-bottom: 4px;">${stat.courseName}</div>
-                                    <c:set var="gBadgeClass" value="badge-gray" />
-                                    <c:set var="gBadgeText" value="교양" />
-                                    <c:if test="${stat.courseType eq 'MAJOR_REQUIRED'}"><c:set var="gBadgeClass" value="badge-red" /><c:set var="gBadgeText" value="전공필수" /></c:if>
-                                    <c:if test="${stat.courseType eq 'MAJOR_ELECTIVE'}"><c:set var="gBadgeClass" value="badge-green" /><c:set var="gBadgeText" value="전공선택" /></c:if>
-                                    <c:if test="${stat.courseType eq 'GENERAL_REQUIRED'}"><c:set var="gBadgeClass" value="badge-orange" /><c:set var="gBadgeText" value="일반필수" /></c:if>
-                                    <c:if test="${stat.courseType eq 'GENERAL_ELECTIVE'}"><c:set var="gBadgeClass" value="badge-gray" /><c:set var="gBadgeText" value="일반선택" /></c:if>
+                                    <c:set var="gBadgeClass" value="badge-gray"/>
+                                    <c:set var="gBadgeText" value="교양"/>
+                                    <c:if test="${stat.courseType eq 'MAJOR_REQUIRED'}"><c:set var="gBadgeClass"
+                                                                                               value="badge-red"/><c:set
+                                            var="gBadgeText" value="전공필수"/></c:if>
+                                    <c:if test="${stat.courseType eq 'MAJOR_ELECTIVE'}"><c:set var="gBadgeClass"
+                                                                                               value="badge-green"/><c:set
+                                            var="gBadgeText" value="전공선택"/></c:if>
+                                    <c:if test="${stat.courseType eq 'GENERAL_REQUIRED'}"><c:set var="gBadgeClass"
+                                                                                                 value="badge-orange"/><c:set
+                                            var="gBadgeText" value="일반필수"/></c:if>
+                                    <c:if test="${stat.courseType eq 'GENERAL_ELECTIVE'}"><c:set var="gBadgeClass"
+                                                                                                 value="badge-gray"/><c:set
+                                            var="gBadgeText" value="일반선택"/></c:if>
                                     <span class="grade-badge ${gBadgeClass}">${gBadgeText}</span>
                                 </td>
                                 <td>${stat.total_students}명</td>
@@ -389,7 +512,9 @@
                         </c:forEach>
                     </c:when>
                     <c:otherwise>
-                        <tr><td colspan="4" style="padding: 50px 0; color: #999;">통계 데이터가 없습니다.</td></tr>
+                        <tr>
+                            <td colspan="4" style="padding: 50px 0; color: #999;">통계 데이터가 없습니다.</td>
+                        </tr>
                     </c:otherwise>
                 </c:choose>
                 </tbody>
@@ -441,12 +566,20 @@
                             <td>
                                 <div style="font-weight: bold; margin-bottom: 4px;">${grade.courseName}</div>
                                     <%-- badge 클래스/텍스트 설정 --%>
-                                <c:set var="gBadgeClass" value="badge-gray" />
-                                <c:set var="gBadgeText" value="${gTypeText}" />
-                                <c:if test="${grade.courseType eq 'MAJOR_REQUIRED'}"><c:set var="gBadgeClass" value="badge-red" /><c:set var="gBadgeText" value="전공필수" /></c:if>
-                                <c:if test="${grade.courseType eq 'MAJOR_ELECTIVE'}"><c:set var="gBadgeClass" value="badge-green" /><c:set var="gBadgeText" value="전공선택" /></c:if>
-                                <c:if test="${grade.courseType eq 'GENERAL_REQUIRED'}"><c:set var="gBadgeClass" value="badge-orange" /><c:set var="gBadgeText" value="일반필수" /></c:if>
-                                <c:if test="${grade.courseType eq 'GENERAL_ELECTIVE'}"><c:set var="gBadgeClass" value="badge-gray" /><c:set var="gBadgeText" value="일반선택" /></c:if>
+                                <c:set var="gBadgeClass" value="badge-gray"/>
+                                <c:set var="gBadgeText" value="${gTypeText}"/>
+                                <c:if test="${grade.courseType eq 'MAJOR_REQUIRED'}"><c:set var="gBadgeClass"
+                                                                                            value="badge-red"/><c:set
+                                        var="gBadgeText" value="전공필수"/></c:if>
+                                <c:if test="${grade.courseType eq 'MAJOR_ELECTIVE'}"><c:set var="gBadgeClass"
+                                                                                            value="badge-green"/><c:set
+                                        var="gBadgeText" value="전공선택"/></c:if>
+                                <c:if test="${grade.courseType eq 'GENERAL_REQUIRED'}"><c:set var="gBadgeClass"
+                                                                                              value="badge-orange"/><c:set
+                                        var="gBadgeText" value="일반필수"/></c:if>
+                                <c:if test="${grade.courseType eq 'GENERAL_ELECTIVE'}"><c:set var="gBadgeClass"
+                                                                                              value="badge-gray"/><c:set
+                                        var="gBadgeText" value="일반선택"/></c:if>
 
                                 <span class="grade-badge ${gBadgeClass}">${gBadgeText}</span>
 
@@ -484,7 +617,11 @@
                     </c:forEach>
                 </c:when>
                 <c:otherwise>
-                    <tr><td colspan="${sessionUser.role == 'ADMIN' ? 5 : 4}" style="padding: 50px 0; color: #999;">조회된 내역이 없습니다.</td></tr>
+                    <tr>
+                        <td colspan="${sessionUser.role == 'ADMIN' ? 5 : 4}" style="padding: 50px 0; color: #999;">조회된
+                            내역이 없습니다.
+                        </td>
+                    </tr>
                 </c:otherwise>
             </c:choose>
             </tbody>
@@ -521,3 +658,7 @@
     /* ================================================================
    마이페이지 시간표 — 수강신청 데이터 연동
    기존 코드 수정 없음 / 변수명 MP_ 접두어로 충돌 방지
+   ====================================================================*/
+</script>
+</body>
+</html>

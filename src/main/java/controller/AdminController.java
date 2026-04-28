@@ -3,7 +3,6 @@ package controller;
 
 import dto.user.*;
 import dto.user.mypage.UserEditFormForAdmin;
-import dto.user.login.Login;
 import dto.user.mypage.AdminCourseList;
 import dto.user.mypage.MyPageData;
 import dto.user.mypage.UserDetailForAdmin;
@@ -21,8 +20,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import service.CourseService;
-
 @Controller
 @RequestMapping("admin")
 @RequiredArgsConstructor
@@ -30,7 +27,6 @@ public class AdminController {
 
     private final AdminService adminService;
     private final UserService userService;
-    private final CourseService courseService;
 
     @GetMapping("userList")
     public String getUserList(@RequestParam(defaultValue = "1") int page,
@@ -47,12 +43,11 @@ public class AdminController {
         model.addAttribute("userList", userList);
         model.addAttribute("currentPage", page);
         model.addAttribute("totalPages", totalPages);
-        model.addAttribute("currentRole", role);
-        
+
         return "admin/adminUserList";
     }
 
-    @GetMapping("courseList")
+    @GetMapping("adminCourseList")
     public String getCourseList(Model model) {
 
         List<AdminCourseList> courseList = adminService.getAllCourseList();
@@ -94,27 +89,73 @@ public class AdminController {
         return "admin/userDetail";
     }
 
-    @GetMapping("editProfile/{userNo}")
+    @GetMapping("editProfileForAdmin/{userNo}")
     public String editProfileForAdminForm(@PathVariable int userNo, Model model) {
 
         User targetUser = adminService.selectUser(userNo);
-        model.addAttribute(UserConst.EDIT_FORM, new UserEditFormForAdmin(targetUser));
+        model.addAttribute(UserConst.DETAIL_USER , new UserDetailForAdmin(targetUser));
 
         return "admin/editProfileForAdmin";
     }
 
-    @PostMapping("editProfile/{userNo}")
+    @PostMapping("editProfileForAdmin/{userNo}")
     public String editProfileForAdmin(@PathVariable int userNo,
-                                      @Validated @ModelAttribute("editForm") UserEditFormForAdmin userEditFormForAdmin,
+                                      @Validated @ModelAttribute("userDetail") UserDetailForAdmin userDetailForAdmin,
                                       BindingResult bindingResult, Model model) {
 
         if (bindingResult.hasErrors()) {
+
+            User targetUser = adminService.selectUser(userNo);
+            findReadyOnlyFields(userDetailForAdmin, targetUser);
+
+            model.addAttribute(UserConst.DETAIL_USER, userDetailForAdmin);
+            model.addAttribute(UserConst.ORIGINAL_NAME, targetUser.getName());
+
             return "admin/editProfileForAdmin";
         }
 
-        adminService.updateUserFormAdmin(userNo, userEditFormForAdmin);
+        adminService.updateUserFormAdmin(userNo, userDetailForAdmin);
 
         return "redirect:/admin/userDetail/" + userNo + "?saved=1";
+    }
+
+    @PostMapping("resetLock/{userNo}")
+    @ResponseBody
+    public Map<String, Object> resetLockCount(@PathVariable int userNo) {
+        Map<String, Object> result = new HashMap<>();
+
+        try {
+            adminService.resetLockCount(userNo);
+            result.put("success", true);
+        } catch (Exception e) {
+            result.put("success", false);
+        }
+        return result;
+    }
+
+    @PostMapping("tempPassword/{userNo}")
+    @ResponseBody
+    public Map<String, Object> sendTempPassword(@PathVariable int userNo) {
+        Map<String, Object> result = new HashMap<>();
+
+        try {
+            User targetUser = adminService.selectUser(userNo);
+            userService.processForgotPassword(targetUser.getUserId(), targetUser.getEmail(), targetUser.getPhone());
+            result.put("success", true);
+        } catch (Exception e) {
+            result.put("success", false);
+        }
+        return result;
+    }
+
+    private static void findReadyOnlyFields(UserDetailForAdmin userDetailForAdmin, User targetUser) {
+
+        userDetailForAdmin.setCurrentProfileImg(targetUser.getProfileImg());
+        userDetailForAdmin.setUserCode(targetUser.getUserCode());
+        userDetailForAdmin.setUserId(targetUser.getUserId());
+        userDetailForAdmin.setCreatedAt(targetUser.getCreatedAt());
+        userDetailForAdmin.setLastLoginDate(targetUser.getLastLoginAt());
+        userDetailForAdmin.setLockCount(targetUser.getLock_count());
     }
 
     private UserDetailForAdmin createdUserDetail(User selectUser) {
@@ -137,38 +178,10 @@ public class AdminController {
 
         return year += semester += String.valueOf(month);
     }
-    
+
+
     @GetMapping("roomTimetable")
     public String getRoomTimetable() {
         return "admin/roomTimetable";
     }
-    
-    @GetMapping("courselist")
-    @ResponseBody
-    public Map<String, Object> getEnrollmentList(
-        @RequestParam(defaultValue = "1") int page,
-        @RequestParam(defaultValue = "10") int size,
-        @RequestParam(defaultValue = "") String type,
-        @RequestParam(defaultValue = "") String credits,
-        @RequestParam(defaultValue = "") String keyword,
-        @RequestParam(defaultValue = "") String status,
-        @RequestParam(defaultValue = "") String semester,
-        @Login SessionUser sessionUser
-    ) {
-        Map<String, Object> result = new HashMap<>();
-        int offset = (page - 1) * size;
-        String effectiveStatus = status;
-        if (UserRole.STUDENT == sessionUser.getRole()) {
-            effectiveStatus = "APPROVED";
-        }
-       
-        
-        List<Map<String, Object>> courseList = courseService.getlist(semester, type, credits, keyword, effectiveStatus, offset, size);
-        int totalCount = courseService.getCount(semester, type, credits, keyword, effectiveStatus);
-        result.put("courses", courseList);
-        result.put("totalCount", courseList.size());
-        result.put("totalPages", (int) Math.ceil((double) totalCount / size));
-        return result;
-    }
-    
 }

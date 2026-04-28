@@ -10,19 +10,23 @@ import exception.LoginFailException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
 public class UserService {
 
     private final UserDao dao;
+    private final MailService mailService;
     private final FileService fileService;
     private final CourseDao courseDao;
     private final EnrollmentDao enrollmentDao;
     private final BCryptPasswordEncoder passwordEncoder;
+
 
     public void join(User user) {
 
@@ -142,6 +146,21 @@ public class UserService {
 
         dao.resetLockCount(userId);
         return new SessionUser(dbUser);
+    }
+
+    @Transactional
+    public void processForgotPassword(String userId, String email, String phone) {
+
+        String selectedUser = dao.selectUserPassword(userId, email, phone);
+
+        if (selectedUser == null || selectedUser.trim().isEmpty()) {
+            throw new IllegalArgumentException("error.mismatch.info");
+        }
+
+        String tempPassword = UUID.randomUUID().toString().substring(0, 8);
+        dao.updatePassword(userId, passwordEncoder.encode(tempPassword));
+
+        mailService.sendTempPasswordEmail(email, tempPassword);
     }
 
 

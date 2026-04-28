@@ -248,8 +248,8 @@
     <div class="profile-card">
         <div class="profile-img-wrap">
             <c:choose>
-                <c:when test="${not empty userDetail.profileImg}">
-                    <img src="${pageContext.request.contextPath}/upload/profiles/${userDetail.profileImg}"
+                <c:when test="${not empty userDetail.currentProfileImg}">
+                    <img src="${pageContext.request.contextPath}/upload/profiles/${userDetail.currentProfileImg}"
                          class="profile-img"
                          onerror="this.src='${pageContext.request.contextPath}/img/default-profile.png'"/>
                 </c:when>
@@ -313,7 +313,7 @@
         </div>
 
         <div class="profile-actions">
-            <a href="${pageContext.request.contextPath}/admin/editProfile/${userDetail.userNo}"
+            <a href="${pageContext.request.contextPath}/admin/editProfileForAdmin/${userDetail.userNo}"
                class="btn-action btn-action-primary">회원정보 수정</a>
             <a href="${pageContext.request.contextPath}/admin/updatePwForm/${userDetail.userNo}"
                class="btn-action btn-action-outline">비밀번호 변경</a>

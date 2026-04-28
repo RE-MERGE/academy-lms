@@ -1,6 +1,8 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<%@ taglib prefix="form" uri="http://www.springframework.org/tags/form" %>
+
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -368,26 +370,46 @@
             .edit-actions { flex-direction: column-reverse; }
             .btn-cancel, .btn-save { width: 100%; text-align: center; }
         }
+        .input-error { border-color: #ef4444 !important; }
+        .form-error  { font-size: 12px; color: #ef4444; margin-top: 2px; }
+        .btn-temp-pw {
+            padding: 11px 28px;
+            border: 1.5px solid #f59e0b;
+            border-radius: 8px;
+            background: #fff;
+            color: #f59e0b;
+            font-size: 14px;
+            font-weight: 600;
+            font-family: 'Noto Sans KR', sans-serif;
+            cursor: pointer;
+            transition: background 0.15s, color 0.15s;
+        }
+        .btn-temp-pw:hover {
+            background: #f59e0b;
+            color: #fff;
+        }
     </style>
 </head>
 <body>
 <div class="edit-wrap">
     <h2 class="edit-title">회원정보 수정</h2>
 
-    <form id="editProfileForm"
-          action="${pageContext.request.contextPath}/admin/editProfile/${userNo}"
-          method="post"
-          enctype="multipart/form-data">
+    <form:form id="editProfileForm" modelAttribute="userDetail"
+               action="${pageContext.request.contextPath}/admin/editProfileForAdmin/${userDetail.userNo}"
+               method="post"
+               enctype="multipart/form-data">
+        <input type="hidden" name="currentProfileImg" value="${userDetail.currentProfileImg}"/>
+
 
         <!-- =============================================
-             프로필 이미지
+        프로필 이미지
         ============================================= -->
         <div class="edit-profile-img-section">
             <div class="edit-img-preview-wrap">
                 <c:choose>
-                    <c:when test="${not empty userDetail.profileImg}">
+                    <c:when test="${not empty userDetail.currentProfileImg}">
                         <img id="previewImg"
-                             src="${pageContext.request.contextPath}/upload/profiles/${userDetail.profileImg}"
+                             src="${pageContext.request.contextPath}/upload/profiles/${userDetail.currentProfileImg}"
                              class="edit-img-preview"
                              onerror="this.src='${pageContext.request.contextPath}/img/default-profile.png'"/>
                     </c:when>
@@ -405,7 +427,7 @@
             </div>
             <div class="edit-img-info">
                 <p>
-                    <strong>${userDetail.name}</strong> 님의 프로필 이미지입니다.<br>
+                    <strong>${not empty originalName ? originalName : userDetail.name}</strong> 님의 프로필 이미지입니다.<br>
                     JPG, PNG, GIF 형식의 파일을 업로드할 수 있으며 최대 <strong>5MB</strong>까지 허용됩니다.
                 </p>
                 <label for="profileImgInput" class="btn-img-upload">이미지 변경</label>
@@ -414,7 +436,7 @@
         </div>
 
         <!-- =============================================
-             기본 정보
+        기본 정보
         ============================================= -->
         <div class="edit-card">
             <div class="edit-card-header">기본 정보</div>
@@ -428,33 +450,35 @@
 
                 <div class="form-group">
                     <label class="form-label">아이디</label>
-                    <input type="text" class="form-input" value="${userDetail.displayUserId}" readonly/>
+                    <input type="text" class="form-input" value="${userDetail.userId}" readonly/>
                     <span class="form-hint">변경 불가 항목입니다.</span>
                 </div>
 
+                    <%-- 이름 --%>
                 <div class="form-group">
                     <label class="form-label" for="name">이름 <span class="required">*</span></label>
-                    <input type="text" id="name" name="name" class="form-input"
-                           value="${userDetail.name}" required/>
+                    <form:input path="name" id="name" cssClass="form-input" cssErrorClass="form-input input-error" required="true"/>
+                    <form:errors path="name" cssClass="form-error"/>
                 </div>
 
+                    <%-- 연락처 --%>
                 <div class="form-group">
                     <label class="form-label" for="phone">연락처 <span class="required">*</span></label>
-                    <input type="tel" id="phone" name="phone" class="form-input"
-                           value="${userDetail.phone}" placeholder="010-0000-0000" required/>
+                    <form:input path="phone" id="phone" cssClass="form-input" cssErrorClass="form-input input-error" placeholder="010-0000-0000" required="true"/>
+                    <form:errors path="phone" cssClass="form-error"/>
                 </div>
 
+                    <%-- 이메일 --%>
                 <div class="form-group full-width">
                     <label class="form-label" for="email">이메일 <span class="required">*</span></label>
-                    <input type="email" id="email" name="email" class="form-input"
-                           value="${userDetail.email}" required/>
+                    <form:input path="email" id="email" cssClass="form-input" cssErrorClass="form-input input-error" required="true"/>
+                    <form:errors path="email" cssClass="form-error"/>
                 </div>
-
             </div>
         </div>
 
         <!-- =============================================
-             계정 설정
+        계정 설정
         ============================================= -->
         <div class="edit-card">
             <div class="edit-card-header">계정 설정</div>
@@ -486,9 +510,9 @@
                 <div class="form-group full-width">
                     <label class="form-label">로그인 실패 횟수</label>
                     <div class="lock-info-row">
-                        <span class="lock-count-badge">
-                            ⚠ ${userDetail.lockCount}회 실패
-                        </span>
+    <span class="lock-count-badge">
+    ⚠ ${userDetail.lockCount}회 실패
+    </span>
                         <c:if test="${userDetail.lockCount > 0}">
                             <button type="button" class="btn-unlock"
                                     onclick="resetLockCount(${userDetail.userNo})">
@@ -503,7 +527,7 @@
         </div>
 
         <!-- =============================================
-             가입 정보 (읽기 전용)
+        가입 정보 (읽기 전용)
         ============================================= -->
         <div class="edit-card">
             <div class="edit-card-header">가입 정보</div>
@@ -527,29 +551,30 @@
         </div>
 
         <!-- =============================================
-             하단 버튼
+        하단 버튼
         ============================================= -->
         <div class="edit-actions">
             <button type="button" class="btn-cancel" onclick="history.back()">취소</button>
+            <button type="button" class="btn-temp-pw" onclick="sendTempPassword(${userDetail.userNo}, '${userDetail.email}')">임시 비밀번호 발급</button>
             <button type="submit" class="btn-save">저장하기</button>
         </div>
 
-    </form>
+    </form:form>
 </div>
 
 <!-- 완료 토스트 -->
 <div class="toast" id="toast">
     <span class="toast-icon">
-        <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-            <path d="M2 6l3 3 5-5" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
+    <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+    <path d="M2 6l3 3 5-5" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
     </span>
     <span id="toastMsg">저장되었습니다.</span>
 </div>
 
 <script>
     /* ============================================
-       상태 점 색상 업데이트
+    상태 점 색상 업데이트
     ============================================ */
     var STATUS_COLORS = {
         ACTIVE:   '#22c55e',
@@ -570,7 +595,7 @@
     });
 
     /* ============================================
-       프로필 이미지 미리보기
+    프로필 이미지 미리보기
     ============================================ */
     document.getElementById('profileImgInput').addEventListener('change', function () {
         var file = this.files[0];
@@ -588,7 +613,7 @@
     });
 
     /* ============================================
-       로그인 실패 횟수 초기화 (AJAX)
+    로그인 실패 횟수 초기화 (AJAX)
     ============================================ */
     function resetLockCount(userNo) {
         if (!confirm('로그인 실패 횟수를 초기화하시겠습니까?')) return;
@@ -616,7 +641,7 @@
     }
 
     /* ============================================
-       폼 제출 처리
+    폼 제출 처리
     ============================================ */
     document.getElementById('editProfileForm').addEventListener('submit', function (e) {
         /* 기본 submit 허용 — 필요 시 AJAX로 전환 */
@@ -631,7 +656,7 @@
     });
 
     /* ============================================
-       토스트 알림
+    토스트 알림
     ============================================ */
     function showToast(msg, isError) {
         var toast = document.getElementById('toast');
@@ -646,6 +671,26 @@
         var params = new URLSearchParams(location.search);
         if (params.get('saved') === '1') showToast('회원정보가 저장되었습니다.');
     });
+    function sendTempPassword(userNo, email) {
+        if (!confirm(email + ' 으로 임시 비밀번호를 발급하시겠습니까?')) return;
+
+        fetch('${pageContext.request.contextPath}/admin/tempPassword/' + userNo, {
+            method: 'POST',
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+            .then(r => {
+                if (!r.ok) throw new Error('서버 오류');
+                return r.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    showToast('임시 비밀번호가 이메일로 발송되었습니다.');
+                } else {
+                    showToast('발송에 실패했습니다.', true);
+                }
+            })
+            .catch(() => showToast('요청 중 오류가 발생했습니다.', true));
+    }
 </script>
 </body>
 </html>

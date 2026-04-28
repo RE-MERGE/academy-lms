@@ -4,6 +4,7 @@ import dao.AdminDao;
 import dao.UserDao;
 import dto.user.AdminUserList;
 import dto.user.User;
+import dto.user.mypage.UserDetailForAdmin;
 import dto.user.mypage.UserEditFormForAdmin;
 import dto.user.mypage.AdminCourseList;
 import org.springframework.stereotype.Service;
@@ -56,22 +57,23 @@ public class AdminService {
     }
 
     @Transactional
-    public void updateUserFormAdmin(int userNo, UserEditFormForAdmin userEditFormForAdmin) {
+    public void updateUserFormAdmin(int userNo, UserDetailForAdmin userDetailForAdmin) {
 
-        MultipartFile profileImg = userEditFormForAdmin.getProfileImg();
+        MultipartFile profileImg = userDetailForAdmin.getProfileImg();
         String originalProfileName;
 
         if (profileImg != null && !profileImg.isEmpty()) {
             originalProfileName = fileService.saveProfileImage(profileImg);
         } else {
-            originalProfileName = userEditFormForAdmin.getCurrentProfileImg();
+            originalProfileName = userDetailForAdmin.getCurrentProfileImg();
         }
 
-        User targetUser = adminDao.selectUser(userNo);
+        userDetailForAdmin.setCurrentProfileImg(originalProfileName);
 
-        userEditFormForAdmin.setCurrentProfileImg(originalProfileName);
-        userEditFormForAdmin.setUserId(targetUser.getUserId());
+        adminDao.updateInfoFormAdmin(userNo, userDetailForAdmin);
+    }
 
-        adminDao.updateInfoFormAdmin(userNo, userEditFormForAdmin);
+    public void resetLockCount(int userNo) {
+        adminDao.resetLockCount(userNo);
     }
 }

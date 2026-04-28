@@ -3,7 +3,7 @@ package dto.user;
 public interface UserConst {
 
 
-    public static final String EDIT_FORM = "editForm";
+    public static final String ORIGINAL_NAME = "originalName";
     public static final String DETAIL_USER = "userDetail";
     public static final String NAVER_LOGIN_USER = "naver_";
     public static final String USER_JOIN_FORM = "userJoinForm";

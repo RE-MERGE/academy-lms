@@ -234,6 +234,7 @@
                     <img src="${pageContext.request.contextPath}/img/default-profile.png" alt="프로필 이미지" class="profile-img"/>
                 </c:otherwise>
             </c:choose>
+
             <span class="profile-status">재학중</span>
         </div>
 

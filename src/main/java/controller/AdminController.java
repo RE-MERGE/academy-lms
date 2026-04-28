@@ -3,7 +3,6 @@ package controller;
 
 import dto.user.*;
 import dto.user.mypage.UserEditFormForAdmin;
-import dto.user.login.Login;
 import dto.user.mypage.AdminCourseList;
 import dto.user.mypage.MyPageData;
 import dto.user.mypage.UserDetailForAdmin;

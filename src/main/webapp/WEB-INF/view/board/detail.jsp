@@ -47,6 +47,17 @@
     <div class="detail-body">${post.content}</div>
 <div class="detail-actions">
     <!-- 하단 버튼 -->
+  <c:choose>
+    <%-- courseNo가 없으면 일반 리스트로 --%>
+    <c:when test="${empty post.courseNo}">
+        <a href="list?boardType=${post.boardType}" class="btn-search">목록으로</a>
+    </c:when>
+    
+    <%-- courseNo가 있으면 과목별 리스트로 --%>
+    <c:otherwise>
+        <a href="list_subject?course_no=${post.courseNo}&boardType=${post.boardType}" class="btn-search">목록으로</a>
+    </c:otherwise>
+</c:choose>
 
   <a href="list?boardType=${post.boardType}" class="btn-search">목록으로</a>
       <c:if test="${sessionScope.sessionUser.role eq 'ADMIN'

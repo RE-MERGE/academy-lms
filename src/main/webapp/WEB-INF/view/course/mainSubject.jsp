@@ -24,55 +24,72 @@
 <body>
 <input type="hidden" id="mainCourseNo" value="${Course.course_no}"/>
 <input type="hidden" id="mainContextPath" value="${pageContext.request.contextPath}"/>
+<input type="hidden" id="mainUserRole" value="${sessionScope.sessionUser.role}"/>
 <div style="display: flex; height: 100vh;">
 
-<%--    <!-- 과목 사이드바 -->--%>
-<%--    <aside class="subject-sidebar">--%>
-<%--        <h2 class="subject-sidebar-title">${Course.course_name}</h2>--%>
-<%--        <nav class="subject-nav">   --%>
-<%--        --%>
-<%--            <a href="#" class="subject-nav-item active">--%>
-<%--            <img src="${pageContext.request.contextPath}/img/icon_home.png" --%>
-<%--            alt="홈 아이콘" width="40px" height="40px">홈</a>--%>
-<%--            --%>
-<%--            <div class="sidebar-divider"></div>--%>
-<%--            <!-- 연한 구분순 <hr>  -->--%>
+    <!-- 과목 사이드바 -->
+    <aside class="subject-sidebar">
+        <h2 class="subject-sidebar-title">${Course.course_name}</h2>
+        <nav class="subject-nav">   
+        
+            <a href="#" class="subject-nav-item">
+            <img src="${pageContext.request.contextPath}/img/icon_home.png" 
+            alt="홈 아이콘" width="40px" height="40px">홈</a>
+            
+            
+		        <div class="sidebar-divider"></div>  
+		        <!-- 연한 구분순 <hr>  -->
 
-<%--            <a href="#" class="subject-nav-item">--%>
-<%--            <img src="${pageContext.request.contextPath}/img/icon_grades.png" --%>
-<%--            alt="성적 아이콘" width="40px" height="40px">성적</a>--%>
-<%--           --%>
-<%--            <div class="sidebar-divider"></div> --%>
-<%--            <!-- 연한 구분순 <hr>  -->--%>
-<%--            --%>
-<%--            <a href="#" class="subject-nav-item">--%>
-<%--            <img src="${pageContext.request.contextPath}/img/icon_qna.png" --%>
-<%--            alt="QNA" width="40px" height="40px">Q&A</a> --%>
-<%--         --%>
-<%--            <div class="sidebar-divider"></div>--%>
-<%--            <!-- 연한 구분순 <hr>  -->--%>
-<%--            <a href="#" class="subject-nav-item">--%>
-<%--            <img src="${pageContext.request.contextPath}/img/icon_studentList.png" --%>
-<%--            alt="학생 아이콘" width="40px" height="40px">학생 리스트</a>--%>
-<%--        </nav>--%>
-<%--    </aside>--%>
+            <a href="#" class="subject-nav-item" onclick="loadContent('score')">
+            <img src="${pageContext.request.contextPath}/img/icon_grades.png" 
+            alt="성적 아이콘" width="40px" height="40px">성적</a>
+       
+           
+           
+            <div class="sidebar-divider"></div> 
+            <!-- 연한 구분순 <hr>  -->
+            
+            
+            <a href="#" class="subject-nav-item">
+            <img src="${pageContext.request.contextPath}/img/icon_qna.png" 
+            alt="QNA" width="40px" height="40px">Q&A</a> 
+         
+         
+          
+              <div class="sidebar-divider"></div> 
+              <!-- 연한 구분순 <hr>  -->
+              
+              
+            <a href="#" class="subject-nav-item">
+            <img src="${pageContext.request.contextPath}/img/icon_studentList.png" 
+            alt="학생 아이콘" width="40px" height="40px">학생 리스트</a>
+            
+            
+        </nav>
+    </aside>
+
+    <!-- 메인 콘텐츠 -->
+    <main class="subject-main" id="mainContent">
+    </main>
 </div>
 <script>
 function loadContent(page) {
-	const courseNo = document.getElementById("mainCourseNo").value;      // ← 추가
+    const courseNo = document.getElementById("mainCourseNo").value;
     const contextPath = document.getElementById("mainContextPath").value;
-	const urlMap = {
+    const userRole = document.getElementById("mainUserRole").value;
+    if (page === 'score') {
+        page = (userRole === 'PROFESSOR' || userRole === 'ADMIN') ? 'profScore' : 'stuScore';
+    }
+    const urlMap = {
         'profScore': contextPath + '/course/profScore?no=' + courseNo,
+        'stuScore' : contextPath + '/course/stuScore?no=' + courseNo,
         'myPage' : contextPath + '/user/myPage',
     };
-	
-	fetch(urlMap[page])
+    fetch(urlMap[page])
     .then(response => response.text())
     .then(html => {
         const main = document.getElementById("mainContent");
         main.innerHTML = html;
-
-        // ✅ 불러온 HTML 안의 script 태그 직접 실행
         main.querySelectorAll("script").forEach(oldScript => {
             const newScript = document.createElement("script");
             newScript.textContent = oldScript.textContent;
@@ -82,7 +99,6 @@ function loadContent(page) {
     })
     .catch(err => console.error("로딩 실패:", err));
 }
-
 </script>
 </body>
 </html>

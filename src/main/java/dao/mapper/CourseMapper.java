@@ -9,6 +9,7 @@ import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.Update;
 
+import dto.Attendance;
 import dto.Course;
 import dto.user.User;
 
@@ -179,6 +180,25 @@ public interface CourseMapper {
             "<foreach collection='list' item='no' open='(' separator=',' close=')'>#{no}</foreach>" +
             "</script>")
     void deleteCourses(List<Integer> courseNos);
+    
+    @Select("select g.type, g.score, g.alphabet from GRADE g join ENROLLMENT e on g.enrollment_no = e.enrollment_no"
+    		+ " where e.course_no = #{courseNo} and e.student_no = #{userNo}")
+    List<Map<String,Object>> getGrade(@Param("courseNo") Integer courseNo, @Param("userNo") Integer userNo);
+
+    @Select("SELECT a.status, a.week FROM ATTENDANCE a " +
+            "JOIN ENROLLMENT e ON a.enrollment_no = e.enrollment_no " +
+            "WHERE e.student_no = #{userNo} AND e.course_no = #{courseNo} " +
+            "ORDER BY a.week ASC")
+    List<Attendance> getAttendance(@Param("userNo") int userNo, @Param("courseNo") int courseNo);
+	
+    @Insert("INSERT INTO ATTENDANCE (enrollment_no, attendance_date, status, week) " +
+            "VALUES (#{enrollment_no}, #{attendance_date}, #{status}, #{week}) " +
+            "ON DUPLICATE KEY UPDATE status = #{status}")
+    void insertAttendanceRecord(@Param("enrollment_no") int enrollment_no,
+                                 @Param("attendance_date") String attendance_date,
+                                 @Param("status") String status,
+                                 @Param("week") int week);
+
 
     @Select("SELECT * FROM COURSE WHERE course_no=#{value}")
     Course getBoardCourse(Integer courseNo);

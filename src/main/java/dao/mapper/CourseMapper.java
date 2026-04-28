@@ -199,4 +199,7 @@ public interface CourseMapper {
                                  @Param("status") String status,
                                  @Param("week") int week);
 
+
+    @Select("SELECT * FROM COURSE WHERE course_no=#{value}")
+    Course getBoardCourse(Integer courseNo);
 }

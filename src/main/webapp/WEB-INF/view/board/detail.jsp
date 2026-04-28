@@ -59,6 +59,7 @@
     </c:otherwise>
 </c:choose>
 
+  <a href="list?boardType=${post.boardType}" class="btn-search">목록으로</a>
       <c:if test="${sessionScope.sessionUser.role eq 'ADMIN'
                    or sessionScope.sessionUser.userNo eq post.writerNo}">
         <a href="update?boardNo=${post.boardNo}&boardType=${post.boardType}&courseNo=${post.courseNo}"

@@ -29,7 +29,7 @@ public class CourseDao {
 	public List<Course> getBlockedCourses(String room, String semester) {
 		return template.getMapper(cls).getBlokcedCourse(room,semester);
 	}
-	public Course selectCourse(int no) {
+	public Course selectCourse(Integer no) {
     	Course param = new Course();
     	param.setCourse_no(no);
     	return template.getMapper(cls).getCourse(param);
@@ -125,4 +125,7 @@ public class CourseDao {
 	}
 	
 	
+	public Course getBoardCourse(Integer courseNo) {
+		return template.getMapper(cls).getBoardCourse(courseNo);
+	}
 }

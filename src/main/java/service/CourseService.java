@@ -23,7 +23,7 @@ public class CourseService {
 		return coursedao.list();
 	}
 	
-	public Course selectCourse(int no) {
+	public Course selectCourse(Integer no) {
     	return coursedao.selectCourse(no);
 	}
 
@@ -137,4 +137,8 @@ public class CourseService {
 		        coursedao.insertAttendanceRecord(enrollment_no, attendance_date, status, week); // ← week 추가
 		    }
 		}
+	// BoardController 에서 사용!
+	public Course getBoardCourse(Integer courseNo) {
+		return coursedao.getBoardCourse(courseNo);
+	}
 }

@@ -67,6 +67,11 @@
     transition: border-color 0.18s, box-shadow 0.18s;
 }
 
+.page-title {
+    font-family: 'Noto Sans KR', sans-serif;
+    font-weight: 800;
+}
+
 .search-select {
     height: 40px;
     padding: 0 10px;

@@ -69,10 +69,8 @@
     </aside>
 
     <!-- 메인 콘텐츠 -->
-    <main class="subject-main" id="mainContent">	
-    
+    <main class="subject-main" id="mainContent">
     </main>
-
 </div>
 <script>
 function loadContent(page) {

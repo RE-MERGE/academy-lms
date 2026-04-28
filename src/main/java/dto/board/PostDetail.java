@@ -20,6 +20,6 @@ public class PostDetail {
     private String writerName;
     private String fileUrl;
     private int views;
-    private int isSecret;
+    private boolean isAnswered;
     private Date createdAt;
 }

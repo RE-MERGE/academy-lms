@@ -1,5 +1,7 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -7,7 +9,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>전체 사용자 목록 조회</title>
 <style>
-/* ── 필터 버튼 ── */
 .filter-btn {
     padding: 7px 18px;
     border: 1.5px solid #004595;
@@ -22,7 +23,6 @@
 .filter-btn.active { background: #e6a817; border-color: #e6a817; color: #fff; }
 .filter-btn:hover:not(.active) { background: #eef3fb; }
 
-/* ── 검색 ── */
 .search-wrap { display: flex; align-items: center; gap: 6px; }
 .search-wrap input {
     padding: 7px 12px;
@@ -45,7 +45,6 @@
 }
 .search-wrap button:hover { background: #c98f10; }
 
-/* ── 테이블 ── */
 .user-table {
     width: 100%;
     border-collapse: collapse;
@@ -61,33 +60,74 @@
     font-size: 14px;
     white-space: nowrap;
 }
-/* 정렬 가능한 헤더 */
-.user-table th.sortable {
-    cursor: pointer;
-    user-select: none;
-}
+.user-table th.sortable { cursor: pointer; user-select: none; }
 .user-table th.sortable:hover { background-color: #003a7d; }
 .sort-icon { margin-left: 4px; font-size: 11px; }
-
 .user-table tbody { text-align: center; background-color: #f8faff; }
-.user-table td {
-    padding: 10px 8px;
-    border: 1px solid #d0d7f0;
-    font-size: 14px;
-}
+.user-table td { padding: 10px 8px; border: 1px solid #d0d7f0; font-size: 14px; }
 .user-table tbody tr:hover { background-color: #eef3fb; }
-.user-table th:first-child,
-.user-table td:first-child { width: 38px; }
+.user-table th:first-child, .user-table td:first-child { width: 38px; }
 
-/* ── 상태 뱃지 ── */
-.badge { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: bold; }
-.badge-ACTIVE   { color: #004595; }
-.badge-INACTIVE { color: #e6a817; }
-.badge-LOCKED   { color: #e74c3c; }
-.badge-PENDING  { color: #27ae60; }
-.badge-DELETE   { color: #c0392b; }
+/* ── 뱃지형 드롭다운 ── */
+.status-badge-wrap {
+    position: relative;
+    display: inline-block;
+}
+.badge-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: bold;
+    cursor: pointer;
+    border: 1.5px solid transparent;
+    background: transparent;
+    transition: filter 0.15s;
+    user-select: none;
+}
+.badge-btn:hover { filter: brightness(0.9); }
+.badge-btn .arrow { font-size: 9px; opacity: 0.7; }
 
-/* ── 상태 필터 셀렉트 (헤더 안) ── */
+.badge-ACTIVE   { color: #004595; border-color: #004595; background: #e8f0fb; }
+.badge-INACTIVE { color: #e6a817; border-color: #e6a817; background: #fdf5e0; }
+.badge-LOCKED   { color: #e74c3c; border-color: #e74c3c; background: #fdecea; }
+.badge-PENDING  { color: #27ae60; border-color: #27ae60; background: #e6f7ed; }
+.badge-DELETE   { color: #888;    border-color: #bbb;    background: #f0f0f0; }
+
+.status-dropdown {
+    display: none;
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: #fff;
+    border: 1px solid #d0d7f0;
+    border-radius: 8px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.13);
+    z-index: 999;
+    min-width: 100px;
+    overflow: hidden;
+}
+.status-dropdown.open { display: block; }
+.status-dropdown-item {
+    padding: 8px 16px;
+    font-size: 13px;
+    font-weight: bold;
+    cursor: pointer;
+    white-space: nowrap;
+    text-align: center;
+    transition: background 0.12s;
+}
+.status-dropdown-item:hover { background: #f0f4fb; }
+.status-dropdown-item.opt-ACTIVE   { color: #004595; }
+.status-dropdown-item.opt-INACTIVE { color: #e6a817; }
+.status-dropdown-item.opt-LOCKED   { color: #e74c3c; }
+.status-dropdown-item.opt-PENDING  { color: #27ae60; }
+.status-dropdown-item.opt-DELETE   { color: #888;    }
+
+/* ── 헤더 상태 필터 ── */
 .status-filter-select {
     background: transparent;
     border: 1px solid rgba(255,255,255,0.5);
@@ -125,13 +165,14 @@
 .pagination-wrap a:hover { background: #eef3fb; border-color: #004595; }
 .pagination-wrap a.active { background: #333; color: #fff; border-color: #333; font-weight: bold; }
 
-/* ── 하단 액션 바 ── */
+/* ── 일괄 상태변경 바 (하단) ── */
 .action-bar {
     display: flex;
     align-items: center;
     justify-content: flex-end;
+    padding-right: 5%;
     gap: 8px;
-    margin-top: 14px;
+    margin-top: 1px;
     font-family: sans-serif;
 }
 .action-bar select {
@@ -154,7 +195,6 @@
     cursor: pointer;
 }
 .btn-confirm:hover { background: #c98f10; }
-.guide-text { font-size: 13px; color: #555; text-decoration: underline; text-underline-offset: 2px; }
 </style>
 <link rel="stylesheet" href="${pageContext.request.contextPath}/css/main.css"/>
 </head>
@@ -164,31 +204,17 @@
 
     <h2 style="margin: 0 0 18px 0; color: #004595; font-size: 22px; font-weight: bold;">전체 학생 목록 조회</h2>
 
-    <!-- 상단 컨트롤 바 -->
+    <!-- 상단 필터 + 검색 -->
     <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
         <div style="display: flex; align-items: center; gap: 8px;">
-            <button class="filter-btn active" id="btn-all"       onclick="filterRole('all')">전체</button>
-            <button class="filter-btn"        id="btn-student"   onclick="filterRole('student')">학생</button>
-            <button class="filter-btn"        id="btn-professor" onclick="filterRole('professor')">교수</button>
+            <button class="filter-btn" id="btn-all"       onclick="filterRole('all')">전체</button>
+            <button class="filter-btn" id="btn-student"   onclick="filterRole('student')">학생</button>
+            <button class="filter-btn" id="btn-professor" onclick="filterRole('professor')">교수</button>
         </div>
-
-        <div style="display: flex; align-items: center; gap: 8px;">
-            <div class="action-bar" style="margin: 0;">
-                <select id="bulkStatus">
-                    <option value="">🔎 상태 선택</option>
-                    <option value="ACTIVE">정상</option>
-                    <option value="INACTIVE">휴먼</option>
-                    <option value="LOCKED">정지</option>
-                    <option value="PENDING">대기</option>
-                    <option value="DELETE">탈퇴</option>
-                </select>
-                <button class="btn-confirm" onclick="applyBulkStatus()">확인</button>
-            </div>
-            <div class="search-wrap">
-                <span style="font-size: 16px; color: #aaa;">🔍</span>
-                <input type="text" id="searchInput" placeholder="" onkeyup="searchTable()"/>
-                <button onclick="searchTable()">검색</button>
-            </div>
+        <div class="search-wrap">
+            <span style="font-size: 16px; color: #aaa;">🔍</span>
+            <input type="text" id="searchInput" placeholder="" onkeyup="searchTable()"/>
+            <button onclick="searchTable()">검색</button>
         </div>
     </div>
 
@@ -197,18 +223,12 @@
         <thead>
             <tr>
                 <th style="width: 3%;"><input type="checkbox" id="checkAll" onclick="toggleAll(this)"/></th>
-                
                 <th style="width: 3%;">번호</th>
-
-                <!-- 이름 정렬 -->
                 <th style="width: 10%;" class="sortable" onclick="sortTable('name')" id="th-name">
                     이름 <span class="sort-icon" id="icon-name">▼</span>
                 </th>
-
                 <th style="width: 26%;">이메일</th>
                 <th style="width: 8%;">역할</th>
-
-                <!-- 상태 셀렉트 필터 -->
                 <th style="width: 11%;">
                     상태
                     <select class="status-filter-select" id="statusFilter" onchange="filterStatus()">
@@ -220,15 +240,11 @@
                         <option value="DELETE">탈퇴</option>
                     </select>
                 </th>
-
-                <!-- 학번 정렬 -->
                 <th style="width: 10%;" class="sortable" onclick="sortTable('studentId')" id="th-studentId">
                     학번 <span class="sort-icon" id="icon-studentId">▼</span>
                 </th>
-
-                <!-- 학번 신청일 정렬 -->
                 <th style="width: 13%;" class="sortable" onclick="sortTable('applyDate')" id="th-applyDate">
-                    학번 신청일 <span class="sort-icon" id="icon-applyDate">▼</span>
+                    회원 가입 신청일 <span class="sort-icon" id="icon-applyDate">▼</span>
                 </th>
             </tr>
         </thead>
@@ -240,7 +256,6 @@
                 data-name="${user.name}"
                 data-student-id="${user.userNo}"
                 data-apply-date="${user.createdAt}">
-
                 <td><input type="checkbox" class="row-check" value="${user.userNo}"/></td>
                 <td class="cell-no">${(currentPage - 1) * 10 + status.count}</td>
                 <td>
@@ -252,19 +267,31 @@
                 <td>${user.email}</td>
                 <td>${user.role eq 'STUDENT' ? '학생' : '교수'}</td>
                 <td>
-                    <span class="badge badge-${user.status}">
-                        <c:choose>
-                            <c:when test="${user.status eq 'ACTIVE'}">정상</c:when>
-                            <c:when test="${user.status eq 'INACTIVE'}">휴먼</c:when>
-                            <c:when test="${user.status eq 'LOCKED'}">정지</c:when>
-                            <c:when test="${user.status eq 'PENDING'}">대기</c:when>
-                            <c:when test="${user.status eq 'DELETE'}">탈퇴</c:when>
-                            <c:otherwise>${user.status}</c:otherwise>
-                        </c:choose>
-                    </span>
+                    <div class="status-badge-wrap">
+                        <button class="badge-btn badge-${user.status}"
+                                id="badge-${user.userNo}"
+                                onclick="toggleDropdown(event, '${user.userNo}')">
+                            <c:choose>
+                                <c:when test="${user.status eq 'ACTIVE'}">정상</c:when>
+                                <c:when test="${user.status eq 'INACTIVE'}">휴먼</c:when>
+                                <c:when test="${user.status eq 'LOCKED'}">정지</c:when>
+                                <c:when test="${user.status eq 'PENDING'}">대기</c:when>
+                                <c:when test="${user.status eq 'DELETE'}">탈퇴</c:when>
+                                <c:otherwise>${user.status}</c:otherwise>
+                            </c:choose>
+                            <span class="arrow">▾</span>
+                        </button>
+                        <div class="status-dropdown" id="dropdown-${user.userNo}">
+                            <div class="status-dropdown-item opt-ACTIVE"   onclick="changeStatus('${user.userNo}', 'ACTIVE')">정상</div>
+                            <div class="status-dropdown-item opt-INACTIVE" onclick="changeStatus('${user.userNo}', 'INACTIVE')">휴먼</div>
+                            <div class="status-dropdown-item opt-LOCKED"   onclick="changeStatus('${user.userNo}', 'LOCKED')">정지</div>
+                            <div class="status-dropdown-item opt-PENDING"  onclick="changeStatus('${user.userNo}', 'PENDING')">대기</div>
+                            <div class="status-dropdown-item opt-DELETE"   onclick="changeStatus('${user.userNo}', 'DELETE')">탈퇴</div>
+                        </div>
+                    </div>
                 </td>
                 <td>${user.userCode}</td>
-                <td style="color: #888; font-size: 13px;">${user.createdAt}</td>
+                <td class="date-cell" style="color: #888; font-size: 13px;">${user.createdAt}</td>
             </tr>
             </c:forEach>
         </tbody>
@@ -273,29 +300,40 @@
     <!-- 페이지네이션 -->
     <div class="pagination-wrap">
         <c:if test="${currentPage > 1}">
-            <a href="?page=${currentPage - 1}">&lt;</a>
+            <a href="?page=${currentPage - 1}&role=${currentRole}">&lt;</a>
         </c:if>
         <c:forEach var="p" begin="1" end="${totalPages}">
-            <a href="?page=${p}" class="${p == currentPage ? 'active' : ''}">${p}</a>
+            <a href="?page=${p}&role=${currentRole}" class="${p == currentPage ? 'active' : ''}">${p}</a>
         </c:forEach>
         <c:if test="${currentPage < totalPages}">
-            <a href="?page=${currentPage + 1}">&gt;</a>
+            <a href="?page=${currentPage + 1}&role=${currentRole}">&gt;</a>
         </c:if>
     </div>
 
-
+    <!-- ── 일괄 상태변경 바 (하단) ── -->
+    <div class="action-bar">
+        <select id="bulkStatus">
+            <option value="">☑️ 체크한 인원 상태 변경</option>
+            <option value="ACTIVE">정상</option>
+            <option value="INACTIVE">휴먼</option>
+            <option value="LOCKED">정지</option>
+            <option value="PENDING">대기</option>
+            <option value="DELETE">탈퇴</option>
+        </select>
+        <button class="btn-confirm" onclick="applyBulkStatus()">변경</button>
+    </div>
 
 </div>
+
 <script>
-    /* ── 정렬 상태 관리 ── */
+    /* ── 정렬 ── */
     const sortState = { name: 'none', studentId: 'none', applyDate: 'none' };
 
     function sortTable(key) {
         const tbody = document.getElementById('userTableBody');
         const rows  = Array.from(tbody.querySelectorAll('tr.user-row'));
-
-        const cur = sortState[key];
-        const next = (cur === 'none' || cur === 'desc') ? 'asc' : 'desc';
+        const cur   = sortState[key];
+        const next  = (cur === 'none' || cur === 'desc') ? 'asc' : 'desc';
         sortState[key] = next;
 
         ['name', 'studentId', 'applyDate'].forEach(function(k) {
@@ -304,7 +342,7 @@
             else { icon.textContent = '▼'; sortState[k] = 'none'; }
         });
 
-        const attrMap = { name: 'name', studentId: 'userCode', applyDate: 'createdAt' };
+        const attrMap = { name: 'name', studentId: 'student-id', applyDate: 'apply-date' };
         const attr = attrMap[key];
 
         rows.sort(function(a, b) {
@@ -317,77 +355,98 @@
         reNumberRows();
     }
 
-    /* ── 번호 재정렬 ── */
     function reNumberRows() {
         const rows = document.querySelectorAll('#userTableBody tr.user-row');
         let i = 1;
         rows.forEach(function(row) {
-            // offsetParent가 있으면 화면에 보이는 요소입니다.
-            if (row.offsetParent !== null) {
+            if (getComputedStyle(row).display !== 'none') {
                 const noCell = row.querySelector('.cell-no');
                 if (noCell) noCell.textContent = i++;
             }
         });
     }
 
-    /* ── 통합 필터 실행 ── */
-    // 현재 선택된 역할(Role)을 전역 변수로 관리합니다.
-    let currentActiveRole = 'all'; // 기본값 all로 변경
-
+    /* ── 역할 필터 ── */
     function filterRole(role) {
+        ['all', 'student', 'professor'].forEach(function(r) {
+            document.getElementById('btn-' + r).classList.toggle('active', r === role);
+        });
         location.href = '?page=1&role=' + role;
     }
 
     function applyFilters() {
-        const targetRole   = currentActiveRole.toUpperCase();
+        const targetRole   = (document.querySelector('.filter-btn.active')?.id.replace('btn-', '') || 'all').toUpperCase();
         const targetStatus = document.getElementById('statusFilter').value;
 
         document.querySelectorAll('.user-row').forEach(function(row) {
             const rowRole   = row.getAttribute('data-role').trim().toUpperCase();
             const rowStatus = row.getAttribute('data-status');
-
             const roleMatch   = (targetRole === 'ALL' || rowRole === targetRole);
-            const statusMatch = !targetStatus || (rowStatus === targetStatus);
-
+            const statusMatch = !targetStatus || rowStatus === targetStatus;
             row.style.setProperty('display', (roleMatch && statusMatch) ? 'table-row' : 'none', 'important');
         });
         reNumberRows();
     }
 
-    function filterStatus() {
-        applyFilters();
-    }
+    function filterStatus() { applyFilters(); }
 
-
-    /* ── 검색 (검색어 필터도 추가) ── */
+    /* ── 검색 ── */
     function searchTable() {
         const keyword = document.getElementById('searchInput').value.toLowerCase().trim();
         document.querySelectorAll('.user-row').forEach(function(row) {
-            // 이미 숨겨진(필터링된) 행은 검색 결과와 상관없이 유지되어야 하므로 filter와 연동 필요
-            // 여기서는 단순 텍스트 검색만 구현
             const isMatch = row.innerText.toLowerCase().includes(keyword);
-            if (isMatch) {
-                 // 검색 결과가 맞으면 다시 전체 필터 적용 확인 (단순화 위해 강제 표시)
-                 row.style.setProperty('display', '', 'important');
-            } else {
-                 row.style.setProperty('display', 'none', 'important');
-            }
+            row.style.setProperty('display', isMatch ? '' : 'none', 'important');
         });
         reNumberRows();
     }
 
+    /* ── 전체 체크 ── */
     function toggleAll(master) {
         document.querySelectorAll('.row-check').forEach(cb => cb.checked = master.checked);
     }
 
-    // 초기 실행
-    document.addEventListener("DOMContentLoaded", function() {
-        var role = '${currentRole}';
-        document.getElementById('btn-all').classList.toggle('active', role === 'all');
-        document.getElementById('btn-student').classList.toggle('active', role === 'student');
-        document.getElementById('btn-professor').classList.toggle('active', role === 'professor');
-    });
+    /* ── 뱃지 드롭다운 ── */
+    const statusLabel = {
+        ACTIVE: '정상', INACTIVE: '휴먼', LOCKED: '정지', PENDING: '대기', DELETE: '탈퇴'
+    };
 
+    function toggleDropdown(e, userNo) {
+        e.stopPropagation();
+        const target = document.getElementById('dropdown-' + userNo);
+        const isOpen = target.classList.contains('open');
+        document.querySelectorAll('.status-dropdown.open').forEach(el => el.classList.remove('open'));
+        if (!isOpen) target.classList.add('open');
+    }
+
+    function changeStatus(userNo, newStatus) {
+        document.querySelectorAll('.status-dropdown.open').forEach(el => el.classList.remove('open'));
+
+        const row = document.querySelector('tr[data-student-id="' + userNo + '"]');
+        const badge = document.getElementById('badge-' + userNo);
+
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '${pageContext.request.contextPath}/admin/updateUserStatus';
+
+        const sInput = document.createElement('input');
+        sInput.type = 'hidden'; sInput.name = 'status'; sInput.value = newStatus;
+        form.appendChild(sInput);
+
+        const nInput = document.createElement('input');
+        nInput.type = 'hidden'; nInput.name = 'userNos'; nInput.value = userNo;
+        form.appendChild(nInput);
+
+        if (badge) {
+            badge.className = 'badge-btn badge-' + newStatus;
+            badge.innerHTML = statusLabel[newStatus] + ' <span class="arrow">▾</span>';
+        }
+        if (row) row.setAttribute('data-status', newStatus);
+
+        document.body.appendChild(form);
+        form.submit();
+    }
+
+    /* ── 일괄 상태변경 ── */
     function applyBulkStatus() {
         const status = document.getElementById('bulkStatus').value;
         if (!status) { alert('변경할 상태를 선택해 주세요.'); return; }
@@ -413,6 +472,32 @@
         document.body.appendChild(form);
         form.submit();
     }
+
+    /* ── 초기화 ── */
+    document.addEventListener('DOMContentLoaded', function() {
+
+        // 날짜 형식 변환
+        document.querySelectorAll('.date-cell').forEach(function(td) {
+            const raw = td.textContent.trim();
+            if (raw.includes('T')) {
+                const [date, time] = raw.split('T');
+                td.textContent = date.replace(/-/g, '.') + ' ' + time.substring(0, 5);
+            }
+        });
+
+        // 역할 버튼 활성화
+        var params = new URLSearchParams(window.location.search);
+        var role = params.get('role') || 'all';
+        document.getElementById('btn-all').classList.toggle('active', role === 'all');
+        document.getElementById('btn-student').classList.toggle('active', role === 'student');
+        document.getElementById('btn-professor').classList.toggle('active', role === 'professor');
+
+        // 드롭다운 외부 클릭 시 닫기
+        document.addEventListener('click', function() {
+            document.querySelectorAll('.status-dropdown.open').forEach(el => el.classList.remove('open'));
+        });
+
+    });
 </script>
 </body>
 </html>

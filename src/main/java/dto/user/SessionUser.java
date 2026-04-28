@@ -37,4 +37,12 @@ public class SessionUser implements Serializable {
         this.profileImg = user.getProfileImg();
         this.last_password_changed = user.getLast_password_changed();
     }
+
+    public boolean isNaverUser() {
+        return userId != null && userId.startsWith(UserConst.NAVER_LOGIN_USER);
+    }
+
+    public String getDisplayUserId() {
+        return isNaverUser() ? "네이버 로그인 회원입니다." : userId;
+    }
 }

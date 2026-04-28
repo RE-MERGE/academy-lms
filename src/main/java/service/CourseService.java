@@ -1,12 +1,17 @@
 package service;
 
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import dao.CourseDao;
+import dao.mapper.CourseMapper;
+import dto.Attendance;
 import dto.Course;
 import dto.user.User;
 
@@ -14,12 +19,13 @@ import dto.user.User;
 public class CourseService {
 	@Autowired
 	private CourseDao coursedao;
+	CourseMapper courseMapper;
 
 	public List<Course> list() {
 		return coursedao.list();
 	}
 	
-	public Course selectCourse(int no) {
+	public Course selectCourse(Integer no) {
     	return coursedao.selectCourse(no);
 	}
 
@@ -119,4 +125,50 @@ public class CourseService {
 			return coursedao.updateCourse(course);
 		}
 		
+		public Map<String, Object> selectGradeMap(Integer courseNo, Integer userNo) {
+		    List<Map<String, Object>> gradeList = coursedao.getGrade(courseNo, userNo); // coursedao로 통일
+		    Map<String, Object> gradeMap = new HashMap<>();
+		    for (Map<String, Object> g : gradeList) {
+		        gradeMap.put((String) g.get("type"), g);
+		    }
+		    return gradeMap;
+		}
+
+		public List<Attendance> selectAttendance(Integer userNo, Integer courseNo) {
+			return coursedao.getAttendanceList(userNo, courseNo);
+		}
+		
+		public void saveAttendance(List<Map<String, String>> attendanceList) {
+		    for (Map<String, String> a : attendanceList) {
+		    	System.out.println("전체 데이터: " + a);  // ← 추가
+		        System.out.println("week 값: " + a.get("week"));  // ← 추가
+		        int user_no = Integer.parseInt(a.get("user_no"));
+		        int course_no = Integer.parseInt(a.get("course_no"));
+		        int week = Integer.parseInt(a.get("week"));           // ← 추가
+		        String status = a.get("status");
+		        String attendance_date = a.get("attendance_date");
+		        int enrollment_no = coursedao.getselectEnrollmentNo(user_no, course_no);
+		        coursedao.insertAttendanceRecord(enrollment_no, attendance_date, status, week); // ← week 추가
+		    }
+		}
+	// BoardController 에서 사용!
+	public Course getBoardCourse(Integer courseNo) {
+		return coursedao.getBoardCourse(courseNo);
+	}
+	public List<Course> selectCoursesByProfessor(int userNo) {
+	    return coursedao.selectCoursesByProfessor(userNo);
+	}
+
+	public List<Course> selectCoursesByStudent(int userNo) {
+	    return coursedao.selectCoursesByStudent(userNo);
+	}
+
+	public Set<Integer> selectFavoriteSet(int userNo) {
+	    return new HashSet<>(coursedao.getFavoriteCourseNos(userNo));
+	}
+
+
+	public List<Course> getFavoriteCourses(int userNo) {
+		return coursedao.getFavoriteCourse(userNo);
+	}
 }

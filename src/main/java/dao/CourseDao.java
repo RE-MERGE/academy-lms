@@ -124,6 +124,7 @@ public class CourseDao {
 	}
 	public List<Course> selectCoursesByStudent(int userNo) {
 		return template.getMapper(cls).selectCoursesByStudent(userNo);
+	}
 	public List<Course> getFavoriteCourse(int userNo) {
 		return template.getMapper(cls).getFavoriteCourse(userNo);
 	}

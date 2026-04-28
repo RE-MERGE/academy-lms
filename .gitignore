@@ -128,3 +128,7 @@ $RECYCLE.BIN/
 logs/
 
 /src/main/java/config/DBConfig.java
+# =====================
+# 민감정보 보호
+# =====================
+src/main/resources/application.properties

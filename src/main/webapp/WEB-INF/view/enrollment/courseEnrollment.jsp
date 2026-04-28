@@ -746,7 +746,7 @@ document.addEventListener('click', function(e) {
   if (!el) return;
   const semester = el.dataset.semester;
   const pdf = el.dataset.pdf;
-  if (pdf) window.open(CTX_PATH + '/upload/curriculum/' + semester + '/' + pdf, '_blank', 'width=800,height=900');
+  if (pdf) window.open(pdf, '_blank', 'width=800,height=900');
 });
 
 let currentPage  = 1;

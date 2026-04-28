@@ -1,7 +1,5 @@
 package controller;
 
-import java.io.File;
-import java.io.IOException;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -9,7 +7,6 @@ import java.time.temporal.TemporalAdjusters;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -29,6 +26,7 @@ import dto.user.UserRole;
 import dto.user.login.Login;
 import service.CourseService;
 import service.EnrollmentService;
+import service.SupabaseStorageService;
 import service.UserService;
 
 
@@ -41,8 +39,9 @@ public class EnrollmentController {
 	private EnrollmentService enrollmentService;
 	@Autowired
 	private UserService userService;
+	@Autowired
+	private SupabaseStorageService storageService;
 	
-	public static final String UPLOAD_CURRICULUM_PDF_PATH = "C:/upload/curriculum/";
 	
 	@GetMapping("courseCreate")
 	public String courseCreate(Model model) {
@@ -100,8 +99,8 @@ public class EnrollmentController {
 	        }
 	        course.setStatus(params.get("status"));
 
-	        String pdfName = saveCurriculumPdf(curriculumPdf, params.get("semester"));
-	        course.setCurriculum_pdf(pdfName);
+	        String pdfUrl = storageService.uploadPdf(curriculumPdf, params.get("semester"));
+	        course.setCurriculum_pdf(pdfUrl);
 
 	        int success = courseService.insertCourse(course);
 	        result.put("success", success > 0);
@@ -205,8 +204,8 @@ public class EnrollmentController {
 	            // user_code가 비어있으면 professor_no 변경 없이 기존 유지
 	        }
 
-	        String pdfName = saveCurriculumPdf(curriculumPdf, params.get("semester"));
-	        if (pdfName != null) course.setCurriculum_pdf(pdfName);
+	        String pdfUrl = storageService.uploadPdf(curriculumPdf, params.get("semester"));
+	        if (pdfUrl != null) course.setCurriculum_pdf(pdfUrl);
 
 	        int success = courseService.updateCourse(course);
 	        result.put("success", success > 0);
@@ -386,26 +385,6 @@ public class EnrollmentController {
 	    return result;
 	}
 	
-	private static String saveCurriculumPdf(MultipartFile file, String semester) {
-	    if (file != null && !file.isEmpty()) {
-	        File saveFolder = new File(UPLOAD_CURRICULUM_PDF_PATH + semester + "/");
-	        if (!saveFolder.exists()) {
-	            saveFolder.mkdirs();
-	        }
-
-	        String originalFilename = file.getOriginalFilename();
-	        String saveFileName = UUID.randomUUID().toString() + "_" + originalFilename;
-
-	        try {
-	            file.transferTo(new File(saveFolder, saveFileName));
-	            return saveFileName;
-	        } catch (IOException e) {
-	            e.printStackTrace();
-	            return null;
-	        }
-	    }
-	    return null;
-	}
 	
 	@GetMapping("professor-blocked")
 	@ResponseBody

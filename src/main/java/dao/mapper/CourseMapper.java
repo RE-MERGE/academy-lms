@@ -17,7 +17,6 @@ public interface CourseMapper {
     @Select("select * from COURSE")
     List<Course> list();
 
- // curriculum_pdf 추가
     @Insert("INSERT INTO COURSE (professor_no, course_name, course_type, room_info, day_of_week, " +
             "start_time, end_time, max_students, status, semester, credits, curriculum_pdf, created_at) " +
             "VALUES (#{professor_no}, #{course_name}, #{course_type}, #{room_info}, #{day_of_week}, " +
@@ -76,11 +75,11 @@ public interface CourseMapper {
             "FROM COURSE c " +
             "JOIN USERS u ON c.professor_no = u.user_no " +
             "WHERE c.semester = #{semester} " +
-            "AND c.professor_no = #{userNo}")  // ← ENROLLMENT 서브쿼리 대신 professor_no로 직접 조회
+            "AND c.professor_no = #{userNo}")
     List<Course> getMyCourse(@Param("userNo") int userNo, @Param("semester") String semester);
 
-    @Select("SELECT* FROM COURSE WHERE course_no IN (SELECT course_no FROM ENROLLMENT WHERE student_no = #{userNo}) AND semester = #{semester}")
-    List<Course> getMyEnrollment(@Param("userNo") int userNo,@Param("semester") String semester);
+    @Select("SELECT * FROM COURSE WHERE course_no IN (SELECT course_no FROM ENROLLMENT WHERE student_no = #{userNo}) AND semester = #{semester}")
+    List<Course> getMyEnrollment(@Param("userNo") int userNo, @Param("semester") String semester);
 
     @Select("""
     SELECT 
@@ -99,7 +98,6 @@ public interface CourseMapper {
 """)
     List<Map<String, Object>> getProfessorMyCourseMap(@Param("userNo") int userNo, @Param("semester") String semester);
 
-
     @Select("""
     SELECT 
         c.*, 
@@ -114,7 +112,7 @@ public interface CourseMapper {
             "JOIN USERS u ON u.user_no = c.professor_no " +
             "WHERE c.course_no IN (SELECT course_no FROM ENROLLMENT WHERE student_no = #{userNo}) " +
             "AND c.semester = #{semester}")
-	List<Map<String, Object>> getEnrollment(@Param("userNo") int userNo,@Param("semester") String semester);
+	List<Map<String, Object>> getEnrollment(@Param("userNo") int userNo, @Param("semester") String semester);
 
     @Select("SELECT * FROM COURSE WHERE course_no = #{value}")
 	Course find(Integer courseNo);
@@ -143,7 +141,7 @@ public interface CourseMapper {
             "JOIN ENROLLMENT e ON u.user_no = e.student_no " +
             "WHERE e.course_no = #{no}")
 	public List<User> getStudentList(Integer userNo);
-    
+
     @Insert("INSERT INTO GRADE (enrollment_no, score, type, alphabet) " +
             "VALUES (#{enrollment_no}, #{midterm}, 'MIDTERM', #{alphabet}) " +
             "ON DUPLICATE KEY UPDATE score = #{midterm}, alphabet = #{alphabet}")
@@ -164,9 +162,10 @@ public interface CourseMapper {
     void insertAttendance(@Param("enrollment_no") int enrollment_no,
                           @Param("attendance") int attendance,
                           @Param("alphabet") String alphabet);
-    
+
     @Select("SELECT enrollment_no FROM ENROLLMENT WHERE student_no = #{user_no} AND course_no = #{course_no}")
 	public int getselectEnrollmentNo(@Param("user_no") int user_no, @Param("course_no") int course_no);
+
     @Update("<script>" +
     	    "UPDATE COURSE SET status = #{status} " +
     	    "WHERE course_no IN " +
@@ -180,7 +179,7 @@ public interface CourseMapper {
             "<foreach collection='list' item='no' open='(' separator=',' close=')'>#{no}</foreach>" +
             "</script>")
     void deleteCourses(List<Integer> courseNos);
-    
+
     @Select("select g.type, g.score, g.alphabet from GRADE g join ENROLLMENT e on g.enrollment_no = e.enrollment_no"
     		+ " where e.course_no = #{courseNo} and e.student_no = #{userNo}")
     List<Map<String,Object>> getGrade(@Param("courseNo") Integer courseNo, @Param("userNo") Integer userNo);
@@ -190,7 +189,7 @@ public interface CourseMapper {
             "WHERE e.student_no = #{userNo} AND e.course_no = #{courseNo} " +
             "ORDER BY a.week ASC")
     List<Attendance> getAttendance(@Param("userNo") int userNo, @Param("courseNo") int courseNo);
-	
+
     @Insert("INSERT INTO ATTENDANCE (enrollment_no, attendance_date, status, week) " +
             "VALUES (#{enrollment_no}, #{attendance_date}, #{status}, #{week}) " +
             "ON DUPLICATE KEY UPDATE status = #{status}")
@@ -199,7 +198,13 @@ public interface CourseMapper {
                                  @Param("status") String status,
                                  @Param("week") int week);
 
-
     @Select("SELECT * FROM COURSE WHERE course_no=#{value}")
     Course getBoardCourse(Integer courseNo);
+
+    // ↓ 홈 화면용 추가 (학기 구분 없이 전체 조회)
+    @Select("SELECT * FROM COURSE WHERE professor_no = #{userNo}")
+    List<Course> selectCoursesByProfessor(@Param("userNo") int userNo);
+
+    @Select("SELECT * FROM COURSE WHERE course_no IN (SELECT course_no FROM ENROLLMENT WHERE student_no = #{userNo})")
+    List<Course> selectCoursesByStudent(@Param("userNo") int userNo);
 }

@@ -15,10 +15,12 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
 
+import dto.Attendance;
 import dto.Course;
 import dto.user.SessionUser;
 import dto.user.User;
 import dto.user.UserConst;
+import dto.user.UserRole;
 import service.CourseService;
 
 @Controller
@@ -32,14 +34,24 @@ public class CourseController {
 	@GetMapping("subject")
     public ModelAndView getSubject(@RequestParam(value="no", defaultValue="1") int no, HttpSession session) {
         ModelAndView mav = new ModelAndView();
+        SessionUser user = (SessionUser) session.getAttribute("sessionUser");
         Course courseDetail = courseService.selectCourse(no);
         String profName = courseService.selectProfessorName(no);
         List<Course> courseList = courseService.selectAllCourses(); // 이게 있어야 함
         List<User> studentList = courseService.selectStudentList(no);
+        List<Attendance> attendanceList = courseService.selectAttendance(user.getUserNo(), no); // no = courseNo
+        long presentCount = attendanceList.stream().filter(a -> a.getStatus().equals("PRESENT")).count();
+        long lateCount = attendanceList.stream().filter(a -> a.getStatus().equals("LATE")).count();
+        long absentCount = attendanceList.stream().filter(a -> a.getStatus().equals("ABSENT")).count();
+        mav.addObject("presentCount", presentCount);
+        mav.addObject("lateCount", lateCount);
+        mav.addObject("absentCount", absentCount);
+        mav.addObject("AttendanceList", attendanceList);
         mav.addObject("Course", courseDetail);
         mav.addObject("courseList", courseList); // 이게 있어야 함
         mav.addObject("profName",profName);
         mav.addObject("studentList",studentList);
+        mav.addObject("AttendanceList",attendanceList);
         mav.setViewName("course/subject");
         return mav;
 	}
@@ -75,20 +87,55 @@ public class CourseController {
 	}
 	
 	@GetMapping("profScore")
-	public ModelAndView getProfScore(@RequestParam(value="no", defaultValue="1") int no) {
+	public ModelAndView getProfScore(@RequestParam(value="no", defaultValue="1") int no, HttpSession session) {
 	    ModelAndView mav = new ModelAndView();
+	    SessionUser user = (SessionUser) session.getAttribute("sessionUser");
+	    if (user == null) {
+	        mav.setViewName("redirect:/home/home");
+	        return mav;
+	    }
+	    UserRole role = user.getRole();
+	    if (role != UserRole.PROFESSOR && role != UserRole.ADMIN) {
+	        mav.setViewName("redirect:/");
+	        return mav;
+	    }
 	    List<User> studentList = courseService.selectStudentList(no);
 	    for(User u : studentList) {
 	        System.out.println("userNo: " + u.getUserNo() + ", name: " + u.getName());
 	    }
 	    Course courseDetail = courseService.selectCourse(no);
         String profName = courseService.selectProfessorName(no);
-        List<Course> courseList = courseService.selectAllCourses(); // 이게 있어야 함
+        List<Course> courseList = courseService.selectAllCourses(); 
 	    mav.addObject("studentList", studentList);
 	    mav.addObject("Course", courseDetail);
-        mav.addObject("courseList", courseList); // 이게 있어야 함
+        mav.addObject("courseList", courseList); 
         mav.addObject("profName",profName);
-        mav.setViewName("course/profScore");  // WEB-INF/views/course/profScore.jsp
+		//==================================================================================
+		mav.addObject("course", courseDetail); // BoardController에서 사용해야함.
+		//==================================================================================
+
+		mav.setViewName("course/profScore");  // WEB-INF/views/course/profScore.jsp
+	    return mav;
+	}
+	
+	@GetMapping("stuScore")
+	public ModelAndView getStuScore(@RequestParam(value="no", defaultValue="1")int no, HttpSession session) {
+		ModelAndView mav = new ModelAndView();
+		SessionUser user = (SessionUser) session.getAttribute("sessionUser");
+		List<User> studentList = courseService.selectStudentList(no);
+		for(User u : studentList) {
+	        System.out.println("userNo: " + u.getUserNo() + ", name: " + u.getName());
+	    }
+	    Course courseDetail = courseService.selectCourse(no);
+        String profName = courseService.selectProfessorName(no);
+        List<Course> courseList = courseService.selectAllCourses(); 
+        Map<String, Object> gradeMap = courseService.selectGradeMap(no, user.getUserNo());
+	    mav.addObject("studentList", studentList);
+	    mav.addObject("Course", courseDetail);
+        mav.addObject("courseList", courseList); 
+        mav.addObject("profName",profName);
+        mav.addObject("gradeMap", gradeMap);
+        mav.setViewName("course/stuScore");  
 	    return mav;
 	}
 	
@@ -98,6 +145,14 @@ public class CourseController {
 		courseService.saveGrades(gradeList);
 		return "ok";
 	}
+	
+	@PostMapping("saveAttendance")
+	@ResponseBody
+	public String saveAttendance(@RequestBody List<Map<String, String>> attendanceList) {
+	    courseService.saveAttendance(attendanceList);
+	    return "ok";
+	}
+	
 	
 //	@GetMapping("*")
 //	public void getCourse(Course course) {

@@ -21,6 +21,7 @@ public class SitemeshFilter extends ConfigurableSiteMeshFilter {
                 .addExcludedPath("/user/login")
                 .addExcludedPath("/user/join")
                 .addExcludedPath("/user/logout")
-        		.addExcludedPath("/course/profScore");
+        		.addExcludedPath("/course/profScore")
+        		.addExcludedPath("/course/stuScore");
     }
 }

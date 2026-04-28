@@ -11,7 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import dao.mapper.CourseMapper;
-
+import dto.Attendance;
 import dto.Course;
 import dto.user.User;
 
@@ -29,7 +29,7 @@ public class CourseDao {
 	public List<Course> getBlockedCourses(String room, String semester) {
 		return template.getMapper(cls).getBlokcedCourse(room,semester);
 	}
-	public Course selectCourse(int no) {
+	public Course selectCourse(Integer no) {
     	Course param = new Course();
     	param.setCourse_no(no);
     	return template.getMapper(cls).getCourse(param);
@@ -112,7 +112,20 @@ public class CourseDao {
 	}
 	public void deleteCourses(List<Integer> courseNos) {
 		template.getMapper(cls).deleteCourses(courseNos);
-		
+	}
+
+	public List<Map<String, Object>> getGrade(Integer courseNo, Integer userNo) {
+	    return template.getMapper(cls).getGrade(courseNo, userNo);
+	}
+	public List<Attendance> getAttendanceList(Integer userNo, Integer courseNo) {
+		return template.getMapper(cls).getAttendance(userNo, courseNo);
+	}
+	public void insertAttendanceRecord(int enrollment_no, String attendance_date, String status, int week) {
+	    template.getMapper(cls).insertAttendanceRecord(enrollment_no, attendance_date, status, week);
 	}
 	
+	
+	public Course getBoardCourse(Integer courseNo) {
+		return template.getMapper(cls).getBoardCourse(courseNo);
+	}
 }

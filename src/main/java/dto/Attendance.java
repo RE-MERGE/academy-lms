@@ -12,4 +12,5 @@ public class Attendance {
     private int enrollment_no;
     private LocalDate attendance_date;
     private String status;
+    private int week;
 }

@@ -24,6 +24,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.file.Files;
+import java.util.List;
 import java.util.Map;
 
 @Controller
@@ -51,7 +52,7 @@ public class BoardController {
     public String write(PostCreate board,
                         @Login SessionUser sessionUser) {
         boardService.insertPost(board, sessionUser.getUserNo());
-        return "redirect:/board/list?no=" + board.getCourseNo() + "&boardType=" + board.getBoardType();
+        return "redirect:/board/list?courseNo=" + board.getCourseNo() + "&boardType=" + board.getBoardType();
     }
 
     @GetMapping("list")
@@ -61,19 +62,22 @@ public class BoardController {
                             @RequestParam(defaultValue = "") String keyword,
                             @RequestParam(defaultValue = "title") String searchType,
                             Model model) {
+        Map<String, Object> data = boardService.getBoardList(courseNo, boardType, keyword, searchType, page, null);
 
-        Map<String, Object> data = boardService.getBoardList(null, boardType, keyword, searchType, page);
-
+        if(courseNo != null) {
+            Course course = courseService.getBoardCourse(courseNo);
+            model.addAttribute("course", course);
+        }
         model.addAttribute("postList", data.get("postList"));
-        model.addAllAttributes(((PageInfo) data.get("pageInfo")).toMap()); // 또는 개별 addAttribute
         model.addAttribute("boardType", boardType);
         model.addAttribute("keyword", keyword);
         model.addAttribute("searchType", searchType);
+        model.addAllAttributes(((PageInfo) data.get("pageInfo")).toMap()); // 또는 개별 addAttribute
         return "board/list";
     }
 
-    @GetMapping("detail")
-    public String detail(int boardNo, Integer courseNo, HttpServletRequest request, HttpServletResponse response, Model model) {
+    @GetMapping({"detail","detail_qna"})
+    public String detail(int boardNo, Integer courseNo, HttpServletRequest request, HttpServletResponse response, @RequestParam(defaultValue = "") String answerStatus, Model model) {
         // 1. 해당 게시글용 쿠키 이름 생성
         String cookieName = "alreadyViewed_" + boardNo;
         Cookie[] cookies = request.getCookies();
@@ -102,6 +106,10 @@ public class BoardController {
         PostDetail postDetail = boardService.detailPost(boardNo);
         model.addAttribute("post", postDetail);
         model.addAttribute("courseNo", courseNo);
+        if ("QNA".equals(postDetail.getBoardType())) {
+            model.addAttribute("answerStatus", answerStatus);
+            return "board/detail_qna";
+        }
         return "board/detail";
     }
 
@@ -128,27 +136,41 @@ public class BoardController {
         return "redirect:/board/list?boardType=" + boardType;
     }
 
-    @GetMapping("list_subject")
-    public String list_subject(int course_no,
+    @GetMapping({"subjectHome", "list_qna"})
+    public String subjectBoard(@RequestParam(required = false) Integer courseNo,
                                @RequestParam(defaultValue = "1") int page,
                                @RequestParam(defaultValue = "NOTICE") String boardType,
                                @RequestParam(defaultValue = "") String keyword,
                                @RequestParam(defaultValue = "title") String searchType,
+                               @RequestParam(defaultValue = "") String answerStatus,
+                               @Login SessionUser sessionUser,
                                Model model) {
-        Course course = courseService.selectCourse(course_no);
-        String professorName = courseService.selectProfessorName(course_no);
-        Map<String, Object> data = boardService.getBoardList(course_no, boardType, keyword,
-                searchType, page);
+
+        Course course = courseService.getBoardCourse(courseNo);
+        String professorName = courseService.selectProfessorName(courseNo);
+
+        // QNA면 학생은 본인 글만
+        Integer writerNo = null;
+        if ("QNA".equals(boardType) && sessionUser.getRole() == UserRole.STUDENT) {
+            writerNo = sessionUser.getUserNo();
+        }
+
+        Map<String, Object> data = boardService.getBoardList(courseNo, boardType, keyword, searchType, page, writerNo);
+
 
         model.addAttribute("postList", data.get("postList"));
         model.addAttribute("course", course);
         model.addAttribute("professorName", professorName);
         model.addAllAttributes(((PageInfo) data.get("pageInfo")).toMap());
         model.addAttribute("boardType", boardType);
-        return "board/list_subject";
 
+        // QNA면 다른 뷰
+        if ("QNA".equals(boardType)) {
+            model.addAttribute("answerStatus", answerStatus);
+            return "board/list_qna";
+        }
+        return "board/subjectHome";
     }
-
     @GetMapping("fileDownload")
     public void fileDownload(@RequestParam String fileUrl, HttpServletResponse response) throws IOException {
         File file = new File("C:/upload/profiles/" + fileUrl);

@@ -7,7 +7,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>전체 사용자 목록 조회</title>
 <style>
-/* ── 필터 버튼 ── */
 .filter-btn {
     padding: 7px 18px;
     border: 1.5px solid #004595;
@@ -21,8 +20,6 @@
 }
 .filter-btn.active { background: #e6a817; border-color: #e6a817; color: #fff; }
 .filter-btn:hover:not(.active) { background: #eef3fb; }
-
-/* ── 검색 ── */
 .search-wrap { display: flex; align-items: center; gap: 6px; }
 .search-wrap input {
     padding: 7px 12px;
@@ -44,8 +41,6 @@
     cursor: pointer;
 }
 .search-wrap button:hover { background: #c98f10; }
-
-/* ── 테이블 ── */
 .user-table {
     width: 100%;
     border-collapse: collapse;
@@ -61,33 +56,19 @@
     font-size: 14px;
     white-space: nowrap;
 }
-/* 정렬 가능한 헤더 */
-.user-table th.sortable {
-    cursor: pointer;
-    user-select: none;
-}
+.user-table th.sortable { cursor: pointer; user-select: none; }
 .user-table th.sortable:hover { background-color: #003a7d; }
 .sort-icon { margin-left: 4px; font-size: 11px; }
-
 .user-table tbody { text-align: center; background-color: #f8faff; }
-.user-table td {
-    padding: 10px 8px;
-    border: 1px solid #d0d7f0;
-    font-size: 14px;
-}
+.user-table td { padding: 10px 8px; border: 1px solid #d0d7f0; font-size: 14px; }
 .user-table tbody tr:hover { background-color: #eef3fb; }
-.user-table th:first-child,
-.user-table td:first-child { width: 38px; }
-
-/* ── 상태 뱃지 ── */
+.user-table th:first-child, .user-table td:first-child { width: 38px; }
 .badge { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: bold; }
 .badge-ACTIVE   { color: #004595; }
 .badge-INACTIVE { color: #e6a817; }
 .badge-LOCKED   { color: #e74c3c; }
 .badge-PENDING  { color: #27ae60; }
 .badge-DELETE   { color: #c0392b; }
-
-/* ── 상태 필터 셀렉트 (헤더 안) ── */
 .status-filter-select {
     background: transparent;
     border: 1px solid rgba(255,255,255,0.5);
@@ -100,8 +81,6 @@
     margin-left: 4px;
 }
 .status-filter-select option { color: #333; background: #fff; }
-
-/* ── 페이지네이션 ── */
 .pagination-wrap {
     display: flex;
     align-items: center;
@@ -124,8 +103,6 @@
 }
 .pagination-wrap a:hover { background: #eef3fb; border-color: #004595; }
 .pagination-wrap a.active { background: #333; color: #fff; border-color: #333; font-weight: bold; }
-
-/* ── 하단 액션 바 ── */
 .action-bar {
     display: flex;
     align-items: center;
@@ -154,7 +131,6 @@
     cursor: pointer;
 }
 .btn-confirm:hover { background: #c98f10; }
-.guide-text { font-size: 13px; color: #555; text-decoration: underline; text-underline-offset: 2px; }
 </style>
 <link rel="stylesheet" href="${pageContext.request.contextPath}/css/main.css"/>
 </head>
@@ -164,14 +140,12 @@
 
     <h2 style="margin: 0 0 18px 0; color: #004595; font-size: 22px; font-weight: bold;">전체 학생 목록 조회</h2>
 
-    <!-- 상단 컨트롤 바 -->
     <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
         <div style="display: flex; align-items: center; gap: 8px;">
-            <button class="filter-btn active" id="btn-all"       onclick="filterRole('all')">전체</button>
-            <button class="filter-btn"        id="btn-student"   onclick="filterRole('student')">학생</button>
-            <button class="filter-btn"        id="btn-professor" onclick="filterRole('professor')">교수</button>
+            <button class="filter-btn" id="btn-all"       onclick="filterRole('all')">전체</button>
+            <button class="filter-btn" id="btn-student"   onclick="filterRole('student')">학생</button>
+            <button class="filter-btn" id="btn-professor" onclick="filterRole('professor')">교수</button>
         </div>
-
         <div style="display: flex; align-items: center; gap: 8px;">
             <div class="action-bar" style="margin: 0;">
                 <select id="bulkStatus">
@@ -192,23 +166,16 @@
         </div>
     </div>
 
-    <!-- 테이블 -->
     <table class="user-table" id="userTable">
         <thead>
             <tr>
                 <th style="width: 3%;"><input type="checkbox" id="checkAll" onclick="toggleAll(this)"/></th>
-                
                 <th style="width: 3%;">번호</th>
-
-                <!-- 이름 정렬 -->
                 <th style="width: 10%;" class="sortable" onclick="sortTable('name')" id="th-name">
                     이름 <span class="sort-icon" id="icon-name">▼</span>
                 </th>
-
                 <th style="width: 26%;">이메일</th>
                 <th style="width: 8%;">역할</th>
-
-                <!-- 상태 셀렉트 필터 -->
                 <th style="width: 11%;">
                     상태
                     <select class="status-filter-select" id="statusFilter" onchange="filterStatus()">
@@ -220,13 +187,9 @@
                         <option value="DELETE">탈퇴</option>
                     </select>
                 </th>
-
-                <!-- 학번 정렬 -->
                 <th style="width: 10%;" class="sortable" onclick="sortTable('studentId')" id="th-studentId">
                     학번 <span class="sort-icon" id="icon-studentId">▼</span>
                 </th>
-
-                <!-- 학번 신청일 정렬 -->
                 <th style="width: 13%;" class="sortable" onclick="sortTable('applyDate')" id="th-applyDate">
                     학번 신청일 <span class="sort-icon" id="icon-applyDate">▼</span>
                 </th>
@@ -240,7 +203,6 @@
                 data-name="${user.name}"
                 data-student-id="${user.userNo}"
                 data-apply-date="${user.createdAt}">
-
                 <td><input type="checkbox" class="row-check" value="${user.userNo}"/></td>
                 <td class="cell-no">${(currentPage - 1) * 10 + status.count}</td>
                 <td>
@@ -270,32 +232,30 @@
         </tbody>
     </table>
 
-    <!-- 페이지네이션 -->
+    <!-- ✅ 페이지네이션 - HTML 영역 (script 밖) -->
     <div class="pagination-wrap">
         <c:if test="${currentPage > 1}">
-            <a href="?page=${currentPage - 1}">&lt;</a>
+            <a href="?page=${currentPage - 1}&role=${currentRole}">&lt;</a>
         </c:if>
         <c:forEach var="p" begin="1" end="${totalPages}">
-            <a href="?page=${p}" class="${p == currentPage ? 'active' : ''}">${p}</a>
+            <a href="?page=${p}&role=${currentRole}" class="${p == currentPage ? 'active' : ''}">${p}</a>
         </c:forEach>
         <c:if test="${currentPage < totalPages}">
-            <a href="?page=${currentPage + 1}">&gt;</a>
+            <a href="?page=${currentPage + 1}&role=${currentRole}">&gt;</a>
         </c:if>
     </div>
 
-
-
 </div>
+
+<!-- ✅ script는 HTML 다 끝난 뒤 -->
 <script>
-    /* ── 정렬 상태 관리 ── */
     const sortState = { name: 'none', studentId: 'none', applyDate: 'none' };
 
     function sortTable(key) {
         const tbody = document.getElementById('userTableBody');
         const rows  = Array.from(tbody.querySelectorAll('tr.user-row'));
-
-        const cur = sortState[key];
-        const next = (cur === 'none' || cur === 'desc') ? 'asc' : 'desc';
+        const cur   = sortState[key];
+        const next  = (cur === 'none' || cur === 'desc') ? 'asc' : 'desc';
         sortState[key] = next;
 
         ['name', 'studentId', 'applyDate'].forEach(function(k) {
@@ -304,7 +264,7 @@
             else { icon.textContent = '▼'; sortState[k] = 'none'; }
         });
 
-        const attrMap = { name: 'name', studentId: 'userCode', applyDate: 'createdAt' };
+        const attrMap = { name: 'name', studentId: 'student-id', applyDate: 'apply-date' };
         const attr = attrMap[key];
 
         rows.sort(function(a, b) {
@@ -317,24 +277,23 @@
         reNumberRows();
     }
 
-    /* ── 번호 재정렬 ── */
     function reNumberRows() {
         const rows = document.querySelectorAll('#userTableBody tr.user-row');
         let i = 1;
         rows.forEach(function(row) {
-            // offsetParent가 있으면 화면에 보이는 요소입니다.
-            if (row.offsetParent !== null) {
+            if (getComputedStyle(row).display !== 'none') {
                 const noCell = row.querySelector('.cell-no');
                 if (noCell) noCell.textContent = i++;
             }
         });
     }
 
-    /* ── 통합 필터 실행 ── */
-    // 현재 선택된 역할(Role)을 전역 변수로 관리합니다.
-    let currentActiveRole = 'all'; // 기본값 all로 변경
+    let currentActiveRole = 'all';
 
     function filterRole(role) {
+        ['all', 'student', 'professor'].forEach(function(r) {
+            document.getElementById('btn-' + r).classList.toggle('active', r === role);
+        });
         location.href = '?page=1&role=' + role;
     }
 
@@ -345,33 +304,20 @@
         document.querySelectorAll('.user-row').forEach(function(row) {
             const rowRole   = row.getAttribute('data-role').trim().toUpperCase();
             const rowStatus = row.getAttribute('data-status');
-
             const roleMatch   = (targetRole === 'ALL' || rowRole === targetRole);
-            const statusMatch = !targetStatus || (rowStatus === targetStatus);
-
+            const statusMatch = !targetStatus || rowStatus === targetStatus;
             row.style.setProperty('display', (roleMatch && statusMatch) ? 'table-row' : 'none', 'important');
         });
         reNumberRows();
     }
 
-    function filterStatus() {
-        applyFilters();
-    }
+    function filterStatus() { applyFilters(); }
 
-
-    /* ── 검색 (검색어 필터도 추가) ── */
     function searchTable() {
         const keyword = document.getElementById('searchInput').value.toLowerCase().trim();
         document.querySelectorAll('.user-row').forEach(function(row) {
-            // 이미 숨겨진(필터링된) 행은 검색 결과와 상관없이 유지되어야 하므로 filter와 연동 필요
-            // 여기서는 단순 텍스트 검색만 구현
             const isMatch = row.innerText.toLowerCase().includes(keyword);
-            if (isMatch) {
-                 // 검색 결과가 맞으면 다시 전체 필터 적용 확인 (단순화 위해 강제 표시)
-                 row.style.setProperty('display', '', 'important');
-            } else {
-                 row.style.setProperty('display', 'none', 'important');
-            }
+            row.style.setProperty('display', isMatch ? '' : 'none', 'important');
         });
         reNumberRows();
     }
@@ -380,9 +326,9 @@
         document.querySelectorAll('.row-check').forEach(cb => cb.checked = master.checked);
     }
 
-    // 초기 실행
     document.addEventListener("DOMContentLoaded", function() {
-        var role = '${currentRole}';
+        var params = new URLSearchParams(window.location.search);
+        var role = params.get('role') || 'all';
         document.getElementById('btn-all').classList.toggle('active', role === 'all');
         document.getElementById('btn-student').classList.toggle('active', role === 'student');
         document.getElementById('btn-professor').classList.toggle('active', role === 'professor');

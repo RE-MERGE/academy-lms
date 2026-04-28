@@ -303,47 +303,9 @@
 </div>
 
 <script>
-/* ================================================================
-   강의실 현황 — 목업 데이터 (나중에 API 연동으로 교체)
-   day_of_week: '월', '화', '수', '목', '금' 또는 '월,수' 형식
-   start_time / end_time: 'HH:00' 형식
-================================================================ */
-var ROOM_MOCK = {
-    '101': [
-        { course_name: '공학수학', day_of_week: '월,수,금', start_time: '09:00', end_time: '10:00', color: 'mp-c1' },
-        { course_name: '회로이론', day_of_week: '화,목',    start_time: '11:00', end_time: '13:00', color: 'mp-c2' }
-    ],
-    '102': [
-        { course_name: '운영체제', day_of_week: '월,수',    start_time: '10:00', end_time: '12:00', color: 'mp-c3' },
-        { course_name: '자료구조', day_of_week: '화,목',    start_time: '09:00', end_time: '10:00', color: 'mp-c4' }
-    ],
-    '103': [
-        { course_name: '데이터베이스', day_of_week: '화,목', start_time: '13:00', end_time: '15:00', color: 'mp-c5' },
-        { course_name: '알고리즘',    day_of_week: '월,금',  start_time: '10:00', end_time: '11:00', color: 'mp-c6' }
-    ],
-    '201': [
-        { course_name: '네트워크',    day_of_week: '월,수',  start_time: '13:00', end_time: '15:00', color: 'mp-c2' },
-        { course_name: '소프트웨어공학', day_of_week: '금',  start_time: '09:00', end_time: '12:00', color: 'mp-c1' }
-    ],
-    '202': [
-        { course_name: '인공지능',    day_of_week: '화,목',  start_time: '10:00', end_time: '12:00', color: 'mp-c3' },
-        { course_name: '컴파일러',    day_of_week: '월',     start_time: '14:00', end_time: '16:00', color: 'mp-c5' }
-    ],
-    '203': [
-        { course_name: '경제학원론',  day_of_week: '월,수,금', start_time: '09:00', end_time: '10:00', color: 'mp-c4' }
-    ],
-    '301': [
-        { course_name: '마케팅',      day_of_week: '화,목',  start_time: '13:00', end_time: '15:00', color: 'mp-c6' },
-        { course_name: '통계학',      day_of_week: '월,수',  start_time: '10:00', end_time: '11:00', color: 'mp-c1' }
-    ],
-    '302': [
-        { course_name: '열역학',      day_of_week: '화,목',  start_time: '09:00', end_time: '11:00', color: 'mp-c2' },
-        { course_name: '유체역학',    day_of_week: '월,금',  start_time: '14:00', end_time: '16:00', color: 'mp-c3' }
-    ],
-    '303': [
-        { course_name: '전자기학',    day_of_week: '화,수,목', start_time: '11:00', end_time: '13:00', color: 'mp-c5' }
-    ]
-};
+var ROOM_DATA   = {};
+var ROOM_CTX    = '${pageContext.request.contextPath}';
+var ROOM_COLORS = ['mp-c1','mp-c2','mp-c3','mp-c4','mp-c5','mp-c6','mp-c7'];
 
 var MIN_H = 9;
 var MAX_H = 18;
@@ -361,9 +323,8 @@ function renderRoomTimetable(roomNo) {
     var body = document.getElementById('room-' + roomNo);
     if (!body) return;
 
-    var courses = ROOM_MOCK[roomNo] || [];
+    var courses = ROOM_DATA[roomNo] || [];
 
-    /* 시간 범위 */
     var minH = MIN_H, maxH = MAX_H;
     if (courses.length) {
         courses.forEach(function(c) {
@@ -374,7 +335,6 @@ function renderRoomTimetable(roomNo) {
         });
     }
 
-    /* 시간 라벨 + 빈 셀 */
     for (var h = minH; h < maxH; h++) {
         var rowIdx = h - minH + 1;
         var period = h - minH + 1;
@@ -405,7 +365,6 @@ function renderRoomTimetable(roomNo) {
         });
     }
 
-    /* 과목 셀 — 연속 시간 병합 */
     courses.forEach(function(c) {
         var days = parseDays(c.day_of_week);
         var sh   = parseHour(c.start_time);
@@ -433,10 +392,31 @@ function switchFloor(floorId, btn) {
     btn.classList.add('active');
 }
 
-/* 전체 강의실 렌더링 */
 window.addEventListener('DOMContentLoaded', function() {
-    ['101','102','103','201','202','203','301','302','303'].forEach(function(room) {
-        renderRoomTimetable(room);
+    fetch(ROOM_CTX + '/admin/courselist?semester=2026-1&size=100', {
+        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+        var colorMap = {}, idx = 0;
+        (data.courses || []).forEach(function(c) {
+            var room = c.room_info ? c.room_info.replace('호', '') : null;
+            if (!room) return;
+            if (!ROOM_DATA[room]) ROOM_DATA[room] = [];
+            if (!colorMap[c.course_name]) {
+                colorMap[c.course_name] = ROOM_COLORS[idx++ % ROOM_COLORS.length];
+            }
+            c.color = colorMap[c.course_name];
+            ROOM_DATA[room].push(c);
+        });
+        ['101','102','103','201','202','203','301','302','303'].forEach(function(room) {
+            renderRoomTimetable(room);
+        });
+    })
+    .catch(function() {
+        ['101','102','103','201','202','203','301','302','303'].forEach(function(room) {
+            renderRoomTimetable(room);
+        });
     });
 });
 </script>

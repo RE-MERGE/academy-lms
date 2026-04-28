@@ -12,7 +12,7 @@
 .mypage-title {
   font-size: 1.4rem;
   font-weight: 700;
-  color: #1e3a6e;
+  color: #1e3a8a;
   margin-bottom: 1.8rem;
   padding-bottom: 0.8rem;
   border-bottom: 2px solid #e2e8f0;
@@ -28,7 +28,7 @@
   background: white;
   border-radius: 16px;
   border: 1px solid #e2e8f0;
-  box-shadow: 0 2px 12px rgba(30, 58, 110, 0.07);
+  box-shadow: 0 2px 12px rgba(30, 58, 138, 0.07);
   padding: 2rem;
   display: flex;
   gap: 2.5rem;
@@ -50,8 +50,8 @@
   height: 110px;
   border-radius: 50%;
   object-fit: cover;
-  border: 3px solid #1e3a6e;
-  box-shadow: 0 4px 12px rgba(30, 58, 110, 0.15);
+  border: 3px solid #1e3a8a;
+  box-shadow: 0 4px 12px rgba(30, 58, 138, 0.15);
 }
 
 .profile-img-default {
@@ -59,12 +59,12 @@
   height: 110px;
   border-radius: 50%;
   background: #dbeafe;
-  border: 3px solid #1e3a6e;
+  border: 3px solid #1e3a8a;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 2.5rem;
-  color: #1e3a6e;
+  color: #1e3a8a;
 }
 
 .profile-status {
@@ -158,7 +158,7 @@
 }
 
 .btn-action-primary {
-  background: #1e3a6e;
+  background: #1e3a8a;
   color: white;
   border: none;
 }
@@ -166,13 +166,13 @@
 .btn-action-primary:hover {
   background: #2563eb;
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(30, 58, 110, 0.25);
+  box-shadow: 0 4px 12px rgba(30, 58, 138, 0.25);
 }
 
 .btn-action-outline {
   background: white;
-  color: #1e3a6e;
-  border: 1.5px solid #1e3a6e;
+  color: #1e3a8a;
+  border: 1.5px solid #1e3a8a;
 }
 
 .btn-action-outline:hover {
@@ -201,7 +201,7 @@
   font-family: 'Noto Sans KR', sans-serif;
   font-size: 0.83rem;
   font-weight: 700;
-  color: #64748b;
+  color: #1e3a8a;
   cursor: pointer;
   transition: all 0.2s;
   background: transparent;
@@ -210,13 +210,13 @@
 
 .mypage-tab:hover {
   background: #e2e8f0;
-  color: #1e3a6e;
+  color: #1e3a8a;
 }
 
 .mypage-tab.active {
-  background: #1e3a6e;
+  background: #1e3a8a;
   color: white;
-  box-shadow: 0 2px 8px rgba(30, 58, 110, 0.25);
+  box-shadow: 0 2px 8px rgba(30, 58, 138, 0.25);
 }
 
 /* ================================================================
@@ -231,7 +231,7 @@
 .section-title {
   font-size: 0.95rem;
   font-weight: 700;
-  color: #1e3a6e;
+  color: #1e3a8a;
   margin-bottom: 1rem;
   display: flex;
   align-items: center;
@@ -262,7 +262,7 @@
 
 .course-card:hover {
   border-color: #93c5fd;
-  box-shadow: 0 4px 16px rgba(30, 58, 110, 0.1);
+  box-shadow: 0 4px 16px rgba(30, 58, 138, 0.1);
   transform: translateY(-2px);
 }
 
@@ -310,7 +310,7 @@
 
 .course-progress-fill {
   height: 100%;
-  background: linear-gradient(90deg, #1e3a6e, #3b82f6);
+  background: linear-gradient(90deg, #1e3a8a, #3b82f6);
   border-radius: 99px;
   transition: width 0.6s ease;
 }
@@ -325,11 +325,11 @@
   border-radius: 12px;
   overflow: hidden;
   border: 1px solid #e2e8f0;
-  box-shadow: 0 2px 8px rgba(30, 58, 110, 0.05);
+  box-shadow: 0 2px 8px rgba(30, 58, 138, 0.05);
 }
 
 .grade-table thead {
-  background: #1e3a6e;
+  background: #1e3a8a;
   color: white;
 }
 
@@ -399,7 +399,7 @@
 .grade-summary-value {
   font-size: 1.4rem;
   font-weight: 700;
-  color: #1e3a6e;
+  color: #1e3a8a;
 }
 
 /* ================================================================
@@ -410,13 +410,13 @@
   border-radius: 12px;
   border: 1px solid #e2e8f0;
   overflow: hidden;
-  box-shadow: 0 2px 8px rgba(30, 58, 110, 0.05);
+  box-shadow: 0 2px 8px rgba(30, 58, 138, 0.05);
 }
 
 .timetable-header {
   display: grid;
   grid-template-columns: 60px repeat(5, 1fr);
-  background: #1e3a6e;
+  background: #1e3a8a;
   color: white;
 }
 
@@ -500,3 +500,101 @@
 
 .badge-gray   { background: #f1f5f9; color: #64748b; }
 .badge-yellow { background: #fef3c7; color: #92400e; }
+
+/* ================================================================
+   빈 상태 (Empty State)
+   ================================================================ */
+.empty-state {
+  background: white;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  padding: 3.5rem 1.5rem;
+  min-height: 220px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  text-align: center;
+  box-shadow: 0 2px 8px rgba(30, 58, 138, 0.05);
+}
+
+.empty-state-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #eff6ff, #dbeafe);
+  border: 2px solid #bfdbfe;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.6rem;
+  margin-bottom: 0.25rem;
+}
+
+.empty-state-text {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #475569;
+}
+
+.empty-state-sub {
+  font-size: 0.75rem;
+  color: #94a3b8;
+  line-height: 1.6;
+}
+
+/* 시간표 전용: 헤더(요일줄) 없이 빈 상태만 표시 */
+.timetable-empty {
+  background: white;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(30, 58, 138, 0.05);
+}
+
+.timetable-empty-body {
+  padding: 3rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+  text-align: center;
+}
+
+/* ================================================================
+   성적 빈 상태 (Grade Empty State)
+   ================================================================ */
+.grade-empty-body {
+  padding: 3.5rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.65rem;
+  text-align: center;
+}
+
+.grade-empty-icon {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #eff6ff, #dbeafe);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.6rem;
+  margin-bottom: 0.25rem;
+  border: 2px solid #bfdbfe;
+}
+
+.grade-empty-text {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #475569;
+}
+
+.grade-empty-sub {
+  font-size: 0.76rem;
+  color: #94a3b8;
+  line-height: 1.6;
+}

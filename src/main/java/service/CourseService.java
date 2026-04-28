@@ -1,8 +1,10 @@
 package service;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -141,6 +143,18 @@ public class CourseService {
 	public Course getBoardCourse(Integer courseNo) {
 		return coursedao.getBoardCourse(courseNo);
 	}
+	public List<Course> selectCoursesByProfessor(int userNo) {
+	    return coursedao.selectCoursesByProfessor(userNo);
+	}
+
+	public List<Course> selectCoursesByStudent(int userNo) {
+	    return coursedao.selectCoursesByStudent(userNo);
+	}
+
+	public Set<Integer> selectFavoriteSet(int userNo) {
+	    return new HashSet<>(coursedao.getFavoriteCourseNos(userNo));
+	}
+
 
 	public List<Course> getFavoriteCourses(int userNo) {
 		return coursedao.getFavoriteCourse(userNo);

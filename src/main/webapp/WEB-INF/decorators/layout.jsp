@@ -119,28 +119,6 @@
             </c:if>
         </nav>
 
-<%--        <div class="flyout" id="course-flyout">--%>
-<%--            <h3 class="flyout-title">${course.course_name}</h3>--%>
-<%--            <ul class="flyout-list">--%>
-<%--                <c:if test="${not empty courseList}">--%>
-<%--                    <c:forEach var="courseItem" items="${courseList}">--%>
-<%--                        <li class="flyout-item">--%>
-<%--                            <a href="${ctx}/board/subjectHome?courseNo=${courseItem.course_no}">--%>
-<%--                                    ${courseItem.course_name}--%>
-<%--                            </a>--%>
-<%--                            <c:set var="isFav" value="false"/>--%>
-<%--                            <c:forEach var="fno" items="${favoriteCourseList}">--%>
-<%--                                <c:if test="${fno == courseItem.course_no}"><c:set var="isFav" value="true"/></c:if>--%>
-<%--                            </c:forEach>--%>
-<%--                            <button class="fav-btn ${isFav ? 'active' : ''}" onclick="toggleFavorite(event, this, ${courseItem.course_no})">--%>
-<%--                                    ${isFav ? '★' : '☆'}--%>
-<%--                            </button>--%>
-<%--                        </li>--%>
-<%--                    </c:forEach>--%>
-<%--                </c:if>--%>
-<%--            </ul>--%>
-<%--        </div>--%>
-
         <div class="flyout" id="course-flyout">
             <h3 class="flyout-title">즐겨찾기</h3>
             <ul class="flyout-list">

@@ -50,7 +50,6 @@
 
         .grade-table thead tr { color: #ffffff; }
 
-        /* 열 너비 비율 (각 25%) */
         .grade-table th:nth-child(1),
         .grade-table td:nth-child(1) { width: 25%; }
 
@@ -156,6 +155,85 @@
         ============================================= */
         .mp-tabs-full .mypage-tab {
             flex: 1;
+            text-align: center;
+        }
+
+        /* =============================================
+           8. 빈 상태 (Empty State) 공통
+        ============================================= */
+        .empty-state {
+            background: white;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+            padding: 3.5rem 1.5rem;
+            min-height: 220px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(30, 58, 110, 0.05);
+        }
+
+        .empty-state-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #eff6ff, #dbeafe);
+            border: 2px solid #bfdbfe;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.6rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .empty-state-text {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: #475569;
+        }
+
+        .empty-state-sub {
+            font-size: 0.75rem;
+            color: #94a3b8;
+            line-height: 1.6;
+        }
+
+        /* ── 성적 테이블 래퍼 ── */
+        .grade-table-wrap {
+            background: white;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(30, 58, 110, 0.05);
+            margin-bottom: 1rem;
+        }
+
+        .grade-table-wrap .grade-table {
+            border: none;
+            box-shadow: none;
+            border-radius: 0;
+            margin-bottom: 0;
+        }
+
+        .grade-empty-body {
+            padding: 3.5rem 1.5rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.65rem;
+            text-align: center;
+        }
+
+        /* ── 시간표 빈 상태 ── */
+        .tt-empty-body {
+            padding: 3rem 1.5rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.65rem;
             text-align: center;
         }
     </style>
@@ -270,22 +348,11 @@
          탭 1: 수강/강의 과목
     ============================================= -->
     <div id="tab-courses" class="tab-panel active">
-        <div class="section-title">
-            <c:choose>
-                <c:when test="${userDetail.role == 'STUDENT'}">수강중인 과목</c:when>
-                <c:when test="${userDetail.role == 'PROFESSOR'}">강의중인 과목</c:when>
-                <c:when test="${userDetail.role == 'ADMIN'}">수강중인 전체 과목</c:when>
-                <c:otherwise>강의 과목</c:otherwise>
-            </c:choose>
-            <span>${semester} 학기</span>
-        </div>
-
-        <div class="course-grid">
-            <c:choose>
-                <c:when test="${not empty courseList}">
+        <c:choose>
+            <c:when test="${not empty courseList}">
+                <div class="course-grid">
                     <c:forEach var="course" items="${courseList}">
                         <div class="course-card">
-                                <%-- 과목 유형 뱃지 --%>
                             <c:choose>
                                 <c:when test="${course.course_type eq 'MAJOR_REQUIRED'}">
                                     <c:set var="badgeText" value="전공필수"/><c:set var="badgeClass" value="badge-red"/>
@@ -319,17 +386,21 @@
                             </div>
                         </div>
                     </c:forEach>
-                </c:when>
-                <c:otherwise>
-                    <div class="no-data">
+                </div>
+            </c:when>
+            <c:otherwise>
+                <div class="empty-state">
+                    <div class="empty-state-icon">📚</div>
+                    <p class="empty-state-text">
                         <c:choose>
                             <c:when test="${userDetail.role == 'PROFESSOR'}">이번 학기에 담당하는 강의가 없습니다.</c:when>
                             <c:otherwise>현재 수강 중인 과목이 없습니다.</c:otherwise>
                         </c:choose>
-                    </div>
-                </c:otherwise>
-            </c:choose>
-        </div>
+                    </p>
+                    <p class="empty-state-sub">수강 신청 기간에 과목을 등록해 주세요.</p>
+                </div>
+            </c:otherwise>
+        </c:choose>
     </div>
 
     <!-- =============================================
@@ -337,45 +408,62 @@
     ============================================= -->
     <c:if test="${userDetail.role == 'PROFESSOR'}">
         <div id="tab-stats" class="tab-panel">
-            <div class="section-title">담당 강의 성적 통계 <span>${semester} 학기</span></div>
-            <table class="grade-table">
-                <thead>
-                <tr>
-                    <th>과목명</th>
-                    <th>수강인원</th>
-                    <th>평균 점수</th>
-                    <th>최고 / 최저</th>
-                </tr>
-                </thead>
-                <tbody>
-                <c:choose>
-                    <c:when test="${not empty myGradeList}">
-                        <c:forEach var="stat" items="${myGradeList}">
+            <c:choose>
+                <c:when test="${not empty myGradeList}">
+                    <div class="grade-table-wrap">
+                        <table class="grade-table">
+                            <thead>
                             <tr>
-                                <td>
-                                    <div style="font-weight:bold; margin-bottom:4px;">${stat.courseName}</div>
-                                    <c:set var="gBadgeClass" value="badge-gray"/><c:set var="gBadgeText" value="교양"/>
-                                    <c:if test="${stat.courseType eq 'MAJOR_REQUIRED'}"><c:set var="gBadgeClass" value="badge-red"/><c:set var="gBadgeText" value="전공필수"/></c:if>
-                                    <c:if test="${stat.courseType eq 'MAJOR_ELECTIVE'}"><c:set var="gBadgeClass" value="badge-green"/><c:set var="gBadgeText" value="전공선택"/></c:if>
-                                    <c:if test="${stat.courseType eq 'GENERAL_REQUIRED'}"><c:set var="gBadgeClass" value="badge-orange"/><c:set var="gBadgeText" value="일반필수"/></c:if>
-                                    <c:if test="${stat.courseType eq 'GENERAL_ELECTIVE'}"><c:set var="gBadgeClass" value="badge-gray"/><c:set var="gBadgeText" value="일반선택"/></c:if>
-                                    <span class="grade-badge ${gBadgeClass}">${gBadgeText}</span>
-                                </td>
-                                <td>${stat.total_students}명</td>
-                                <td style="font-weight:700;">${stat.avg_score}점</td>
-                                <td>
-                                    <span style="color:#e74c3c; font-weight:bold;">${stat.max_score}</span> /
-                                    <span style="color:#3498db; font-weight:bold;">${stat.min_score}</span>
-                                </td>
+                                <th>과목명</th>
+                                <th>수강인원</th>
+                                <th>평균 점수</th>
+                                <th>최고 / 최저</th>
                             </tr>
-                        </c:forEach>
-                    </c:when>
-                    <c:otherwise>
-                        <tr><td colspan="4" style="padding:50px 0; color:#999;">통계 데이터가 없습니다.</td></tr>
-                    </c:otherwise>
-                </c:choose>
-                </tbody>
-            </table>
+                            </thead>
+                            <tbody>
+                            <c:forEach var="stat" items="${myGradeList}">
+                                <tr>
+                                    <td>
+                                        <div style="font-weight:bold; margin-bottom:4px;">${stat.courseName}</div>
+                                        <c:set var="gBadgeClass" value="badge-gray"/><c:set var="gBadgeText" value="교양"/>
+                                        <c:if test="${stat.courseType eq 'MAJOR_REQUIRED'}"><c:set var="gBadgeClass" value="badge-red"/><c:set var="gBadgeText" value="전공필수"/></c:if>
+                                        <c:if test="${stat.courseType eq 'MAJOR_ELECTIVE'}"><c:set var="gBadgeClass" value="badge-green"/><c:set var="gBadgeText" value="전공선택"/></c:if>
+                                        <c:if test="${stat.courseType eq 'GENERAL_REQUIRED'}"><c:set var="gBadgeClass" value="badge-orange"/><c:set var="gBadgeText" value="일반필수"/></c:if>
+                                        <c:if test="${stat.courseType eq 'GENERAL_ELECTIVE'}"><c:set var="gBadgeClass" value="badge-gray"/><c:set var="gBadgeText" value="일반선택"/></c:if>
+                                        <span class="grade-badge ${gBadgeClass}">${gBadgeText}</span>
+                                    </td>
+                                    <td>${stat.total_students}명</td>
+                                    <td style="font-weight:700;">${stat.avg_score}점</td>
+                                    <td>
+                                        <span style="color:#e74c3c; font-weight:bold;">${stat.max_score}</span> /
+                                        <span style="color:#3498db; font-weight:bold;">${stat.min_score}</span>
+                                    </td>
+                                </tr>
+                            </c:forEach>
+                            </tbody>
+                        </table>
+                    </div>
+                </c:when>
+                <c:otherwise>
+                    <div class="grade-table-wrap">
+                        <table class="grade-table">
+                            <thead>
+                            <tr>
+                                <th>과목명</th>
+                                <th>수강인원</th>
+                                <th>평균 점수</th>
+                                <th>최고 / 최저</th>
+                            </tr>
+                            </thead>
+                        </table>
+                        <div class="grade-empty-body">
+                            <div class="empty-state-icon">📊</div>
+                            <p class="empty-state-text">아직 등록된 통계 데이터가 없습니다.</p>
+                            <p class="empty-state-sub">성적 입력 기간이 지나면 이곳에 통계가 표시됩니다.</p>
+                        </div>
+                    </div>
+                </c:otherwise>
+            </c:choose>
         </div>
     </c:if>
 
@@ -383,91 +471,86 @@
          탭 3: 성적 조회 (학생 / 관리자)
     ============================================= -->
     <div id="tab-grades" class="tab-panel">
-        <div class="section-title">
-            <c:choose>
-                <c:when test="${userDetail.role == 'PROFESSOR'}">담당 강의 성적 내역</c:when>
-                <c:when test="${userDetail.role == 'ADMIN'}">전체 과목 성적 통계</c:when>
-                <c:otherwise>나의 성적 내역</c:otherwise>
-            </c:choose>
-        </div>
-        <table class="grade-table">
-            <thead>
-            <tr>
-                <th>과목명</th>
-                <c:choose>
-                    <c:when test="${userDetail.role == 'ADMIN'}">
-                        <th>수강인원</th>
-                        <th>중간 평균</th>
-                        <th>기말 평균</th>
-                        <th>최고 / 최저</th>
-                    </c:when>
-                    <c:when test="${userDetail.role == 'PROFESSOR'}">
-                        <th>수강인원</th>
-                        <th>평균 점수</th>
-                        <th>최고 / 최저</th>
-                    </c:when>
-                    <c:otherwise>
-                        <th>구분</th>
-                        <th>시험유형</th>
-                        <th>점수</th>
-                    </c:otherwise>
-                </c:choose>
-            </tr>
-            </thead>
-            <tbody>
-            <c:choose>
-                <c:when test="${not empty myGradeList}">
-                    <c:forEach var="grade" items="${myGradeList}">
+        <c:choose>
+            <c:when test="${not empty myGradeList}">
+                <div class="grade-table-wrap">
+                    <table class="grade-table">
+                        <thead>
                         <tr>
-                            <td>
-                                <div style="font-weight:bold; margin-bottom:4px;">${grade.courseName}</div>
-                                <c:set var="gBadgeClass" value="badge-gray"/><c:set var="gBadgeText" value="${gTypeText}"/>
-                                <c:if test="${grade.courseType eq 'MAJOR_REQUIRED'}"><c:set var="gBadgeClass" value="badge-red"/><c:set var="gBadgeText" value="전공필수"/></c:if>
-                                <c:if test="${grade.courseType eq 'MAJOR_ELECTIVE'}"><c:set var="gBadgeClass" value="badge-green"/><c:set var="gBadgeText" value="전공선택"/></c:if>
-                                <c:if test="${grade.courseType eq 'GENERAL_REQUIRED'}"><c:set var="gBadgeClass" value="badge-orange"/><c:set var="gBadgeText" value="일반필수"/></c:if>
-                                <c:if test="${grade.courseType eq 'GENERAL_ELECTIVE'}"><c:set var="gBadgeClass" value="badge-gray"/><c:set var="gBadgeText" value="일반선택"/></c:if>
-                                <span class="grade-badge ${gBadgeClass}">${gBadgeText}</span>
-                            </td>
+                            <th>과목명</th>
                             <c:choose>
                                 <c:when test="${userDetail.role == 'ADMIN'}">
-                                    <td>${grade.total_students}명</td>
-                                    <td style="font-weight:700; color:#4e73df;">${grade.mid_avg}점</td>
-                                    <td style="font-weight:700; color:#1cc88a;">${grade.final_avg}점</td>
-                                    <td>
-                                        <span style="color:#e74c3c; font-weight:bold;">${grade.max_score}</span> /
-                                        <span style="color:#3498db; font-weight:bold;">${grade.min_score}</span>
-                                    </td>
+                                    <th>수강인원</th>
+                                    <th>중간 평균</th>
+                                    <th>기말 평균</th>
+                                    <th>최고 / 최저</th>
                                 </c:when>
                                 <c:when test="${userDetail.role == 'PROFESSOR'}">
-                                    <td>${grade.total_students}명</td>
-                                    <td style="font-weight:700;">${grade.avg_score}점</td>
-                                    <td>
-                                        <span style="color:#e74c3c; font-weight:bold;">${grade.max_score}</span> /
-                                        <span style="color:#3498db; font-weight:bold;">${grade.min_score}</span>
-                                    </td>
+                                    <th>수강인원</th>
+                                    <th>평균 점수</th>
+                                    <th>최고 / 최저</th>
                                 </c:when>
                                 <c:otherwise>
-                                    <td>
-                                            <span class="type-badge ${grade.examType eq 'MIDTERM' ? 'badge-indigo' : 'badge-purple'}">
-                                                    ${grade.examType eq 'MIDTERM' ? '중간고사' : '기말고사'}
-                                            </span>
-                                    </td>
-                                    <td style="font-weight:700;">${grade.score}</td>
+                                    <th>구분</th>
+                                    <th>시험유형</th>
+                                    <th>점수</th>
                                 </c:otherwise>
                             </c:choose>
                         </tr>
-                    </c:forEach>
-                </c:when>
-                <c:otherwise>
-                    <tr>
-                        <td colspan="${userDetail.role == 'ADMIN' ? 5 : 4}" style="padding:50px 0; color:#999;">
-                            조회된 내역이 없습니다.
-                        </td>
-                    </tr>
-                </c:otherwise>
-            </c:choose>
-            </tbody>
-        </table>
+                        </thead>
+                        <tbody>
+                        <c:forEach var="grade" items="${myGradeList}">
+                            <tr>
+                                <td>
+                                    <div style="font-weight:bold; margin-bottom:4px;">${grade.courseName}</div>
+                                    <c:set var="gBadgeClass" value="badge-gray"/><c:set var="gBadgeText" value="${gTypeText}"/>
+                                    <c:if test="${grade.courseType eq 'MAJOR_REQUIRED'}"><c:set var="gBadgeClass" value="badge-red"/><c:set var="gBadgeText" value="전공필수"/></c:if>
+                                    <c:if test="${grade.courseType eq 'MAJOR_ELECTIVE'}"><c:set var="gBadgeClass" value="badge-green"/><c:set var="gBadgeText" value="전공선택"/></c:if>
+                                    <c:if test="${grade.courseType eq 'GENERAL_REQUIRED'}"><c:set var="gBadgeClass" value="badge-orange"/><c:set var="gBadgeText" value="일반필수"/></c:if>
+                                    <c:if test="${grade.courseType eq 'GENERAL_ELECTIVE'}"><c:set var="gBadgeClass" value="badge-gray"/><c:set var="gBadgeText" value="일반선택"/></c:if>
+                                    <span class="grade-badge ${gBadgeClass}">${gBadgeText}</span>
+                                </td>
+                                <c:choose>
+                                    <c:when test="${userDetail.role == 'ADMIN'}">
+                                        <td>${grade.total_students}명</td>
+                                        <td style="font-weight:700; color:#4e73df;">${grade.mid_avg}점</td>
+                                        <td style="font-weight:700; color:#1cc88a;">${grade.final_avg}점</td>
+                                        <td>
+                                            <span style="color:#e74c3c; font-weight:bold;">${grade.max_score}</span> /
+                                            <span style="color:#3498db; font-weight:bold;">${grade.min_score}</span>
+                                        </td>
+                                    </c:when>
+                                    <c:when test="${userDetail.role == 'PROFESSOR'}">
+                                        <td>${grade.total_students}명</td>
+                                        <td style="font-weight:700;">${grade.avg_score}점</td>
+                                        <td>
+                                            <span style="color:#e74c3c; font-weight:bold;">${grade.max_score}</span> /
+                                            <span style="color:#3498db; font-weight:bold;">${grade.min_score}</span>
+                                        </td>
+                                    </c:when>
+                                    <c:otherwise>
+                                        <td>
+                                            <span class="type-badge ${grade.examType eq 'MIDTERM' ? 'badge-indigo' : 'badge-purple'}">
+                                                ${grade.examType eq 'MIDTERM' ? '중간고사' : '기말고사'}
+                                            </span>
+                                        </td>
+                                        <td style="font-weight:700;">${grade.score}</td>
+                                    </c:otherwise>
+                                </c:choose>
+                            </tr>
+                        </c:forEach>
+                        </tbody>
+                    </table>
+                </div>
+            </c:when>
+            <c:otherwise>
+                <div class="empty-state">
+                    <div class="empty-state-icon">🎓</div>
+                    <p class="empty-state-text">아직 등록된 성적이 없습니다.</p>
+                    <p class="empty-state-sub">성적 입력 기간이 지나면<br>이곳에 성적이 표시됩니다.</p>
+                </div>
+            </c:otherwise>
+        </c:choose>
     </div>
 
     <!-- =============================================
@@ -476,7 +559,7 @@
     <c:if test="${userDetail.role != 'ADMIN'}">
         <div id="tab-timetable" class="tab-panel">
             <div class="mp-tt-wrap">
-                <div class="tt-grid-header">
+                <div id="mpTimetableHeader" class="tt-grid-header">
                     <div></div>
                     <div class="tt-day">월</div>
                     <div class="tt-day">화</div>
@@ -521,14 +604,37 @@
     }
 
     function renderMpTimetable() {
-        var body = document.getElementById('mpTimetableBody');
+        var header = document.getElementById('mpTimetableHeader');
+        var body   = document.getElementById('mpTimetableBody');
         body.innerHTML = '';
 
+        var wrap = document.querySelector('.mp-tt-wrap');
+
+        /* ── 과목 없을 때: wrap 스타일 제거 + empty-state 통일 ── */
         if (!mp_courses.length) {
-            body.style.display = 'block';
-            body.innerHTML = '<div style="padding:40px 0; text-align:center; color:#999; font-size:12px;">수강신청된 과목이 없습니다.</div>';
+            header.style.display  = 'none';
+            wrap.style.width      = '100%';
+            wrap.style.background = 'transparent';
+            wrap.style.border     = 'none';
+            wrap.style.padding    = '0';
+            wrap.style.boxShadow  = 'none';
+            body.style.display    = 'block';
+            body.innerHTML =
+                '<div class="empty-state">' +
+                '  <div class="empty-state-icon">🗓️</div>' +
+                '  <p class="empty-state-text">등록된 시간표가 없습니다.</p>' +
+                '  <p class="empty-state-sub">수강 신청 후 시간표가 자동으로 표시됩니다.</p>' +
+                '</div>';
             return;
         }
+
+        /* 과목 있을 때: wrap 스타일 복원 + 헤더 복원 */
+        header.style.display  = '';
+        wrap.style.width      = '';
+        wrap.style.background = '';
+        wrap.style.border     = '';
+        wrap.style.padding    = '';
+        wrap.style.boxShadow  = '';
 
         body.style.display = 'grid';
         body.style.gridTemplateColumns = '50px repeat(5, 1fr)';

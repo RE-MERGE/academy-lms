@@ -98,6 +98,13 @@ public class CourseDao {
 	public void deleteCourses(List<Integer> courseNos) {
 		template.getMapper(cls).deleteCourses(courseNos);
 	}
+	public List<Course> getProfessorBlockedCourses(int professorNo, String semester) {
+		return template.getMapper(cls).getProfessorBlockedCourses(professorNo, semester);
+	}
+	public int updateCourse(Course course) {
+		return template.getMapper(cls).updateCourse(course);
+	}
+	
 	public List<Map<String, Object>> getGrade(Integer courseNo, Integer userNo) {
 	    return template.getMapper(cls).getGrade(courseNo, userNo);
 	}

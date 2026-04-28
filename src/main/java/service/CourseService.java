@@ -112,6 +112,18 @@ public class CourseService {
 		public void deleteCourses(List<Integer> courseNos) {
 		    coursedao.deleteCourses(courseNos);
 		}
+
+		public List<Course> getProfessorBlockedCourses(int professorNo, String semester) {
+			return coursedao.getProfessorBlockedCourses(professorNo,semester);
+		}
+
+		public Course findByCourseNo(int courseNo) {
+			return coursedao.findByCourseNo(courseNo);
+		}
+
+		public int updateCourse(Course course) {
+			return coursedao.updateCourse(course);
+		}
 		
 		public Map<String, Object> selectGradeMap(Integer courseNo, Integer userNo) {
 		    List<Map<String, Object>> gradeList = coursedao.getGrade(courseNo, userNo); // coursedao로 통일

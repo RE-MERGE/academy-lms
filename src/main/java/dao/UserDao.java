@@ -77,4 +77,13 @@ public class UserDao {
     public User selectUserByNaverId(String naverId) {
         return template.getMapper(cls).selectUserByNaverId(naverId);
     }
+
+	public Integer getProfNo(int code) {
+		
+		return template.getMapper(cls).getProfNo(code);
+	}
+
+	public int getUserCode(int professor_no) {
+		return template.getMapper(cls).getUserCode(professor_no);
+	}
 }

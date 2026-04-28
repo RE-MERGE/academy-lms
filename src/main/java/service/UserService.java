@@ -230,4 +230,12 @@ public class UserService {
 
         return year += semester += String.valueOf(month);
     }
+
+	public Integer getProfNo(int code) {
+		return dao.getProfNo(code);
+	}
+
+	public int getUserCodeByProfNo(int professor_no) {
+		return dao.getUserCode(professor_no);
+	}
 }

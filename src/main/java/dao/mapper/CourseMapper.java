@@ -180,6 +180,25 @@ public interface CourseMapper {
             "</script>")
     void deleteCourses(List<Integer> courseNos);
 
+    @Select("SELECT * FROM COURSE "
+    		+ "WHERE professor_no = #{professorNo} "
+    		+ "  AND semester = #{semester}")
+	List<Course> getProfessorBlockedCourses(@Param("professorNo") int professorNo, @Param("semester") String semester);
+
+    @Update("UPDATE COURSE SET " +
+            "course_name = #{course_name}, " +
+            "course_type = #{course_type}, " +
+            "room_info = #{room_info}, " +
+            "day_of_week = #{day_of_week}, " +
+            "start_time = #{start_time}, " +
+            "end_time = #{end_time}, " +
+            "max_students = #{max_students}, " +
+            "semester = #{semester}, " +
+            "credits = #{credits}, " +
+            "curriculum_pdf = #{curriculum_pdf}, " +
+            "professor_no = #{professor_no} " +  
+            "WHERE course_no = #{course_no}")
+    public int updateCourse(Course course);
     @Select("select g.type, g.score, g.alphabet from GRADE g join ENROLLMENT e on g.enrollment_no = e.enrollment_no"
     		+ " where e.course_no = #{courseNo} and e.student_no = #{userNo}")
     List<Map<String,Object>> getGrade(@Param("courseNo") Integer courseNo, @Param("userNo") Integer userNo);

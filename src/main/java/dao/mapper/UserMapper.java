@@ -82,7 +82,11 @@ public interface UserMapper {
     @Update("UPDATE USERS SET lock_count=0 WHERE user_id = #{userId}")
     void resetLockCount(String userId);
 
-    @Update("UPDATE USERS SET lock_count=#{newLockCount} WHERE user_id = #{userId}")
+    @Select("SELECT user_no FROM USERS WHERE user_code = #{value} AND ROLE = 'PROFESSOR'")
+	Integer getProfNo(int code);
+
+    @Select("SELECT user_code FROM USERS WHERE user_no = #{value}")
+	int getUserCode(int professor_no);
     void updateLockCount(@Param("userId") String userId, @Param("newLockCount") int newLockCount);
 
     @Update("UPDATE USERS SET last_login = now() WHERE user_id = #{userId}")

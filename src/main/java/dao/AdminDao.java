@@ -53,4 +53,8 @@ public class AdminDao {
     public void updateInfoFormAdmin(int userNo, UserDetailForAdmin userDetailForAdmin) {
          template.getMapper(cls).updateInfoForAdmin(userNo, userDetailForAdmin);
     }
+
+    public void resetLockCount(int userNo) {
+        template.getMapper(cls).resetLockCount(userNo);
+    }
 }

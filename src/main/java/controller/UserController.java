@@ -7,8 +7,6 @@ import dto.user.login.UpdatePwForm;
 import dto.user.mypage.MyPageData;
 import exception.LoginFailException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.mail.MailSender;
-import org.springframework.mail.SimpleMailMessage;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -17,15 +15,13 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import service.FileService;
+import service.MailService;
 import service.NaverLoginService;
 import service.UserService;
 
-import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 import java.time.LocalDate;
-import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 @Controller
@@ -36,7 +32,7 @@ public class UserController {
     private final UserService userService;
     private final NaverLoginConfig naverLoginConfig;
     private final NaverLoginService naverLoginService;
-    private final MailSender mailSender;
+    private final MailService mailService;
     private final BCryptPasswordEncoder passwordEncoder;
     private final FileService fileService;
 
@@ -122,8 +118,7 @@ public class UserController {
     @GetMapping("myPage")
     public String myPage(@Login SessionUser sessionUser, Model model) {
 
-        String semester = getSemester();
-
+        String semester = userService.getSemester();
         MyPageData data = userService.getMyPageData(sessionUser, semester);
 
         model.addAttribute("courseList", data.getCourseList());
@@ -178,13 +173,11 @@ public class UserController {
             return "home/findAccount";
         }
 
-        String tempPassword = UUID.randomUUID().toString().substring(0, 8);
-
-        userService.updatePassword(findPwForm.getUserId(), passwordEncoder.encode(tempPassword));
-
         try {
-            sentTempPasswordEmail(findPwForm.getEmail(), tempPassword);
+            userService.processForgotPassword(findPwForm.getUserId(), findPwForm.getEmail(), findPwForm.getPhone());
             model.addAttribute("message", "이메일로 임시 비밀번호를 발송했습니다.");
+        } catch (IllegalArgumentException e) {
+            bindingResult.reject("error.mismatch.info");
         } catch (Exception e) {
             e.printStackTrace();
             model.addAttribute("message", "메일 발송에 실패했습니다. 관리자에게 문의하세요.");
@@ -195,18 +188,7 @@ public class UserController {
         return "home/findAccount";
     }
 
-    private void sentTempPasswordEmail(String email, String tempPassword) {
-        SimpleMailMessage message = new SimpleMailMessage();
-        message.setFrom("alswo818@naver.com");
-        message.setTo(email);
-        message.setSubject("[re-merge LMS] 임시 비밀번호 발급 ");
-        message.setText("안녕하세요, [re-merge LMS]입니다. \n" +
-                "요청하신 임시 비밀번호는 [ " + tempPassword + "] 입니다.\n" +
-                "로그인 후 반드시 비밀번호를 변경해주세요.");
 
-        mailSender.send(message);
-
-    }
 
     @GetMapping("naverLogin")
     public String naverLogin(HttpSession session) {
@@ -376,20 +358,6 @@ public class UserController {
         }
     }
 
-    private String getSemester() {
 
-        String year = String.valueOf(LocalDate.now().getYear());
-        int month = LocalDate.now().getMonthValue();
-
-        String semester = "-";
-
-        if (month <= 6) {
-            month = 1;
-        } else {
-            month = 2;
-        }
-
-        return year += semester += String.valueOf(month);
-    }
 
 }

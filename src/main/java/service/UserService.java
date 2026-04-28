@@ -10,19 +10,23 @@ import exception.LoginFailException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
 public class UserService {
 
     private final UserDao dao;
+    private final MailService mailService;
     private final FileService fileService;
     private final CourseDao courseDao;
     private final EnrollmentDao enrollmentDao;
     private final BCryptPasswordEncoder passwordEncoder;
+
 
     public void join(User user) {
 
@@ -144,6 +148,21 @@ public class UserService {
         return new SessionUser(dbUser);
     }
 
+    @Transactional
+    public void processForgotPassword(String userId, String email, String phone) {
+
+        String selectedUser = dao.selectUserPassword(userId, email, phone);
+
+        if (selectedUser == null || selectedUser.trim().isEmpty()) {
+            throw new IllegalArgumentException("error.mismatch.info");
+        }
+
+        String tempPassword = UUID.randomUUID().toString().substring(0, 8);
+        dao.updatePassword(userId, passwordEncoder.encode(tempPassword));
+
+        mailService.sendTempPasswordEmail(email, tempPassword);
+    }
+
 
     private int getUserCode() {
 
@@ -195,5 +214,21 @@ public class UserService {
 
     public void updateLastLogin(String userId) {
         dao.updateLastLogin(userId);
+    }
+
+    public String getSemester() {
+
+        String year = String.valueOf(LocalDate.now().getYear());
+        int month = LocalDate.now().getMonthValue();
+
+        String semester = "-";
+
+        if (month <= 6) {
+            month = 1;
+        } else {
+            month = 2;
+        }
+
+        return year += semester += String.valueOf(month);
     }
 }

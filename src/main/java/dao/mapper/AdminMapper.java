@@ -112,4 +112,8 @@ public interface AdminMapper {
             "WHERE user_no = #{userNo}"
     })
     void updateInfoForAdmin(@Param("userNo") int userNo, @Param("userDetail") UserDetailForAdmin userDetailForAdmin);
+
+    @Update("UPDATE USERS SET lock_count = 0 WHERE user_no = #{userNo}")
+    void resetLockCount(int userNo);
+
 }

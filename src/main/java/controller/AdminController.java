@@ -16,7 +16,9 @@ import service.AdminService;
 import service.UserService;
 
 import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Controller
 @RequestMapping("admin")
@@ -45,7 +47,7 @@ public class AdminController {
         return "admin/adminUserList";
     }
 
-    @GetMapping("courseList")
+    @GetMapping("adminCourseList")
     public String getCourseList(Model model) {
 
         List<AdminCourseList> courseList = adminService.getAllCourseList();
@@ -91,19 +93,23 @@ public class AdminController {
     public String editProfileForAdminForm(@PathVariable int userNo, Model model) {
 
         User targetUser = adminService.selectUser(userNo);
-        model.addAttribute(UserConst.DETAIL_USER , new UserEditFormForAdmin(targetUser));
+        model.addAttribute(UserConst.DETAIL_USER , new UserDetailForAdmin(targetUser));
 
         return "admin/editProfileForAdmin";
     }
 
     @PostMapping("editProfileForAdmin/{userNo}")
     public String editProfileForAdmin(@PathVariable int userNo,
-                                      @Validated UserDetailForAdmin userDetailForAdmin,
+                                      @Validated @ModelAttribute("userDetail") UserDetailForAdmin userDetailForAdmin,
                                       BindingResult bindingResult, Model model) {
 
         if (bindingResult.hasErrors()) {
+
             User targetUser = adminService.selectUser(userNo);
-            model.addAttribute(UserConst.DETAIL_USER , new UserEditFormForAdmin(targetUser));
+            findReadyOnlyFields(userDetailForAdmin, targetUser);
+
+            model.addAttribute(UserConst.DETAIL_USER, userDetailForAdmin);
+            model.addAttribute(UserConst.ORIGINAL_NAME, targetUser.getName());
 
             return "admin/editProfileForAdmin";
         }
@@ -111,6 +117,45 @@ public class AdminController {
         adminService.updateUserFormAdmin(userNo, userDetailForAdmin);
 
         return "redirect:/admin/userDetail/" + userNo + "?saved=1";
+    }
+
+    @PostMapping("resetLock/{userNo}")
+    @ResponseBody
+    public Map<String, Object> resetLockCount(@PathVariable int userNo) {
+        Map<String, Object> result = new HashMap<>();
+
+        try {
+            adminService.resetLockCount(userNo);
+            result.put("success", true);
+        } catch (Exception e) {
+            result.put("success", false);
+        }
+        return result;
+    }
+
+    @PostMapping("tempPassword/{userNo}")
+    @ResponseBody
+    public Map<String, Object> sendTempPassword(@PathVariable int userNo) {
+        Map<String, Object> result = new HashMap<>();
+
+        try {
+            User targetUser = adminService.selectUser(userNo);
+            userService.processForgotPassword(targetUser.getUserId(), targetUser.getEmail(), targetUser.getPhone());
+            result.put("success", true);
+        } catch (Exception e) {
+            result.put("success", false);
+        }
+        return result;
+    }
+
+    private static void findReadyOnlyFields(UserDetailForAdmin userDetailForAdmin, User targetUser) {
+
+        userDetailForAdmin.setCurrentProfileImg(targetUser.getProfileImg());
+        userDetailForAdmin.setUserCode(targetUser.getUserCode());
+        userDetailForAdmin.setUserId(targetUser.getUserId());
+        userDetailForAdmin.setCreatedAt(targetUser.getCreatedAt());
+        userDetailForAdmin.setLastLoginDate(targetUser.getLastLoginAt());
+        userDetailForAdmin.setLockCount(targetUser.getLock_count());
     }
 
     private UserDetailForAdmin createdUserDetail(User selectUser) {

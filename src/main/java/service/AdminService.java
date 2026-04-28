@@ -72,4 +72,8 @@ public class AdminService {
 
         adminDao.updateInfoFormAdmin(userNo, userDetailForAdmin);
     }
+
+    public void resetLockCount(int userNo) {
+        adminDao.resetLockCount(userNo);
+    }
 }

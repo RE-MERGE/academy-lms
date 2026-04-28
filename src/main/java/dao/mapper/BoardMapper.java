@@ -11,28 +11,6 @@ public interface BoardMapper {
             "VALUES (#{board.courseNo}, #{writerNo}, #{board.boardType}, #{board.title}, #{board.content}, #{board.fileUrl}, now())")
     void insertPost(@Param("board") PostCreate board, @Param("writerNo") int writerNo);
 
-    @Select("""
-                <script>
-                    SELECT b.board_no AS boardNo, b.writer_no AS writerNo, b.board_type AS boardType, b.title, b.views, b.is_secret AS isSecret, b.created_at AS createdAt, u.name AS writerName
-                    FROM BOARD b
-                    JOIN USERS u ON b.writer_no = u.user_no
-                    <where>
-                        <choose>
-                            <when test="courseNo != null">
-                                AND b.course_no = #{courseNo}
-                            </when>
-                            <otherwise>
-                                AND b.course_no IS NULL
-                            </otherwise>
-                        </choose>
-                        <if test="boardType != null">
-                            AND b.board_type = #{boardType}
-                        </if>
-                    </where>
-                </script>
-            """)
-    List<PostList> postList(@Param("courseNo") Integer courseNo, @Param("boardType") String boardType);
-
     @Select("SELECT  b.board_no AS boardNo,\n" +
             "        b.course_no AS courseNo,\n" +
             "        b.board_type AS boardType,\n" +
@@ -42,7 +20,7 @@ public interface BoardMapper {
             "        u.name AS writerName,\n" +
             "        b.file_url AS fileUrl,\n" +
             "        b.views,\n" +
-            "        b.is_secret AS isSecret,\n" +
+            "        b.is_answered AS isAnswered,\n" +
             "        b.created_at AS createdAt\n" +
             "        FROM BOARD b" +
             "        JOIN USERS u ON b.writer_no = u.user_no" +
@@ -63,14 +41,19 @@ public interface BoardMapper {
     @Select("""
             <script>
                 SELECT b.board_no as boardNo, b.course_no as courseNo, b.board_type as boardType, b.title,
-                       b.views, b.is_secret AS isSecret, b.created_at AS createdAt, b.file_url AS fileUrl,
+                       b.views, b.is_answered AS isAnswered, b.created_at AS createdAt, b.file_url AS fileUrl,
                        m.name AS writerName
                 FROM BOARD b
                 JOIN USERS m ON b.writer_no = m.user_no
                 WHERE b.board_type = #{boardType}
-                <if test="courseNo != null">
-                    AND b.course_no = #{courseNo}
-                </if>
+                <choose>
+                    <when test="courseNo != null">
+                        AND b.course_no = #{courseNo}
+                    </when>
+                    <otherwise>
+                        AND b.course_no IS NULL
+                    </otherwise>
+                </choose>
                 <if test="keyword != null and keyword != ''">
                     <choose>
                         <when test="searchType == 'title'">
@@ -84,6 +67,9 @@ public interface BoardMapper {
                             OR m.name LIKE CONCAT('%', #{keyword}, '%'))
                         </otherwise>
                     </choose>
+                </if>
+                <if test="writerNo != null">
+                    AND b.writer_no = #{writerNo}
                 </if>
                 ORDER BY b.created_at DESC
                 LIMIT #{pageSize} OFFSET #{offset}
@@ -96,6 +82,16 @@ public interface BoardMapper {
                 SELECT COUNT(*) FROM BOARD b
                 JOIN USERS m ON b.writer_no = m.user_no
                 WHERE b.board_type = #{boardType}
+            
+                <choose>
+                    <when test="courseNo != null">
+                        AND b.course_no = #{courseNo}
+                    </when>
+                    <otherwise>
+                        AND b.course_no IS NULL
+                    </otherwise>
+                </choose>
+            
                 <if test="keyword != null and keyword != ''">
                     <choose>
                         <when test="searchType == 'title'">
@@ -110,11 +106,16 @@ public interface BoardMapper {
                         </otherwise>
                     </choose>
                 </if>
+                <if test="writerNo != null">
+                    AND b.writer_no = #{writerNo}
+                </if>
             </script>
             """)
-    int getTotalCount(@Param("boardType") String boardType,
+    int getTotalCount(@Param("courseNo") Integer courseNo, // courseNo 파라미터 추가
+                      @Param("boardType") String boardType,
                       @Param("keyword") String keyword,
-                      @Param("searchType") String searchType);
+                      @Param("searchType") String searchType,
+                      @Param("writerNo") Integer writerNo);
 
     @Update("UPDATE BOARD SET views = views + 1 WHERE board_no = #{value}")
     void viewCount(int boardNo);

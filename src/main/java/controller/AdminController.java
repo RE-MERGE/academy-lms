@@ -1,14 +1,13 @@
 package controller;
 
 
-import dao.UserDao;
 import dto.user.*;
 import dto.user.mypage.UserEditFormForAdmin;
+import dto.user.login.Login;
 import dto.user.mypage.AdminCourseList;
 import dto.user.mypage.MyPageData;
 import dto.user.mypage.UserDetailForAdmin;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -17,7 +16,6 @@ import org.springframework.web.bind.annotation.*;
 import service.AdminService;
 import service.UserService;
 
-import javax.annotation.PostConstruct;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -28,8 +26,6 @@ public class AdminController {
 
     private final AdminService adminService;
     private final UserService userService;
-    private final UserDao userDao;
-    private final BCryptPasswordEncoder bCryptPasswordEncoder;
 
     @GetMapping("userList")
     public String getUserList(@RequestParam(defaultValue = "1") int page,

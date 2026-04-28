@@ -18,7 +18,7 @@ public class PostList {
     private String title;
     private String writerName;
     private int views;
-    private int isSecret;
     private Date createdAt;
     private String fileUrl;
+    private Boolean isAnswered;
 }

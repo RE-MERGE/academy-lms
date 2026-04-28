@@ -12,7 +12,7 @@
 <main class="write-wrap">
     <div class="write-header">
         <div class="header-title">
-            <h2>${boardType=="NOTICE"?"공지사항":"자유게시판"} 게시글 작성</h2>
+            <h2>${boardType=="NOTICE"?"공지사항":boardType=="FREE"?"자유게시판":"질문"} 게시글 작성</h2>
             <p>지식과 질문을 공유하여 함께 성장하는 커뮤니티를 만들어주세요.</p>
         </div>
         <div class="header-actions">
@@ -22,7 +22,7 @@
     </div>
     <div class="card write-card">
         <form id="write" action="write" method="post" enctype="multipart/form-data">
-            <input type="hidden" name="no" value="${param.courseNo}"/>
+            <input type="hidden" name="courseNo" value="${param.courseNo}"/>
             <input type="hidden" name="boardType" value="${boardType}"/>
             <div class="form-row">
                 <div class="form-group group-category">

@@ -4,7 +4,6 @@ package dao.mapper;
 import dto.user.AdminUserList;
 import dto.user.User;
 import dto.user.mypage.UserDetailForAdmin;
-import dto.user.mypage.UserEditFormForAdmin;
 import dto.user.mypage.AdminCourseList;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
@@ -85,21 +84,41 @@ public interface AdminMapper {
     @Select("<script>" +
             "SELECT user_no AS userNo, name, email, role, status, user_code AS userCode, created_at AS createdAt " +
             "FROM USERS " +
-            "<where>" +
-            "  <if test=\"role != null and role != 'all'\">role = #{role}</if>" +
-            "</where>" +
+            "WHERE 1=1 " +
+            "<choose>" +
+            "  <when test=\"role != null and role == 'admin'\">AND role = 'ADMIN' </when>" +
+            "  <when test=\"role != null and role == 'student'\">AND role = 'STUDENT' </when>" +
+            "  <when test=\"role != null and role == 'professor'\">AND role = 'PROFESSOR' </when>" +
+            "</choose>" +
+            "<if test=\"keyword != null and keyword != ''\">" +
+            "  <choose>" +
+            "    <when test=\"searchType == 'name'\">AND name LIKE CONCAT('%', #{keyword}, '%') </when>" +
+            "    <when test=\"searchType == 'email'\">AND email LIKE CONCAT('%', #{keyword}, '%') </when>" +
+            "    <when test=\"searchType == 'userCode'\">AND user_code LIKE CONCAT('%', #{keyword}, '%') </when>" +
+            "    <when test=\"searchType == 'nameEmail'\">AND (name LIKE CONCAT('%', #{keyword}, '%') OR email LIKE CONCAT('%', #{keyword}, '%')) </when>" +
+            "    <otherwise>AND (name LIKE CONCAT('%', #{keyword}, '%') OR email LIKE CONCAT('%', #{keyword}, '%') OR user_code LIKE CONCAT('%', #{keyword}, '%')) </otherwise>" +
+            "  </choose>" +
+            "</if>" +
             "ORDER BY created_at DESC " +
             "LIMIT #{size} OFFSET #{offset}" +
             "</script>")
-    List<AdminUserList> getUserListPaged(@Param("offset") int offset, @Param("size") int size, @Param("role") String role);
+    List<AdminUserList> getUserListPaged(@Param("offset") int offset, @Param("size") int size, @Param("role") String role, @Param("keyword") String keyword, @Param("searchType") String searchType);
 
     @Select("<script>" +
             "SELECT COUNT(*) FROM USERS " +
-            "<where>" +
-            "  <if test=\"role != null and role != 'all'\">role = #{role}</if>" +
-            "</where>" +
+            "WHERE role != 'ADMIN' " +
+            "<if test=\"role != null and role != 'all'\">AND role = #{role} </if>" +
+            "<if test=\"keyword != null and keyword != ''\">" +
+            "  <choose>" +
+            "    <when test=\"searchType == 'name'\">AND name LIKE CONCAT('%', #{keyword}, '%') </when>" +
+            "    <when test=\"searchType == 'email'\">AND email LIKE CONCAT('%', #{keyword}, '%') </when>" +
+            "    <when test=\"searchType == 'userCode'\">AND user_code LIKE CONCAT('%', #{keyword}, '%') </when>" +
+            "    <when test=\"searchType == 'nameEmail'\">AND (name LIKE CONCAT('%', #{keyword}, '%') OR email LIKE CONCAT('%', #{keyword}, '%')) </when>" +
+            "    <otherwise>AND (name LIKE CONCAT('%', #{keyword}, '%') OR email LIKE CONCAT('%', #{keyword}, '%') OR user_code LIKE CONCAT('%', #{keyword}, '%')) </otherwise>" +
+            "  </choose>" +
+            "</if>" +
             "</script>")
-    int getTotalUserCount(String role);
+    int getTotalUserCount(@Param("role") String role, @Param("keyword") String keyword, @Param("searchType") String searchType);
 
     @Update({
             "UPDATE USERS " +
@@ -115,5 +134,8 @@ public interface AdminMapper {
 
     @Update("UPDATE USERS SET lock_count = 0 WHERE user_no = #{userNo}")
     void resetLockCount(int userNo);
+
+    @Select("SELECT COUNT(*) FROM USERS")
+    int getTotalAllUserCount();
 
 }

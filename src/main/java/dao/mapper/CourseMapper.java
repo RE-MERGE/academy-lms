@@ -261,4 +261,12 @@ public interface CourseMapper {
             "AND FIND_IN_SET(#{day_of_week}, day_of_week) > 0 " +
             "AND start_time < #{end_time} AND end_time > #{start_time}")
     int hasProfessorConflictExcludeSelf(Course course);
+
+    @Select("select * from COURSE where professor_no = #{userNo}")
+	List<Course> getCourseByProfessor(Integer userNo);
+
+    @Select("SELECT c.* FROM COURSE c " +
+            "JOIN ENROLLMENT e ON c.course_no = e.course_no " +
+            "WHERE e.student_no = #{userNo}")
+	List<Course> getCourseByStudent(Integer userNo);
 }

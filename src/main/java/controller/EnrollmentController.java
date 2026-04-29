@@ -205,7 +205,7 @@ public class EnrollmentController {
 
 	        String pdfUrl = storageService.uploadPdf(curriculumPdf, params.get("semester"));
 	        if (pdfUrl != null) course.setCurriculum_pdf(pdfUrl);
-
+	        else {course.setCurriculum_pdf(existing.getCurriculum_pdf()); }
 	        result = courseService.updateCourse(course);
 	    } catch (Exception e) {
 	        result.put("success", false);
@@ -388,5 +388,27 @@ public class EnrollmentController {
 	@ResponseBody
 	public List<Course> professorBlocked(@RequestParam int professorNo, @RequestParam String semester) {
 	    return courseService.getProfessorBlockedCourses(professorNo, semester);
+	}
+
+	@GetMapping("professor-verify")
+	@ResponseBody
+	public Map<String, Object> verifyProfessor(@RequestParam int userCode) {
+	    Map<String, Object> result = new HashMap<>();
+	    try {
+	        Integer profNo = userService.getProfNo(userCode);
+	        if (profNo == null || profNo <= 0) {
+	            result.put("success", false);
+	            result.put("message", "존재하지 않는 교수입니다.");
+	            return result;
+	        }
+	        String name = userService.getNameByUserCode(userCode);
+	        result.put("success", true);
+	        result.put("professorNo", profNo);
+	        result.put("name", name != null ? name : "");
+	    } catch (Exception e) {
+	        result.put("success", false);
+	        result.put("message", e.getMessage());
+	    }
+	    return result;
 	}
 }

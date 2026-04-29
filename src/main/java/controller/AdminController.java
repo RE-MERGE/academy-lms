@@ -1,6 +1,7 @@
 package controller;
 
 
+import dto.Course;
 import dto.user.*;
 import dto.user.mypage.AdminCourseList;
 import dto.user.mypage.MyPageData;
@@ -94,8 +95,6 @@ public class AdminController {
         model.addAttribute("semester", semester);
         model.addAttribute("timetable", data.getTimeTableData());
         model.addAttribute(UserConst.DETAIL_USER, targetUser);
-
-        System.err.println("timetable cells: " + data.getTimeTableData().getCells().size());
 
 
         return "admin/userDetail";

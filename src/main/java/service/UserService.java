@@ -82,6 +82,9 @@ public class UserService {
         List<Course> courseList = courseDao.getStudentMyCourseMap(userNo, semester);
         List<MyGrade> gradeList = enrollmentDao.getStudentMyGradeList(userNo);
 
+        System.err.println("courseList size: " + courseList.size());
+        courseList.forEach(c -> System.err.println(c.getCourse_name() + " " + c.getDay_of_week() + " " + c.getStart_time()));
+
         return MyPageData.builder()
                 .courseList(courseList)
                 .gradeList(gradeList)

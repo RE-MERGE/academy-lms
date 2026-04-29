@@ -220,15 +220,22 @@
         <input type="hidden" id="courseNo" value="${param.courseNo}">
 
         <%-- 교수 사번: ADMIN만 표시 --%>
-		<c:if test="${sessionUser.role.toString() == 'ADMIN'}">
-  			<div class="form-row">
-    		<div class="form-label">교수 사번</div>
-    		<div class="form-field">
-      		<input type="text" class="form-input" id="userCode" placeholder="교수 사번을 입력하세요" style="max-width:200px;">
-      		<div class="hint">변경 시 해당 교수로 담당 교수가 변경됩니다</div>
-    		</div>
-  			</div>
-		</c:if>
+        <c:if test="${sessionUser.role.toString() == 'ADMIN'}">
+          <div class="form-row">
+            <div class="form-label">교수 사번</div>
+            <div class="form-field">
+              <div style="display:flex; align-items:center; gap:.6rem; flex-wrap:wrap;">
+                <input type="text" class="form-input" id="userCode" placeholder="교수 사번을 입력하세요" style="max-width:200px;">
+                <button type="button" onclick="verifyProfessor()"
+                  style="padding:.5rem 1rem; background:var(--primary-pale); border:1.5px solid var(--primary-tint);
+                         border-radius:var(--radius-md); font-size:.82rem; font-weight:600; color:var(--primary);
+                         cursor:pointer; white-space:nowrap;">🔍 교수 검증</button>
+                <span id="professorNameDisplay" style="font-size:.84rem; font-weight:700; color:#15803d; display:none;"></span>
+              </div>
+              <div class="hint">변경 시 검증 후 해당 교수로 담당 교수가 변경됩니다</div>
+            </div>
+          </div>
+        </c:if>
 
         <%-- 개설 과목명 --%>
         <div class="form-row">
@@ -321,9 +328,8 @@
 
         <%-- 하단 버튼 --%>
         <div class="form-actions">
-          <button class="btn-submit" id="submitBtn" onclick="submitForm()">수정 완료</button>
-          <button class="btn-delete" id="deleteBtn" onclick="deleteCourse()">강의 삭제</button>
           <button class="btn-cancel" onclick="history.back()">취소</button>
+          <button class="btn-submit" id="submitBtn" onclick="submitForm()">수정 완료</button>
         </div>
 
       </div><%-- /form-card --%>
@@ -350,7 +356,10 @@ var DAYS = ['월','화','수','목','금'];
 var selectedSlots  = [];
 var blockedSlots   = [];
 var myBlockedSlots = [];
-var originalCourseNo = COURSE_NO; /* 자신은 blocked에서 제외하기 위해 보관 */
+var originalCourseNo = COURSE_NO;
+var professorVerified = false;
+var verifiedProfessorNo = 0;
+var currentCourseData = null; /* 복원용 강의 데이터 보관 */
 
 /* ================================================================
    기존 강의 데이터 로드 (수정 시 폼 pre-fill)
@@ -396,10 +405,30 @@ function loadCourseData() {
     var semesterDisplay = document.querySelector('.inline-group span[style]');
     if (semesterDisplay && c.semester) semesterDisplay.textContent = c.semester;
 
-    /* blocked 로드 후 기존 요일/시간 선택 복원 */
-    loadBlockedSlots(function() {
-      restoreSlots(c.day_of_week, c.start_time, c.end_time);
-    });
+    currentCourseData = c;
+
+    /* ADMIN: 기존 교수 자동 검증 후 blocked 로드 */
+    if (document.getElementById('userCode') && data.professor_user_code) {
+      var preCode = data.professor_user_code;
+      fetch(CTX_PATH + '/enrollment/professor-verify?userCode=' + encodeURIComponent(preCode), {
+        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+      })
+      .then(function(r) { return r.json(); })
+      .then(function(vd) {
+        if (vd.success) {
+          professorVerified = true;
+          verifiedProfessorNo = vd.professorNo;
+          var nameEl = document.getElementById('professorNameDisplay');
+          if (nameEl) { nameEl.textContent = '✓ ' + vd.name + ' 교수'; nameEl.style.display = 'inline'; }
+        }
+        loadBlockedSlots(function() { restoreSlots(c.day_of_week, c.start_time, c.end_time); });
+      })
+      .catch(function() {
+        loadBlockedSlots(function() { restoreSlots(c.day_of_week, c.start_time, c.end_time); });
+      });
+    } else {
+      loadBlockedSlots(function() { restoreSlots(c.day_of_week, c.start_time, c.end_time); });
+    }
   })
   .catch(function() {
     /* 서버 연동 전 개발 환경 — blocked만 로드 */
@@ -557,8 +586,13 @@ function loadBlockedSlots(callback) {
   var room     = document.getElementById('roomInfo').value;
   var semester = document.getElementById('semester').value;
   var userCodeEl2 = document.getElementById('userCode');
-  /* professor-blocked 조회는 professorNo가 필요하므로, ADMIN 입력 중에는 skip */
-  var professorNo   = parseInt('${sessionUser.userNo}');
+  /* professor-blocked 조회는 professorNo가 필요하므로,
+     ADMIN + 검증 완료 → verifiedProfessorNo(변경된 교수),
+     ADMIN + 미검증   → 0 (skip),
+     일반 교수 세션   → sessionUser.userNo */
+  var professorNo = (userCodeEl2 && verifiedProfessorNo > 0)
+    ? verifiedProfessorNo
+    : (userCodeEl2 ? 0 : parseInt('${sessionUser.userNo}'));
 
   blockedSlots   = [];
   myBlockedSlots = [];
@@ -585,6 +619,43 @@ function loadBlockedSlots(callback) {
       if (callback) callback();
     })
     .catch(function() { blockedSlots = []; myBlockedSlots = []; renderGrid(); if (callback) callback(); });
+}
+
+/* ================================================================
+   교수 검증 (ADMIN only)
+================================================================ */
+function verifyProfessor() {
+  var codeEl = document.getElementById('userCode');
+  var nameEl = document.getElementById('professorNameDisplay');
+  var userCode = codeEl ? codeEl.value.trim() : '';
+  if (!userCode) { alert('교수 사번을 입력하세요.'); return; }
+
+  nameEl.style.display = 'none';
+  nameEl.textContent = '';
+  professorVerified = false;
+  verifiedProfessorNo = 0;
+
+  fetch(CTX_PATH + '/enrollment/professor-verify?userCode=' + encodeURIComponent(userCode), {
+    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(data) {
+    if (data.success) {
+      professorVerified = true;
+      verifiedProfessorNo = data.professorNo;
+      nameEl.textContent = '✓ ' + data.name + ' 교수';
+      nameEl.style.display = 'inline';
+      /* 기존 시간 유지하면서 blocked만 갱신 */
+      var saved = currentCourseData;
+      loadBlockedSlots(function() {
+        if (saved) restoreSlots(saved.day_of_week, saved.start_time, saved.end_time);
+        else { renderGrid(); updateSummary(); }
+      });
+    } else {
+      alert(data.message || '교수 검증에 실패했습니다.');
+    }
+  })
+  .catch(function() { alert('서버 오류가 발생했습니다.'); });
 }
 
 /* ================================================================
@@ -656,7 +727,7 @@ function submitForm() {
 
   var userCodeEl = document.getElementById('userCode');
   var userCode   = userCodeEl ? userCodeEl.value.trim() : '';
-  if (userCodeEl && !userCode) { alert('교수 사번을 입력해주세요.'); return; }
+  if (userCodeEl && !professorVerified) { alert('교수 검증을 먼저 해주세요.'); return; }
 
   var formData = new FormData();
   formData.append('course_no',    COURSE_NO);
@@ -679,8 +750,10 @@ function submitForm() {
   submitBtn.disabled = true;
   submitBtn.textContent = '검증 중...';
 
-  /* professor-blocked 재검증: ADMIN은 user_code만 있어 professorNo 불명이므로 세션 기준 */
-  var professorNo2 = parseInt('${sessionUser.userNo}');
+  /* ADMIN은 검증된 교수 번호, 일반 교수는 세션 기준 */
+  var professorNo2 = (document.getElementById('userCode') && verifiedProfessorNo > 0)
+    ? verifiedProfessorNo
+    : parseInt('${sessionUser.userNo}');
 
   var roomFetch2 = fetch(CTX_PATH + '/enrollment/blocked?room=' + encodeURIComponent(roomInfo)
       + '&semester=' + encodeURIComponent(semester), {

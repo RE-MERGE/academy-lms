@@ -112,4 +112,7 @@ public interface UserMapper {
             "FROM USERS " +
             "WHERE user_id=#{naverId}")
             User selectUserByNaverId(String naverId);
+
+    @Select("SELECT name FROM USERS WHERE user_code = #{value}")
+	String getNameByUserCode(int userCode);
 }

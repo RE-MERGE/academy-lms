@@ -400,7 +400,9 @@ window.addEventListener('DOMContentLoaded', function() {
     .then(function(data) {
         var colorMap = {}, idx = 0;
         (data.courses || []).forEach(function(c) {
-            var room = c.room_info ? c.room_info.replace('호', '') : null;
+            if (c.semester !== '2026-1') return;
+            if (c.status !== 'APPROVED') return;
+            var room = c.classroom ? c.classroom.replace('호', '') : null;
             if (!room) return;
             if (!ROOM_DATA[room]) ROOM_DATA[room] = [];
             if (!colorMap[c.course_name]) {

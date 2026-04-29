@@ -48,6 +48,7 @@ public class SupabaseStorageService {
         // 공개 접근 URL 반환
         return supabaseUrl + "/storage/v1/object/public/" + bucket + "/" + path;
     }
+
     public String uploadImg(MultipartFile file) throws Exception {
         if (file == null || file.isEmpty()) return null;
 

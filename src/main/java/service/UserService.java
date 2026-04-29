@@ -4,6 +4,8 @@ import dao.CourseDao;
 import dao.EnrollmentDao;
 import dao.UserDao;
 import dto.user.*;
+import dto.user.grade.MyGrade;
+import dto.user.grade.MyGradeRow;
 import dto.user.mypage.MyPageData;
 import dto.user.mypage.UserDetailForAdmin;
 import exception.LoginFailException;
@@ -14,7 +16,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.UUID;
+import java.time.temporal.ChronoUnit;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -73,10 +76,40 @@ public class UserService {
 
 
     private MyPageData buildStudentData(int userNo, String semester) {
+        List<MyGrade> gradeList = enrollmentDao.getStudentMyGradeList(userNo);
+
         return MyPageData.builder()
                 .courseList(courseDao.getStudentMyCourseMap(userNo, semester))
-                .gradeList(enrollmentDao.getStudentMyGradeList(userNo))
+                .gradeList(gradeList)
+                .gradeRows(convertToGradeRows(gradeList))
                 .build();
+//        return MyPageData.builder()
+//                .courseList(courseDao.getStudentMyCourseMap(userNo, semester))
+//                .gradeList(enrollmentDao.getStudentMyGradeList(userNo))
+//                .build();
+    }
+
+    private List<MyGradeRow> convertToGradeRows(List<MyGrade> gradeList) {
+        Map<String, MyGradeRow> rowMap = new LinkedHashMap<>();
+
+        for (MyGrade grade : gradeList) {
+
+            String key = grade.getCourseName();
+
+            rowMap.putIfAbsent(key, new MyGradeRow());
+            MyGradeRow row = rowMap.get(grade.getCourseName());
+            row.setCourseName(grade.getCourseName());
+            row.setCourseType(grade.getCourseType());
+
+            if ("MIDTERM".equals(grade.getExamType())) {
+                row.setMidterm(grade);
+            } else if ("FINAL".equals(grade.getExamType())) {
+                row.setFinalExam(grade);
+            } else {
+                row.setAttendance(grade);
+            }
+        }
+        return new ArrayList<>(rowMap.values());
     }
 
     private MyPageData buildProfessorData(int userNo, String semester) {
@@ -124,6 +157,11 @@ public class UserService {
             throw new LoginFailException("error.loginFail");
         }
 
+        if (validateLastLogin(dbUser)) {
+            dao.updateStatus(dbUser.getUserId(), UserStatus.LOCKED);
+            throw new LoginFailException("error.account.locked.inactive");
+        }
+
         if (dbUser.getStatus() == UserStatus.LOCKED) {
             throw new LoginFailException("error.status.locked");
         }
@@ -146,6 +184,14 @@ public class UserService {
 
         dao.resetLockCount(userId);
         return new SessionUser(dbUser);
+    }
+
+    private static boolean validateLastLogin(User dbUser) {
+        long daysSinceLastLogin = ChronoUnit.DAYS.between(
+                dbUser.getLastLoginAt(), LocalDate.now()
+        );
+
+        return daysSinceLastLogin >= 90L;
     }
 
     @Transactional

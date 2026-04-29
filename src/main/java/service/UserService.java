@@ -3,8 +3,13 @@ package service;
 import dao.CourseDao;
 import dao.EnrollmentDao;
 import dao.UserDao;
+import dto.Course;
 import dto.user.*;
+import dto.user.grade.MyGrade;
+import dto.user.grade.MyGradeRow;
 import dto.user.mypage.MyPageData;
+import dto.user.mypage.TimetableData;
+import dto.user.mypage.TimetableResult;
 import dto.user.mypage.UserDetailForAdmin;
 import exception.LoginFailException;
 import lombok.RequiredArgsConstructor;
@@ -14,7 +19,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.UUID;
+import java.time.temporal.ChronoUnit;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -60,9 +66,9 @@ public class UserService {
         };
     }
 
-    public MyPageData getMyPageData(UserDetailForAdmin userDetailForAdmin, String semester) {
-        int userNo = userDetailForAdmin.getUserNo();
-        UserRole role = userDetailForAdmin.getRole();
+    public MyPageData getMyPageData(UserDetailForAdmin targetUser, String semester) {
+        int userNo = targetUser.getUserNo();
+        UserRole role = targetUser.getRole();
 
         return switch (role) {
             case STUDENT -> buildStudentData(userNo, semester);
@@ -73,23 +79,61 @@ public class UserService {
 
 
     private MyPageData buildStudentData(int userNo, String semester) {
+        List<Course> courseList = courseDao.getStudentMyCourseMap(userNo, semester);
+        List<MyGrade> gradeList = enrollmentDao.getStudentMyGradeList(userNo);
+
+        System.err.println("courseList size: " + courseList.size());
+        courseList.forEach(c -> System.err.println(c.getCourse_name() + " " + c.getDay_of_week() + " " + c.getStart_time()));
+
         return MyPageData.builder()
-                .courseList(courseDao.getStudentMyCourseMap(userNo, semester))
-                .gradeList(enrollmentDao.getStudentMyGradeList(userNo))
+                .courseList(courseList)
+                .gradeList(gradeList)
+                .gradeRows(convertToGradeRows(gradeList))
+                .timeTableData(buildTimetableData(courseList))
                 .build();
     }
 
-    private MyPageData buildProfessorData(int userNo, String semester) {
-        return MyPageData.builder()
-                .courseList(courseDao.getProfessorMyCourseMap(userNo, semester))
-                .gradeList(enrollmentDao.getProfessorMyGradeList(userNo, semester))
-                .build();    }
-
     private MyPageData buildAdminData(String semester) {
+
         return MyPageData.builder()
                 .courseList(courseDao.getListWithProfessorName(semester))
                 .gradeList(enrollmentDao.getAllStudentGrades())
                 .build();
+    }
+
+    private MyPageData buildProfessorData(int userNo, String semester) {
+
+        List<Course> courseList = courseDao.getProfessorMyCourseMap(userNo, semester);
+
+        return MyPageData.builder()
+                .courseList(courseList)
+                .gradeList(enrollmentDao.getProfessorMyGradeList(userNo, semester))
+                .timeTableData(buildTimetableData(courseList)) // 추가
+                .build();
+    }
+
+    private List<MyGradeRow> convertToGradeRows(List<MyGrade> gradeList) {
+
+        Map<String, MyGradeRow> rowMap = new LinkedHashMap<>();
+
+        for (MyGrade grade : gradeList) {
+
+            String key = grade.getCourseName();
+
+            rowMap.putIfAbsent(key, new MyGradeRow());
+            MyGradeRow row = rowMap.get(grade.getCourseName());
+            row.setCourseName(grade.getCourseName());
+            row.setCourseType(grade.getCourseType());
+
+            if ("MIDTERM".equals(grade.getExamType())) {
+                row.setMidterm(grade);
+            } else if ("FINAL".equals(grade.getExamType())) {
+                row.setFinalExam(grade);
+            } else {
+                row.setAttendance(grade);
+            }
+        }
+        return new ArrayList<>(rowMap.values());
     }
 
     public String selectUserIdByEmail(String email) {
@@ -124,6 +168,11 @@ public class UserService {
             throw new LoginFailException("error.loginFail");
         }
 
+        if (validateLastLogin(dbUser)) {
+            dao.updateStatus(dbUser.getUserId(), UserStatus.LOCKED);
+            throw new LoginFailException("error.account.locked.inactive");
+        }
+
         if (dbUser.getStatus() == UserStatus.LOCKED) {
             throw new LoginFailException("error.status.locked");
         }
@@ -146,6 +195,14 @@ public class UserService {
 
         dao.resetLockCount(userId);
         return new SessionUser(dbUser);
+    }
+
+    private static boolean validateLastLogin(User dbUser) {
+        long daysSinceLastLogin = ChronoUnit.DAYS.between(
+                dbUser.getLastLoginAt(), LocalDate.now()
+        );
+
+        return daysSinceLastLogin >= 90L;
     }
 
     @Transactional
@@ -239,7 +296,56 @@ public class UserService {
 		return dao.getUserCode(professor_no);
 	}
 
-	public String getNameByUserCode(int userCode) {
-		return dao.getNameByUserCode(userCode);
-	}
+    private TimetableResult buildTimetableData(List<Course> courseList) {
+
+        if (courseList == null || courseList.isEmpty()) {
+            return new TimetableResult(Collections.emptyList(), 9, 17);
+        }
+
+        int minHour = 9;
+        int maxHour = 17;
+
+        return new TimetableResult(buildTimetableCells(courseList, minHour), minHour, maxHour);
+    }
+
+    public List<TimetableData> buildTimetableCells(List<Course> courseList, int minHour) {
+        Map<String, Integer> dayCol = Map.of(
+                "월", 2, "화", 3, "수", 4, "목", 5, "금", 6
+        );
+
+        List<TimetableData> cells = new ArrayList<>();
+        for (Course course : courseList) {
+            if (course.getDay_of_week() == null || course.getDay_of_week().isEmpty()) continue; // 추가
+            String[] days = course.getDay_of_week().split(",");
+
+            for (String day : days) {
+                day = day.trim();
+                int startHour = parseHour(course.getStart_time());
+                int endHour = parseHour(course.getEnd_time());
+
+                TimetableData cell = new TimetableData();
+                cell.setCourseNo(course.getCourse_no());
+                cell.setCourseName(course.getCourse_name());
+                cell.setRoomInfo(course.getRoom_info());
+                cell.setDayOfWeek(day);
+                cell.setRowStart(startHour - minHour + 1);
+                cell.setRowSpan(endHour - startHour);
+                cell.setColIndex(dayCol.getOrDefault(day, 2));
+                cells.add(cell);
+            }
+        }
+        return cells;
+    }
+
+    // "11:00:00" → 11
+    private int parseHour(String time) {
+        if (time == null) return 9;
+        return Integer.parseInt(time.split(":")[0]);
+    }
+
+    public String getNameByUserCode(int userCode) {
+        return dao.getNameByUserCode(userCode);
+    }
+
+
 }

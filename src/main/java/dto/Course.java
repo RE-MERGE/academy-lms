@@ -29,4 +29,5 @@ public class Course {
     private String semester;
     private int credits;
     private int counts;
+    private String professor_name;
 }

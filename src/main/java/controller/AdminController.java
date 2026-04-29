@@ -1,6 +1,7 @@
 package controller;
 
 
+import dto.Course;
 import dto.user.*;
 import dto.user.mypage.AdminCourseList;
 import dto.user.mypage.MyPageData;
@@ -86,13 +87,15 @@ public class AdminController {
         String semester = adminService.getSemester();
 
         UserDetailForAdmin targetUser = createdUserDetail(selectUser);
-
         MyPageData data = userService.getMyPageData(targetUser, semester);
 
         model.addAttribute("courseList", data.getCourseList());
         model.addAttribute("myGradeList", data.getGradeList());
+        model.addAttribute("gradeRows", data.getGradeRows());
         model.addAttribute("semester", semester);
+        model.addAttribute("timetable", data.getTimeTableData());
         model.addAttribute(UserConst.DETAIL_USER, targetUser);
+
 
         return "admin/userDetail";
     }

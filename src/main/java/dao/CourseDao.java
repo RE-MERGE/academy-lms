@@ -50,7 +50,7 @@ public class CourseDao {
 	public List<Map<String, Object>> getlist(String semester, String type, String credits, String keyword, String status, int offset, int size) {
 		return template.getMapper(cls).getlist(semester, type, credits, keyword, status, offset, size);
     }
-	public List<Map<String, Object>> getStudentMyCourseMap(int userNo, String semester) {
+	public List<Course> getStudentMyCourseMap(int userNo, String semester) {
 		return template.getMapper(cls).getStudentMyCourseMap(userNo, semester);
 	}
 	public List<Course> getMyCourse(int userNo, String semester) {
@@ -62,7 +62,7 @@ public class CourseDao {
 	public Course findByCourseNo(Integer courseNo) {
 		return template.getMapper(cls).find(courseNo);
 	}
-    public List<Map<String, Object>> getProfessorMyCourseMap(int userNo, String semester) {
+    public List<Course> getProfessorMyCourseMap(int userNo, String semester) {
 		return template.getMapper(cls).getProfessorMyCourseMap(userNo, semester);
     }
     public List<Map<String, Object>> getListWithProfessorName(String semester) {

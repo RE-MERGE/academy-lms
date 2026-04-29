@@ -125,6 +125,8 @@ public class UserController {
 
         model.addAttribute("courseList", data.getCourseList());
         model.addAttribute("myGradeList", data.getGradeList());
+        model.addAttribute("gradeRows", data.getGradeRows());
+
         model.addAttribute("semester", semester);
         model.addAttribute(UserConst.SESSION_USER, sessionUser);
 

@@ -2,7 +2,6 @@ package controller;
 
 
 import dto.user.*;
-import dto.user.mypage.UserEditFormForAdmin;
 import dto.user.mypage.AdminCourseList;
 import dto.user.mypage.MyPageData;
 import dto.user.mypage.UserDetailForAdmin;
@@ -30,19 +29,27 @@ public class AdminController {
 
     @GetMapping("userList")
     public String getUserList(@RequestParam(defaultValue = "1") int page,
-                              @RequestParam(defaultValue = "all") String role, Model model) {
+                              @RequestParam(defaultValue = "all") String role,
+                              @RequestParam(defaultValue = "") String keyword,
+                              @RequestParam(defaultValue = "name") String searchType,
+                              Model model) {
 
         int size = 10;
         int offset = (page - 1) * size;
 
-        List<AdminUserList> userList = adminService.getUserListPaged(offset, size, role);
+        List<AdminUserList> userList = adminService.searchUserListPaged(offset, size, role, keyword, searchType);
 
-        int totalCount = adminService.getTotalUserCount(role);
+        int totalCount = adminService.countSearchUsers(role, keyword, searchType);
+        int totalUserCount = adminService.getTotalAllUserCount();
         int totalPages = (int) Math.ceil((double) totalCount / size);
 
         model.addAttribute("userList", userList);
         model.addAttribute("currentPage", page);
         model.addAttribute("totalPages", totalPages);
+        model.addAttribute("currentRole", role);
+        model.addAttribute("keyword", keyword);
+        model.addAttribute("searchType", searchType);
+        model.addAttribute("totalUserCount", totalUserCount);
 
         return "admin/adminUserList";
     }
@@ -69,14 +76,15 @@ public class AdminController {
     public String updateCourseStatus(@RequestParam String status, @RequestParam List<Integer> courseNos) {
         adminService.updateCourseStatus(status, courseNos);
 
-        return "redirect:/admin/courseList";
+        return "redirect:/admin/adminCourseList";
     }
 
     @GetMapping("userDetail/{userNo}")
     public String userDetail(@PathVariable int userNo, Model model) {
 
         User selectUser = adminService.selectUser(userNo);
-        String semester = getSemester();
+        String semester = adminService.getSemester();
+
         UserDetailForAdmin targetUser = createdUserDetail(selectUser);
 
         MyPageData data = userService.getMyPageData(targetUser, semester);
@@ -163,6 +171,7 @@ public class AdminController {
         return userDetailForAdmin;
     }
 
+
     private String getSemester() {
 
         String year = String.valueOf(LocalDate.now().getYear());
@@ -193,6 +202,7 @@ public class AdminController {
         return result;
     }
     
+//github.com/RE-MERGE/academy-lms
     @GetMapping("roomTimetable")
     public String getRoomTimetable() {
         return "admin/roomTimetable";

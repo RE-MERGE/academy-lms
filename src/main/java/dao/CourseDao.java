@@ -128,4 +128,22 @@ public class CourseDao {
 	public List<Course> getFavoriteCourse(int userNo) {
 		return template.getMapper(cls).getFavoriteCourse(userNo);
 	}
+	public int hasRoomConflict(Course course) {
+		return template.getMapper(cls).hasRoomConflict(course);
+	}
+	public int hasProfessorConflict(Course course) {
+		return template.getMapper(cls).hasProfessorConflict(course);
+	}
+	public int hasRoomConflictExcludeSelf(Course course) {
+		return template.getMapper(cls).hasRoomConflictExcludeSelf(course);
+	}
+	public int hasProfessorConflictExcludeSelf(Course course) {
+		return template.getMapper(cls).hasProfessorConflictExcludeSelf(course);
+	}
+	public List<Course> getCourseByProfessor(Integer userNo) {
+		return template.getMapper(cls).getCourseByProfessor(userNo);
+	}
+	public List<Course> getCourseByStudent(Integer userNo) {
+		return template.getMapper(cls).getCourseByStudent(userNo);
+	}
 }

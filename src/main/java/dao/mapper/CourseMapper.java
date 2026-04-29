@@ -231,4 +231,42 @@ public interface CourseMapper {
             "JOIN FAVORITE f ON c.course_no = f.course_no " +
             "WHERE f.user_no = #{userNo}")
     List<Course> getFavoriteCourse(int userNo);
+
+    @Select("SELECT COUNT(*) FROM COURSE " +
+            "WHERE room_info = #{room_info} " +
+            "AND semester = #{semester} " +
+            "AND FIND_IN_SET(#{day_of_week}, day_of_week) > 0 " +
+            "AND start_time < #{end_time} AND end_time > #{start_time}")
+    int hasRoomConflict(Course course);
+    
+    @Select("SELECT COUNT(*) FROM COURSE " +
+            "WHERE professor_no = #{professor_no} " +
+            "AND semester = #{semester} " +
+            "AND FIND_IN_SET(#{day_of_week}, day_of_week) > 0 " +
+            "AND start_time < #{end_time} AND end_time > #{start_time}")
+    int hasProfessorConflict(Course course);
+
+    @Select("SELECT COUNT(*) FROM COURSE " +
+            "WHERE room_info = #{room_info} " +
+            "AND semester = #{semester} " +
+            "AND course_no != #{course_no} " +
+            "AND FIND_IN_SET(#{day_of_week}, day_of_week) > 0 " +
+            "AND start_time < #{end_time} AND end_time > #{start_time}")
+    int hasRoomConflictExcludeSelf(Course course);
+
+    @Select("SELECT COUNT(*) FROM COURSE " +
+            "WHERE professor_no = #{professor_no} " +
+            "AND semester = #{semester} " +
+            "AND course_no != #{course_no} " +
+            "AND FIND_IN_SET(#{day_of_week}, day_of_week) > 0 " +
+            "AND start_time < #{end_time} AND end_time > #{start_time}")
+    int hasProfessorConflictExcludeSelf(Course course);
+
+    @Select("select * from COURSE where professor_no = #{userNo}")
+	List<Course> getCourseByProfessor(Integer userNo);
+
+    @Select("SELECT c.* FROM COURSE c " +
+            "JOIN ENROLLMENT e ON c.course_no = e.course_no " +
+            "WHERE e.student_no = #{userNo}")
+	List<Course> getCourseByStudent(Integer userNo);
 }

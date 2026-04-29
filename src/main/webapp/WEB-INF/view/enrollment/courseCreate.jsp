@@ -209,13 +209,20 @@
 
       <div class="form-card">
 
-        <%-- 교수번호 (관리자 전용) --%>
+        <%-- 교수 사번 (관리자 전용) --%>
         <c:if test="${sessionUser.role == 'ADMIN'}">
         <div class="form-row">
-          <div class="form-label">교수번호</div>
+          <div class="form-label">교수 번호</div>
           <div class="form-field">
-            <input type="number" class="form-input" id="professorNo" placeholder="교수번호를 입력하세요" style="max-width:200px;">
-            <div class="hint">관리자 전용 — 강의를 개설할 교수의 번호를 입력하세요</div>
+            <div style="display:flex; align-items:center; gap:.6rem; flex-wrap:wrap;">
+              <input type="text" class="form-input" id="professorNo" placeholder="교수 번호를 입력하세요" style="max-width:200px;">
+              <button type="button" onclick="verifyProfessor()"
+                style="padding:.5rem 1rem; background:var(--primary-pale); border:1.5px solid var(--primary-tint);
+                       border-radius:var(--radius-md); font-size:.82rem; font-weight:600; color:var(--primary);
+                       cursor:pointer; white-space:nowrap;">🔍 교수 검증</button>
+              <span id="professorNameDisplay" style="font-size:.84rem; font-weight:700; color:#15803d; display:none;"></span>
+            </div>
+            <div class="hint">사번 입력 후 반드시 교수 검증을 해주세요</div>
           </div>
         </div>
         </c:if>
@@ -311,8 +318,8 @@
 
         <%-- 하단 버튼 --%>
         <div class="form-actions">
-          <button class="btn-submit" id="submitBtn" onclick="submitForm()">제출</button>
           <button class="btn-cancel" onclick="history.back()">취소</button>
+          <button class="btn-submit" id="submitBtn" onclick="submitForm()">제출</button>
         </div>
 
       </div><%-- /form-card --%>
@@ -338,6 +345,8 @@ var DAYS = ['월','화','수','목','금'];
 var selectedSlots  = [];
 var blockedSlots   = [];  /* 교실 사용 중 슬롯 */
 var myBlockedSlots = [];  /* 내 기존 강의 시간 충돌 슬롯 */
+var professorVerified = false;  /* 교수 검증 여부 (ADMIN only) */
+var verifiedProfessorNo = 0;    /* 검증된 교수 DB PK */
 
 /* ================================================================
    blocked 슬롯 계산 헬퍼 — loadBlockedSlots & submitForm 공용
@@ -487,8 +496,8 @@ function loadBlockedSlots() {
   var room        = document.getElementById('roomInfo').value;
   var semester    = document.getElementById('semester').value;
   var professorNoEl = document.getElementById('professorNo');
-  /* ADMIN이면 입력한 교수번호, 교수면 세션에서 받아온 번호 */
-  var professorNo = professorNoEl ? parseInt(professorNoEl.value) || 0
+  /* ADMIN이면 검증된 professorNo 사용, 교수면 세션에서 받아온 번호 */
+  var professorNo = professorNoEl ? verifiedProfessorNo
                                   : parseInt('${sessionUser.userNo}');
 
   blockedSlots   = [];
@@ -517,6 +526,38 @@ function loadBlockedSlots() {
       updateSummary();
     })
     .catch(function() { blockedSlots = []; myBlockedSlots = []; renderGrid(); });
+}
+
+/* ================================================================
+   교수 검증 (ADMIN only)
+================================================================ */
+function verifyProfessor() {
+  var noEl = document.getElementById('professorNo');
+  var nameEl = document.getElementById('professorNameDisplay');
+  var userCode = noEl ? noEl.value.trim() : '';
+  if (!userCode) { alert('교수 사번을 입력하세요.'); return; }
+
+  nameEl.style.display = 'none';
+  nameEl.textContent = '';
+  professorVerified = false;
+  verifiedProfessorNo = 0;
+
+  fetch(CTX_PATH + '/enrollment/professor-verify?userCode=' + encodeURIComponent(userCode), {
+    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(data) {
+    if (data.success) {
+      professorVerified = true;
+      verifiedProfessorNo = data.professorNo;
+      nameEl.textContent = '✓ ' + data.name + ' 교수';
+      nameEl.style.display = 'inline';
+      loadBlockedSlots();
+    } else {
+      alert(data.message || '교수 검증에 실패했습니다.');
+    }
+  })
+  .catch(function() { alert('서버 오류가 발생했습니다.'); });
 }
 
 /* ================================================================
@@ -556,8 +597,8 @@ function submitForm() {
   var endTime   = PERIODS[pIdxList[pIdxList.length-1]].end + ':00';
 
   var professorNoEl = document.getElementById('professorNo');
-  var professorNo   = professorNoEl ? parseInt(professorNoEl.value) : 0;
-  if (professorNoEl && !professorNo) { alert('교수번호를 입력해주세요.'); return; }
+  if (professorNoEl && !professorVerified) { alert('교수 검증을 먼저 해주세요.'); return; }
+  var professorNo = professorNoEl ? verifiedProfessorNo : 0;
 
   var formData = new FormData();
   formData.append('course_name',  courseName);

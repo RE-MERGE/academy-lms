@@ -86,4 +86,8 @@ public class UserDao {
 	public int getUserCode(int professor_no) {
 		return template.getMapper(cls).getUserCode(professor_no);
 	}
+
+	public String getNameByUserCode(int userCode) {
+		return template.getMapper(cls).getNameByUserCode(userCode);
+	}
 }

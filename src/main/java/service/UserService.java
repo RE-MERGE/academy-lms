@@ -33,10 +33,23 @@ public class UserService {
     private final EnrollmentDao enrollmentDao;
     private final BCryptPasswordEncoder passwordEncoder;
 
+    public void join(UserJoinForm form) {
 
-    public void join(User user) {
+        validateDuplicateUser(form);
 
+        User user = createUser(form);
         dao.join(user);
+    }
+
+    private void validateDuplicateUser(UserJoinForm form) {
+
+        if (selectUser(form.getUserId()) != null) {
+            throw new IllegalStateException("이미 존재하는 아이디입니다.");
+        }
+
+        if (selectUserIdByEmail(form.getEmail()) != null) {
+            throw new IllegalStateException("이미 존재하는 이메일입니다");
+        }
     }
 
     public User selectUser(String userId) {
@@ -168,14 +181,20 @@ public class UserService {
             throw new LoginFailException("error.loginFail");
         }
 
-        if (validateLastLogin(dbUser)) {
-            dao.updateStatus(dbUser.getUserId(), UserStatus.LOCKED);
-            throw new LoginFailException("error.account.locked.inactive");
-        }
+        //장기 미접속 확인
+        lockIfInactive(dbUser);
 
-        if (dbUser.getStatus() == UserStatus.LOCKED) {
-            throw new LoginFailException("error.status.locked");
-        }
+        //계정 상태 확인
+        validateStatus(dbUser);
+
+        //비밀번호 검증
+        validatePassword(userId, password, dbUser);
+
+        dao.resetLockCount(userId);
+        return new SessionUser(dbUser);
+    }
+
+    private void validatePassword(String userId, String password, User dbUser) {
 
         if (!passwordEncoder.matches(password, dbUser.getPassword())) {
             int newCount = dbUser.getLock_count() + 1;
@@ -188,21 +207,31 @@ public class UserService {
             dao.updateLockCount(userId, newCount);
             throw new LoginFailException("error.loginFail");
         }
+    }
+
+    private void validateStatus(User dbUser) {
+
+        if (dbUser.getStatus() == UserStatus.LOCKED) {
+            throw new LoginFailException("error.status.locked");
+        }
 
         if (dbUser.getStatus() != UserStatus.ACTIVE) {
             throw new LoginFailException("error.status.notActive");
         }
-
-        dao.resetLockCount(userId);
-        return new SessionUser(dbUser);
     }
 
-    private static boolean validateLastLogin(User dbUser) {
+    private void lockIfInactive(User dbUser) {
+
+        if(dbUser.getLastLoginAt() == null) return;
+
         long daysSinceLastLogin = ChronoUnit.DAYS.between(
                 dbUser.getLastLoginAt(), LocalDate.now()
         );
 
-        return daysSinceLastLogin >= 90L;
+        if (daysSinceLastLogin >= 90) {
+            dao.updateStatus(dbUser.getUserId(), UserStatus.LOCKED);
+            throw new LoginFailException("error.account.locked.inactive");
+        }
     }
 
     @Transactional
@@ -310,12 +339,10 @@ public class UserService {
 
     public List<TimetableData> buildTimetableCells(List<Course> courseList, int minHour) {
         Map<String, Integer> dayCol = Map.of(
-                "월", 2, "화", 3, "수", 4, "목", 5, "금", 6
+                "월", 1, "화", 2, "수", 3, "목", 4, "금", 5
         );
 
         List<TimetableData> cells = new ArrayList<>();
-
-
 
         for (Course course : courseList) {
             if (course.getDay_of_week() == null || course.getDay_of_week().isEmpty()) continue; // 추가

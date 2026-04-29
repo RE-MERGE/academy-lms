@@ -54,8 +54,6 @@ public class GlobalExceptionHandler {
     public void handleUnauthorized(UnauthorizedException ex, HttpServletRequest request, HttpServletResponse response) throws IOException {
 
         HttpSession session = request.getSession(false);
-        System.out.println("==== UnauthorizedException 처리 ====");
-        System.out.println("세션 존재: " + (session != null));
         String prevUrl = null;
 
         if (session != null) {
@@ -67,7 +65,7 @@ public class GlobalExceptionHandler {
         response.setContentType("text/html; charset=UTF-8");
         PrintWriter out = response.getWriter();
 
-        // 3. 자바스크립트 작성 및 전송
+        //자바스크립트 작성
         out.println("<script>");
         out.println("alert('" + ex.getMessage() + "');");
         out.println("location.href='" + redirectURL + "';");

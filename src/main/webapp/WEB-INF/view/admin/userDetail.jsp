@@ -227,8 +227,8 @@
         <div class="profile-actions">
             <a href="${pageContext.request.contextPath}/admin/editProfileForAdmin/${userDetail.userNo}"
                class="btn-action btn-action-primary">회원정보 수정</a>
-<%--            <a href="${pageContext.request.contextPath}/admin/updatePwForm/${userDetail.userNo}"--%>
-<%--               class="btn-action btn-action-outline">비밀번호 변경</a>--%>
+            <%--            <a href="${pageContext.request.contextPath}/admin/updatePwForm/${userDetail.userNo}"--%>
+            <%--               class="btn-action btn-action-outline">비밀번호 변경</a>--%>
         </div>
     </div>
 
@@ -476,23 +476,16 @@
                     </c:forEach>
                 </div>
 
-                    <%-- 과목 그리드에 position:relative 추가 --%>
-                <div style="flex:1; display:grid; grid-template-columns: repeat(5, 1fr); grid-template-rows: repeat(9, 80px); gap:3px; position:relative;">
-
-                        <%-- 빈 셀 --%>
+                    <%-- 빈 셀 --%>
+                <div style="flex:1; display:grid; grid-template-columns: repeat(5, 1fr); grid-template-rows: repeat(9, 80px); grid-auto-rows: 0; gap:3px; overflow:hidden;">
                     <c:forEach begin="1" end="45" var="i">
                         <div class="tt-cell empty"></div>
                     </c:forEach>
 
-                        <%-- 과목 셀: absolute로 띄우기 --%>
+                        <%-- 과목 셀 --%>
                     <c:forEach var="cell" items="${timetable.cells}" varStatus="vs">
                         <div class="tt-cell mp-c${(vs.index % 5) + 1}"
-                             style="grid-column:${cell.colIndex - 1}; grid-row:${cell.rowStart} / span ${cell.rowSpan}; position:absolute;
-                                     top:calc((${cell.rowStart} - 1) * 83px);
-                                     left:calc((${cell.colIndex - 2}) * (100% / 5) + 1px);
-                                     width:calc(100% / 5 - 3px);
-                                     height:calc(${cell.rowSpan} * 83px - 3px);
-                                     z-index:1;">
+                             style="grid-column:${cell.colIndex}; grid-row:${cell.rowStart} / span ${cell.rowSpan}; z-index:1;">
                                 ${cell.courseName}<br>${cell.roomInfo}
                         </div>
                     </c:forEach>
@@ -500,15 +493,16 @@
             </div>
         </div>
     </div>
-    </c:when>
-    <c:otherwise>
-        <div class="empty-state">
-            <div class="empty-state-icon">🗓️</div>
-            <p class="empty-state-text">등록된 시간표가 없습니다.</p>
-            <p class="empty-state-sub">수강 신청 후 시간표가 자동으로 표시됩니다.</p>
-        </div>
-    </c:otherwise>
-    </c:choose>
+</div>
+</c:when>
+<c:otherwise>
+    <div class="empty-state">
+        <div class="empty-state-icon">🗓️</div>
+        <p class="empty-state-text">등록된 시간표가 없습니다.</p>
+        <p class="empty-state-sub">수강 신청 후 시간표가 자동으로 표시됩니다.</p>
+    </div>
+</c:otherwise>
+</c:choose>
 </div>
 </c:if>
 

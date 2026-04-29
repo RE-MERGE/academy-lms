@@ -20,7 +20,6 @@ public class AdminCheckInterceptor implements HandlerInterceptor {
         SessionUser sessionUser = (session != null) ? (SessionUser) session.getAttribute(UserConst.SESSION_USER) : null;
 
         if (sessionUser == null || UserRole.ADMIN != sessionUser.getRole()) {
-
             throw new UnauthorizedException("관리자 권한이 필요한 서비스입니다.");
         }
 

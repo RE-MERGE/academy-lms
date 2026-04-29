@@ -30,7 +30,7 @@
             </c:choose>
         </c:if>
 
-        <form method="post" action="${pageContext.request.contextPath}/course/saveGrades" id="gradeForm">
+        <form method="post" action="${pageContext.request.contextPath}/course/saveGradeList" id="gradeForm">
             <input type="hidden" name="course_no" value="${course.course_no}" />
 
             <div class="board-card">
@@ -57,7 +57,7 @@
                         <c:forEach var="student" items="${studentList}" varStatus="vs">
                             <tr data-idx="${vs.index}">
                                 <%-- 학생 번호를 hidden으로 전송 --%>
-                                <input type="hidden" name="gradeList[${vs.index}].user_no"   value="${student.userNo}" />
+                                <input type="hidden" name="gradeList[${vs.index}].enrollment_no" value="${student.enrollmentNo}" />
                                 <input type="hidden" name="gradeList[${vs.index}].course_no" value="${course.course_no}" />
                                 <td class="td-title" style="text-align:center !important;">${student.userCode}</td>
 
@@ -259,25 +259,36 @@
     <c:when test="${role eq 'STUDENT'}">
 
         <c:choose>
-            <c:when test="${not empty myGrade}">
-
                 <%-- 요약 카드 --%>
+            <c:when test="${not empty midtermGrade or not empty finalGrade}">
+
                 <div class="stat-grid" style="margin-bottom:1.5rem;">
                     <div class="stat-card">
                         <div class="stat-label">중간고사</div>
-                        <div class="stat-value">${myGrade.examType eq "MIDTERM"}<small style="font-size:1rem;color:var(--gray-400)">/100</small></div>
+                        <div class="stat-value">
+                                ${not empty midtermGrade ? midtermGrade.score : '—'}
+                            <small style="font-size:1rem;color:var(--gray-400)">/100</small>
+                        </div>
                     </div>
                     <div class="stat-card">
                         <div class="stat-label">기말고사</div>
-                        <div class="stat-value">${myGrade.examType eq "FINAL"}<small style="font-size:1rem;color:var(--gray-400)">/100</small></div>
+                        <div class="stat-value">
+                                ${not empty finalGrade ? finalGrade.score : '—'}
+                            <small style="font-size:1rem;color:var(--gray-400)">/100</small>
+                        </div>
                     </div>
                     <div class="stat-card">
                         <div class="stat-label">출석</div>
-                        <div class="stat-value">${myGrade.attendance}<small style="font-size:1rem;color:var(--gray-400)">/100</small></div>
+                        <div class="stat-value">
+                                ${not empty attendanceGrade ? attendanceGrade.score : '—'}
+                            <small style="font-size:1rem;color:var(--gray-400)">/100</small>
+                        </div>
                     </div>
                     <div class="stat-card">
                         <div class="stat-label">최종 학점</div>
-                        <div class="stat-value" style="font-family:'DM Serif Display',serif;">${myGrade.alphabet}</div>
+                        <div class="stat-value" style="font-family:'DM Serif Display',serif;">
+                                ${not empty midtermGrade ? midtermGrade.alphabet : '—'}
+                        </div>
                     </div>
                 </div>
 
@@ -299,14 +310,10 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr>
-                                <td>${myGrade.examType == "MIDTERM"}점</td>
-                                <td>${myGrade.examType == "FINAL"}점</td>
-<%--                                <td>${myGrade.attendance}점</td>--%>
-                                <td>
-                                    <%-- EL 산술: 중간*0.4 + 기말*0.4 + 출석*0.2 --%>
-<%--                                    ${myGrade.midterm * 0.4 + myGrade.finalScore * 0.4 + myGrade.attendance * 0.2}점--%>
-                                </td>
+                        <tr>
+                            <td>${not empty midtermGrade ? midtermGrade.score : '—'}점</td>
+                            <td>${not empty finalGrade ? finalGrade.score : '—'}점</td>
+                            <td>${not empty attendanceGrade ? attendanceGrade.score : '—'}점</td>
                             </tr>
                         </tbody>
                     </table>
@@ -318,12 +325,13 @@
                     </div>
                     <div class="board-footer-right">
                         <c:choose>
-                            <c:when test="${myGrade.alphabet eq 'A+' or myGrade.alphabet eq 'A'}">
+                            <c:when test="${not empty midtermGrade and (midtermGrade.alphabet eq 'A+' or midtermGrade.alphabet eq 'A')}">
                                 <span class="badge badge-green">우수 성적</span>
                             </c:when>
-                            <c:when test="${myGrade.alphabet eq 'F'}">
+                            <c:when test="${not empty midtermGrade and midtermGrade.alphabet eq 'F'}">
                                 <span class="badge badge-red">재수강 대상</span>
                             </c:when>
+                            <c:otherwise></c:otherwise>
                         </c:choose>
                     </div>
                 </div>

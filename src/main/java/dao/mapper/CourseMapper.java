@@ -274,4 +274,20 @@ public interface CourseMapper {
             "FROM COURSE " +
             "WHERE course_no = #{courseNo}")
     Integer selectProfessorNoByCourseNo(int courseNo);
+
+    @Insert("INSERT INTO grade (\n" +
+            "        enrollment_no, \n" +
+            "        score, \n" +
+            "        type, \n" +
+            "        alphabet\n" +
+            "    ) VALUES (\n" +
+            "        #{enrollment_no}, \n" +
+            "        #{score}, \n" +
+            "        #{type}, \n" +
+            "        #{alphabet}\n" +
+            "    )\n" +
+            "    ON DUPLICATE KEY UPDATE\n" +
+            "        score = #{score},\n" +
+            "        alphabet = #{alphabet}")
+    void upsertGrade(int userNo, int courseNo, String midterm1, String alphabet);
 }

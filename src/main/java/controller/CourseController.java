@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpSession;
 
+import dto.user.grade.GradeForm;
 import dto.user.grade.MyGrade;
 import dto.user.login.Login;
 import dto.user.mypage.MyPageData;
@@ -28,6 +29,7 @@ import dto.user.SessionUser;
 import dto.user.User;
 import dto.user.UserConst;
 import dto.user.UserRole;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import service.CourseService;
 import service.UserService;
 
@@ -221,15 +223,55 @@ public class CourseController {
 		mav.setViewName("course/courseHome");
 		return mav;
 	}
-	
+
 	@GetMapping("score")
 	public void score(@Login SessionUser sessionUser, Integer courseNo, Model model){
 		List<User> studentList = courseService.selectStudentList(courseNo);
 		Course course = courseService.selectCourse(courseNo);
 		MyPageData data = userService.getMyPageData(sessionUser, userService.getSemester());
+
 		model.addAttribute("course", course);
-		model.addAttribute("myGrade", data.getGradeList());
 		model.addAttribute("studentList", studentList);
+
+		List<?> gradeList = data.getGradeList();
+
+		// 리스트가 비어있지 않고 MyGrade 타입일 때만 처리
+		if (gradeList != null && !gradeList.isEmpty() && gradeList.get(0) instanceof MyGrade) {
+			List<MyGrade> myGradeList = (List<MyGrade>) gradeList;
+
+			MyGrade midterm = myGradeList.stream()
+					.filter(g -> g.getCourseNo() == courseNo && "MIDTERM".equals(g.getExamType()))
+					.findFirst().orElse(null);
+
+			MyGrade finalGrade = myGradeList.stream()
+					.filter(g -> g.getCourseNo() == courseNo && "FINAL".equals(g.getExamType()))
+					.findFirst().orElse(null);
+
+			MyGrade attendance = myGradeList.stream()
+					.filter(g -> g.getCourseNo() == courseNo && "ATTENDANCE".equals(g.getExamType()))
+					.findFirst().orElse(null);
+
+			model.addAttribute("midtermGrade", midterm);
+			model.addAttribute("finalGrade", finalGrade);
+			model.addAttribute("attendanceGrade", attendance);
+		}
+	}
+
+	@PostMapping("saveGradeList")
+	public String saveGrades(GradeForm gradeForm, RedirectAttributes rttr) {
+		try {
+			// 서비스에 데이터 전달
+			courseService.saveGradesList(gradeForm);
+
+			// 성공 시 메시지 전달
+			rttr.addFlashAttribute("saveResult", "ok");
+		} catch (Exception e) {
+			e.printStackTrace();
+			rttr.addFlashAttribute("saveResult", "fail");
+		}
+
+		// 다시 성적 관리 페이지로 리다이렉트 (courseNo를 쿼리스트링으로 전달)
+		return "redirect:/course/score?courseNo=" + gradeForm.getCourse_no();
 	}
 //	@GetMapping("*")
 //	public void getCourse(Course course) {

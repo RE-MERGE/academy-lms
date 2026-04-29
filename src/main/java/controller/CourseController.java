@@ -41,12 +41,22 @@ public class CourseController {
 	UserService userService;
 
 	@GetMapping("subject")
-	public ModelAndView getSubject(@RequestParam(value="no", defaultValue="1") int no, HttpSession session) {
+	public ModelAndView getSubject(@RequestParam(value="no", required=false) Integer no, HttpSession session) {
 		ModelAndView mav = new ModelAndView();
 		SessionUser user = (SessionUser) session.getAttribute("sessionUser");
-		Course courseDetail = courseService.selectCourse(no);
-		String profName = courseService.selectProfessorName(no);
-		List<Course> courseList = courseService.selectAllCourses();
+		List<Course> courseList;
+	    if (UserRole.PROFESSOR == user.getRole()) {
+	        courseList = courseService.selectCoursesByProfessor(user.getUserNo());
+	    } else {
+	        courseList = courseService.selectCoursesByStudent(user.getUserNo());
+	    }
+
+	    // ← no 결정을 먼저! 이후 코드에서 no 사용 가능
+	    if (no == null) {
+	        no = courseList.isEmpty() ? 1 : courseList.get(0).getCourse_no();
+	    }
+	    Course courseDetail = courseService.selectCourse(no);
+	    String profName = courseService.selectProfessorName(no);
 		List<User> studentList = courseService.selectStudentList(no);
 		List<Attendance> attendanceList = courseService.selectAttendance(user.getUserNo(), no);
 		long presentCount = attendanceList.stream().filter(a -> a.getStatus().equals("PRESENT")).count();
@@ -57,6 +67,7 @@ public class CourseController {
 		mav.addObject("absentCount", absentCount);
 		mav.addObject("AttendanceList", attendanceList);
 		mav.addObject("Course", courseDetail);
+		mav.addObject("course", courseDetail);
 		mav.addObject("courseList", courseList);
 		mav.addObject("profName", profName);
 		mav.addObject("studentList", studentList);
@@ -203,11 +214,10 @@ public class CourseController {
 
 		Set<Integer> favSet = courseService.selectFavoriteSet(userNo);
 
-		mav.addObject("userRole", role.name());
 		mav.addObject("enrolledList", enrolledList);
 		mav.addObject("otherList", otherList);
 		mav.addObject("favSet", favSet);
-		mav.setViewName("course/courseHome");
+		mav.setViewName("course/home");
 		return mav;
 	}
 	

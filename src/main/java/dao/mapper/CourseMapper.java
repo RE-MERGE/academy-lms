@@ -96,7 +96,7 @@ public interface CourseMapper {
       AND c.semester = #{semester}
     ORDER BY c.start_time ASC
 """)
-    List<Map<String, Object>> getProfessorMyCourseMap(@Param("userNo") int userNo, @Param("semester") String semester);
+    List<Course> getProfessorMyCourseMap(@Param("userNo") int userNo, @Param("semester") String semester);
 
     @Select("""
     SELECT 

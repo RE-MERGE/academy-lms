@@ -99,9 +99,12 @@ public class UserService {
     }
 
     private MyPageData buildProfessorData(int userNo, String semester) {
+        List<Course> courseList = courseDao.getProfessorMyCourseMap(userNo, semester);
+
         return MyPageData.builder()
-                .courseList(courseDao.getProfessorMyCourseMap(userNo, semester))
+                .courseList(courseList)
                 .gradeList(enrollmentDao.getProfessorMyGradeList(userNo, semester))
+//                .timetableData(courseList) // 추가
                 .build();
     }
 
@@ -297,13 +300,6 @@ public class UserService {
 
         int minHour = 9;
         int maxHour = 17;
-
-//        int minHour = courseList.stream()
-//                .mapToInt(c -> parseHour(c.getStart_time()))
-//                .min().orElse(9);
-//        int maxHour = courseList.stream()
-//                .mapToInt(c -> parseHour(c.getEnd_time()))
-//                .max().orElse(18);
 
         return new TimetableResult(buildTimetableCells(courseList, minHour), minHour, maxHour);
     }

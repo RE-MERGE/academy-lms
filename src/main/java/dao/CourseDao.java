@@ -62,7 +62,7 @@ public class CourseDao {
 	public Course findByCourseNo(Integer courseNo) {
 		return template.getMapper(cls).find(courseNo);
 	}
-    public List<Map<String, Object>> getProfessorMyCourseMap(int userNo, String semester) {
+    public List<Course> getProfessorMyCourseMap(int userNo, String semester) {
 		return template.getMapper(cls).getProfessorMyCourseMap(userNo, semester);
     }
     public List<Map<String, Object>> getListWithProfessorName(String semester) {

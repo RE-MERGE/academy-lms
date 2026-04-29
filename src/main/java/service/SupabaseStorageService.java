@@ -25,7 +25,8 @@ public class SupabaseStorageService {
 
     public String uploadPdf(MultipartFile file, String semester) throws Exception {
         if (file == null || file.isEmpty()) return null;
-
+        String originalName = file.getOriginalFilename();
+        
         String fileName = "file_" + System.currentTimeMillis() + ".pdf";
         String path = semester + "/" + fileName;
 
@@ -45,6 +46,34 @@ public class SupabaseStorageService {
         }
 
         // 공개 접근 URL 반환
+        return supabaseUrl + "/storage/v1/object/public/" + bucket + "/" + path;
+    }
+    public String uploadImg(MultipartFile file) throws Exception {
+        if (file == null || file.isEmpty()) return null;
+
+        String originalFilename = file.getOriginalFilename();
+        String ext = originalFilename != null && originalFilename.contains(".")
+                ? originalFilename.substring(originalFilename.lastIndexOf("."))  // ".jpg", ".png" 등
+                : "";
+
+        String fileName = "img_" + System.currentTimeMillis() + ext;
+        String path = "profile" + "/" + fileName;
+
+        HttpClient client = HttpClient.newHttpClient();
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(supabaseUrl + "/storage/v1/object/" + bucket + "/" + path))
+                .header("apikey", supabaseKey)
+                .header("Content-Type", file.getContentType())  // image/jpeg, image/png 자동
+                .header("x-upsert", "true")
+                .POST(HttpRequest.BodyPublishers.ofByteArray(file.getBytes()))
+                .build();
+
+        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+        if (response.statusCode() != 200) {
+            throw new IOException("Supabase 업로드 실패: " + response.body());
+        }
+
         return supabaseUrl + "/storage/v1/object/public/" + bucket + "/" + path;
     }
 }

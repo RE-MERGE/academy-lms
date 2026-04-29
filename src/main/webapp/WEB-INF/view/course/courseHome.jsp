@@ -47,7 +47,12 @@
   }
   .section-title .badge {
     font-size: 12px; font-weight: 600;
-    background: #e8f0fb; color: #004595;
+  }
+  .type-major-req  { background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; }
+  .type-major-elec { background: #f0fdf4; color: #15803d; border: 1px solid #bbf7d0; }
+  .type-gen-req    { background: #fffbeb; color: #a16207; border: 1px solid #fde68a; }
+  .type-gen-elec   { background: #fdf4ff; color: #7e22ce; border: 1px solid #e9d5ff; }
+  .type-free       { background: #f3f4f6; color: #4b5563; border: 1px solid #d1d5db;
     padding: 2px 8px; border-radius: 20px;
   }
 
@@ -89,11 +94,16 @@
   }
   .star-btn.on svg path { fill: #FFC107; stroke: #e0a800; }
 
-  .card-icon {
-    width: 42px; height: 42px; border-radius: 10px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 18px; font-weight: 700; margin-bottom: 12px;
-    background: #e8f0fb; color: #004595;
+  .card-type-badge {
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 700;
+    padding: 4px 10px; border-radius: 6px; margin-bottom: 12px; white-space: nowrap; letter-spacing: 0.02em;
+  }
+  .type-major-req  { background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; }
+  .type-major-elec { background: #f0fdf4; color: #15803d; border: 1px solid #bbf7d0; }
+  .type-gen-req    { background: #fffbeb; color: #a16207; border: 1px solid #fde68a; }
+  .type-gen-elec   { background: #fdf4ff; color: #7e22ce; border: 1px solid #e9d5ff; }
+  .type-free       { background: #f3f4f6; color: #4b5563; border: 1px solid #d1d5db;
   }
   .card-name { font-size: 15px; font-weight: 700; color: #1a1a2e; margin-bottom: 4px; padding-right: 24px; }
   .card-info { font-size: 12px; color: #888; margin-bottom: 14px; }
@@ -125,7 +135,11 @@
 <%-- ════════════ 수강중인 강의 ════════════ --%>
 <div class="section-wrap">
   <div class="section-title">
-    수강중인 강의 <span class="badge">${enrolledList.size()}</span>
+    <c:choose>
+      <c:when test="${userRole == 'ADMIN'}">모든 과목</c:when>
+      <c:otherwise>수강중인 강의</c:otherwise>
+    </c:choose>
+    <span class="badge">${enrolledList.size()}</span>
   </div>
 </div>
 <div class="grid-wrap">
@@ -141,7 +155,14 @@
           <button class="star-btn on" title="즐겨찾기 해제" onclick="toggleStar(event,this,${course.course_no})">
             <svg width="20" height="20" viewBox="0 0 20 20"><path d="M10 2l2.4 4.9 5.4.8-3.9 3.8.9 5.3L10 14.3l-4.8 2.5.9-5.3L2.2 7.7l5.4-.8z"/></svg>
           </button>
-          <div class="card-icon">${course.course_name.substring(0,1)}</div>
+          <c:choose>
+            <c:when test="${course.course_type == 'MAJOR_REQUIRED'}"><c:set var="typeClass" value="type-major-req"/><c:set var="typeLabel" value="전공필수"/></c:when>
+            <c:when test="${course.course_type == 'MAJOR_ELECTIVE'}"><c:set var="typeClass" value="type-major-elec"/><c:set var="typeLabel" value="전공선택"/></c:when>
+            <c:when test="${course.course_type == 'GENERAL_REQUIRED'}"><c:set var="typeClass" value="type-gen-req"/><c:set var="typeLabel" value="교양필수"/></c:when>
+            <c:when test="${course.course_type == 'GENERAL_ELECTIVE'}"><c:set var="typeClass" value="type-gen-elec"/><c:set var="typeLabel" value="교양선택"/></c:when>
+            <c:otherwise><c:set var="typeClass" value="type-free"/><c:set var="typeLabel" value="일반선택"/></c:otherwise>
+          </c:choose>
+          <div class="card-type-badge ${typeClass}">${typeLabel}</div>
           <div class="card-name">${course.course_name}</div>
           <div class="card-info">${course.semester} &nbsp;|&nbsp; ${course.credits}학점</div>
           <hr class="card-divider"/>
@@ -160,7 +181,14 @@
           <button class="star-btn" title="즐겨찾기 추가" onclick="toggleStar(event,this,${course.course_no})">
             <svg width="20" height="20" viewBox="0 0 20 20"><path d="M10 2l2.4 4.9 5.4.8-3.9 3.8.9 5.3L10 14.3l-4.8 2.5.9-5.3L2.2 7.7l5.4-.8z"/></svg>
           </button>
-          <div class="card-icon">${course.course_name.substring(0,1)}</div>
+          <c:choose>
+            <c:when test="${course.course_type == 'MAJOR_REQUIRED'}"><c:set var="typeClass" value="type-major-req"/><c:set var="typeLabel" value="전공필수"/></c:when>
+            <c:when test="${course.course_type == 'MAJOR_ELECTIVE'}"><c:set var="typeClass" value="type-major-elec"/><c:set var="typeLabel" value="전공선택"/></c:when>
+            <c:when test="${course.course_type == 'GENERAL_REQUIRED'}"><c:set var="typeClass" value="type-gen-req"/><c:set var="typeLabel" value="교양필수"/></c:when>
+            <c:when test="${course.course_type == 'GENERAL_ELECTIVE'}"><c:set var="typeClass" value="type-gen-elec"/><c:set var="typeLabel" value="교양선택"/></c:when>
+            <c:otherwise><c:set var="typeClass" value="type-free"/><c:set var="typeLabel" value="일반선택"/></c:otherwise>
+          </c:choose>
+          <div class="card-type-badge ${typeClass}">${typeLabel}</div>
           <div class="card-name">${course.course_name}</div>
           <div class="card-info">${course.semester} &nbsp;|&nbsp; ${course.credits}학점</div>
           <hr class="card-divider"/>
@@ -169,15 +197,21 @@
       </c:if>
     </c:forEach>
 
-	<c:if test="${empty enrolledList}">
-      <div class="empty-state">수강중인 강의가 없습니다.</div>
+    <c:if test="${empty enrolledList}">
+      <div class="empty-state">
+        <c:choose>
+          <c:when test="${userRole == 'ADMIN'}">등록된 과목이 없습니다.</c:when>
+          <c:otherwise>수강중인 강의가 없습니다.</c:otherwise>
+        </c:choose>
+      </div>
     </c:if>
   </div>
 </div>
 
-<hr class="section-divider"/>
+<c:if test="${userRole != 'ADMIN'}"><hr class="section-divider"/></c:if>
 
 <%-- ════════════ 전체 강의 (수강중 제외) ════════════ --%>
+<c:if test="${userRole != 'ADMIN'}">
 <div class="section-wrap">
   <div class="section-title">
     전체 강의 <span class="badge">${otherList.size()}</span>
@@ -196,7 +230,14 @@
           <button class="star-btn on" title="즐겨찾기 해제" onclick="toggleStar(event,this,${course.course_no})">
             <svg width="20" height="20" viewBox="0 0 20 20"><path d="M10 2l2.4 4.9 5.4.8-3.9 3.8.9 5.3L10 14.3l-4.8 2.5.9-5.3L2.2 7.7l5.4-.8z"/></svg>
           </button>
-          <div class="card-icon">${course.course_name.substring(0,1)}</div>
+          <c:choose>
+            <c:when test="${course.course_type == 'MAJOR_REQUIRED'}"><c:set var="typeClass" value="type-major-req"/><c:set var="typeLabel" value="전공필수"/></c:when>
+            <c:when test="${course.course_type == 'MAJOR_ELECTIVE'}"><c:set var="typeClass" value="type-major-elec"/><c:set var="typeLabel" value="전공선택"/></c:when>
+            <c:when test="${course.course_type == 'GENERAL_REQUIRED'}"><c:set var="typeClass" value="type-gen-req"/><c:set var="typeLabel" value="교양필수"/></c:when>
+            <c:when test="${course.course_type == 'GENERAL_ELECTIVE'}"><c:set var="typeClass" value="type-gen-elec"/><c:set var="typeLabel" value="교양선택"/></c:when>
+            <c:otherwise><c:set var="typeClass" value="type-free"/><c:set var="typeLabel" value="일반선택"/></c:otherwise>
+          </c:choose>
+          <div class="card-type-badge ${typeClass}">${typeLabel}</div>
           <div class="card-name">${course.course_name}</div>
           <div class="card-info">${course.semester} &nbsp;|&nbsp; ${course.credits}학점</div>
           <hr class="card-divider"/>
@@ -215,7 +256,14 @@
           <button class="star-btn" title="즐겨찾기 추가" onclick="toggleStar(event,this,${course.course_no})">
             <svg width="20" height="20" viewBox="0 0 20 20"><path d="M10 2l2.4 4.9 5.4.8-3.9 3.8.9 5.3L10 14.3l-4.8 2.5.9-5.3L2.2 7.7l5.4-.8z"/></svg>
           </button>
-          <div class="card-icon">${course.course_name.substring(0,1)}</div>
+          <c:choose>
+            <c:when test="${course.course_type == 'MAJOR_REQUIRED'}"><c:set var="typeClass" value="type-major-req"/><c:set var="typeLabel" value="전공필수"/></c:when>
+            <c:when test="${course.course_type == 'MAJOR_ELECTIVE'}"><c:set var="typeClass" value="type-major-elec"/><c:set var="typeLabel" value="전공선택"/></c:when>
+            <c:when test="${course.course_type == 'GENERAL_REQUIRED'}"><c:set var="typeClass" value="type-gen-req"/><c:set var="typeLabel" value="교양필수"/></c:when>
+            <c:when test="${course.course_type == 'GENERAL_ELECTIVE'}"><c:set var="typeClass" value="type-gen-elec"/><c:set var="typeLabel" value="교양선택"/></c:when>
+            <c:otherwise><c:set var="typeClass" value="type-free"/><c:set var="typeLabel" value="일반선택"/></c:otherwise>
+          </c:choose>
+          <div class="card-type-badge ${typeClass}">${typeLabel}</div>
           <div class="card-name">${course.course_name}</div>
           <div class="card-info">${course.semester} &nbsp;|&nbsp; ${course.credits}학점</div>
           <hr class="card-divider"/>
@@ -224,11 +272,12 @@
       </c:if>
     </c:forEach>
 
-	<c:if test="${empty otherList}">
+    <c:if test="${empty otherList}">
       <div class="empty-state">다른 강의가 없습니다.</div>
     </c:if>
   </div>
 </div>
+</c:if>
 
 <script>
   const contextPath = "${pageContext.request.contextPath}";

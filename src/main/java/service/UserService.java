@@ -66,9 +66,9 @@ public class UserService {
         };
     }
 
-    public MyPageData getMyPageData(UserDetailForAdmin userDetailForAdmin, String semester) {
-        int userNo = userDetailForAdmin.getUserNo();
-        UserRole role = userDetailForAdmin.getRole();
+    public MyPageData getMyPageData(UserDetailForAdmin targetUser, String semester) {
+        int userNo = targetUser.getUserNo();
+        UserRole role = targetUser.getRole();
 
         return switch (role) {
             case STUDENT -> buildStudentData(userNo, semester);
@@ -79,23 +79,58 @@ public class UserService {
 
 
     private MyPageData buildStudentData(int userNo, String semester) {
+        List<Course> courseList = courseDao.getStudentMyCourseMap(userNo, semester);
+        List<MyGrade> gradeList = enrollmentDao.getStudentMyGradeList(userNo);
+
         return MyPageData.builder()
-                .courseList(courseDao.getStudentMyCourseMap(userNo, semester))
-                .gradeList(enrollmentDao.getStudentMyGradeList(userNo))
+                .courseList(courseList)
+                .gradeList(gradeList)
+                .gradeRows(convertToGradeRows(gradeList))
+                .timeTableData(buildTimetableData(courseList))
                 .build();
     }
 
-    private MyPageData buildProfessorData(int userNo, String semester) {
-        return MyPageData.builder()
-                .courseList(courseDao.getProfessorMyCourseMap(userNo, semester))
-                .gradeList(enrollmentDao.getProfessorMyGradeList(userNo, semester))
-                .build();    }
-
     private MyPageData buildAdminData(String semester) {
+
         return MyPageData.builder()
                 .courseList(courseDao.getListWithProfessorName(semester))
                 .gradeList(enrollmentDao.getAllStudentGrades())
                 .build();
+    }
+
+    private MyPageData buildProfessorData(int userNo, String semester) {
+
+        List<Course> courseList = courseDao.getProfessorMyCourseMap(userNo, semester);
+
+        return MyPageData.builder()
+                .courseList(courseList)
+                .gradeList(enrollmentDao.getProfessorMyGradeList(userNo, semester))
+                .timeTableData(buildTimetableData(courseList)) // 추가
+                .build();
+    }
+
+    private List<MyGradeRow> convertToGradeRows(List<MyGrade> gradeList) {
+
+        Map<String, MyGradeRow> rowMap = new LinkedHashMap<>();
+
+        for (MyGrade grade : gradeList) {
+
+            String key = grade.getCourseName();
+
+            rowMap.putIfAbsent(key, new MyGradeRow());
+            MyGradeRow row = rowMap.get(grade.getCourseName());
+            row.setCourseName(grade.getCourseName());
+            row.setCourseType(grade.getCourseType());
+
+            if ("MIDTERM".equals(grade.getExamType())) {
+                row.setMidterm(grade);
+            } else if ("FINAL".equals(grade.getExamType())) {
+                row.setFinalExam(grade);
+            } else {
+                row.setAttendance(grade);
+            }
+        }
+        return new ArrayList<>(rowMap.values());
     }
 
     public String selectUserIdByEmail(String email) {
@@ -130,6 +165,11 @@ public class UserService {
             throw new LoginFailException("error.loginFail");
         }
 
+        if (validateLastLogin(dbUser)) {
+            dao.updateStatus(dbUser.getUserId(), UserStatus.LOCKED);
+            throw new LoginFailException("error.account.locked.inactive");
+        }
+
         if (dbUser.getStatus() == UserStatus.LOCKED) {
             throw new LoginFailException("error.status.locked");
         }
@@ -152,6 +192,14 @@ public class UserService {
 
         dao.resetLockCount(userId);
         return new SessionUser(dbUser);
+    }
+
+    private static boolean validateLastLogin(User dbUser) {
+        long daysSinceLastLogin = ChronoUnit.DAYS.between(
+                dbUser.getLastLoginAt(), LocalDate.now()
+        );
+
+        return daysSinceLastLogin >= 90L;
     }
 
     @Transactional
@@ -283,8 +331,6 @@ public class UserService {
                 cells.add(cell);
             }
         }
-
-
         return cells;
     }
 
@@ -294,7 +340,9 @@ public class UserService {
         return Integer.parseInt(time.split(":")[0]);
     }
 
-	public String getNameByUserCode(int userCode) {
-		return dao.getNameByUserCode(userCode);
-	}
+    public String getNameByUserCode(int userCode) {
+        return dao.getNameByUserCode(userCode);
+    }
+
+
 }

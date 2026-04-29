@@ -176,6 +176,7 @@ public class CourseController {
 		SessionUser user = (SessionUser) session.getAttribute("sessionUser");
 
 		if (user == null) {
+			session.invalidate();
 			mav.setViewName("redirect:/user/login");
 			return mav;
 		}

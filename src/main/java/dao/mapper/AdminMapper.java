@@ -38,6 +38,7 @@ public interface AdminMapper {
             "  c.status AS status, " +
             "  c.created_at AS apply_date, " +
             "  c.semester, " +
+            "  c.curriculum_pdf, " +
             "  u.name AS prof_name, " +
             "  u.user_code AS course_code " +
             "FROM COURSE c " +

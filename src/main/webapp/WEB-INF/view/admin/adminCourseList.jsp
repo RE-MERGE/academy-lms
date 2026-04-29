@@ -111,50 +111,6 @@
 }
 .btn-pdf:hover { transform: scale(1.2); }
 
-/* ── PDF 모달 ── */
-.modal-overlay {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.55);
-    z-index: 1000;
-    justify-content: center;
-    align-items: center;
-}
-.modal-overlay.open { display: flex; }
-.modal-box {
-    background: #fff;
-    border-radius: 12px;
-    width: 780px;
-    max-width: 95vw;
-    max-height: 88vh;
-    display: flex;
-    flex-direction: column;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.25);
-    overflow: hidden;
-}
-.modal-header {
-    background: #004595;
-    color: #fff;
-    padding: 14px 20px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    font-size: 16px;
-    font-weight: bold;
-}
-.modal-close {
-    background: none;
-    border: none;
-    color: #fff;
-    font-size: 22px;
-    cursor: pointer;
-    line-height: 1;
-}
-.modal-close:hover { opacity: 0.7; }
-.modal-body { flex: 1; overflow: auto; padding: 0; }
-.modal-body iframe { width: 100%; height: 100%; min-height: 600px; border: none; }
-
 /* ── 페이지네이션 ── */
 .pagination-wrap {
     display: flex;
@@ -222,26 +178,28 @@
     <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
 
         <!-- 왼쪽: 필터 버튼 + 안내 -->
-        <div style="display: flex; align-items: center; gap: 8px;">
-            <button class="filter-btn active" id="btn-all"     onclick="filterCourseStatus('all')">전체</button>
-            <button class="filter-btn"        id="btn-active"  onclick="filterCourseStatus('active')">진행중인 수업</button>
-            <button class="filter-btn"        id="btn-pending" onclick="filterCourseStatus('pending')">대기중인 수업</button>
+        <div style="display: flex; flex-direction: column; gap: 6px;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <button class="filter-btn active" id="btn-all"     onclick="filterCourseStatus('all')">전체</button>
+                <button class="filter-btn"        id="btn-active"  onclick="filterCourseStatus('active')">진행중인 수업</button>
+                <button class="filter-btn"        id="btn-pending" onclick="filterCourseStatus('pending')">대기중인 수업</button>
+            </div>
+            <span style="font-size:13px; color:#555;">
+                전체 강의 <strong style="color:#004595;" id="visibleCount">${courseList.size()}</strong>개
+            </span>
         </div>
 
         <!-- 오른쪽: 상태변경 + 검색 -->
         <div style="display: flex; align-items: center; gap: 8px;">
-            <select id="bulkStatus" style="padding: 7px 14px; border-radius: 6px; border: 1.5px solid #d0d7f0; font-size: 14px; cursor: pointer; min-width: 130px; color: #333;">
-                <option value="">상태 선택</option>
-                <option value="APPROVED">승인</option>
-                <option value="APPLIED">신청</option>
-                <option value="PENDING">대기</option>
-                <option value="CANCELED">거절</option>
-            </select>
-            <button class="btn-confirm" onclick="applyBulkStatus()">확인</button>
-
+           
             <div class="search-wrap">
-                <span style="font-size: 16px; color: #aaa;">🔍</span>
-                <input type="text" id="searchInput" placeholder="" onkeyup="searchTable()"/>
+                <select id="searchType" style="padding: 7px 10px; border: 1.5px solid #d0d7f0; border-radius: 6px; font-size: 14px; color: #333; cursor: pointer; outline: none;">
+                    <option value="all">교수이름+강의이름</option>
+                    <option value="profName">교수이름</option>
+                    <option value="courseName">강의이름</option>
+                    <option value="classroom">강의실</option>
+                </select>
+                <input type="text" id="searchInput" placeholder="검색어 입력" onkeyup="searchTable()"/>
                 <button onclick="searchTable()">검색</button>
             </div>
         </div>
@@ -301,7 +259,8 @@
                 data-prof-name="${course.prof_name}"
                 data-course-name="${course.course_name}"
                 data-apply-date="${course.apply_date}"
-                data-day-of-week="${course.day_of_week}">
+                data-day-of-week="${course.day_of_week}"
+                data-classroom="${course.classroom}">
               <td><input type="checkbox" class="row-check" value="${course.course_no}"/></td>
              
                 
@@ -313,7 +272,7 @@
                 
                 <td>
                     <button class="btn-pdf"
-                            onclick="openPdf('${pageContext.request.contextPath}/course/pdf?no=${course.course_no}', '${course.course_name}')"
+                            onclick="openPdf('${course.curriculum_pdf}', '${course.course_name}')"
                             title="강의계획서 보기">📁</button>
                 </td>
                 
@@ -344,18 +303,8 @@
         </tbody>
     </table>
 
-    <!-- 페이지네이션 -->
-    <div class="pagination-wrap">
-        <c:if test="${currentPage > 1}">
-            <a href="?page=${currentPage - 1}">&lt;</a>
-        </c:if>
-        <c:forEach var="p" begin="1" end="${totalPages}">
-            <a href="?page=${p}" class="${p == currentPage ? 'active' : ''}">${p}</a>
-        </c:forEach>
-        <c:if test="${currentPage < totalPages}">
-            <a href="?page=${currentPage + 1}">&gt;</a>
-        </c:if>
-    </div>
+    <!-- 페이지네이션 (JS 렌더링) -->
+    <div class="pagination-wrap" id="paginationWrap"></div>
 
     <!-- 하단 액션 바 -->
     <div class="action-bar">
@@ -371,33 +320,144 @@
 
 </div>
 
-<!-- PDF 모달 -->
-<div class="modal-overlay" id="pdfModal">
-    <div class="modal-box">
-        <div class="modal-header">
-            <span>📄 <span id="modalTitle">강의계획서</span></span>
-            <button class="modal-close" onclick="closePdf()">✕</button>
-        </div>
-        <div class="modal-body">
-            <iframe id="pdfFrame" src=""></iframe>
-        </div>
-    </div>
-</div>
+
 
 <script>
-    /* ── PDF 모달 ── */
-    function openPdf(url, title) {
-        document.getElementById('modalTitle').textContent = title;
-        document.getElementById('pdfFrame').src = url;
-        document.getElementById('pdfModal').classList.add('open');
+    const PAGE_SIZE = 10;
+    let currentPage = 1;
+
+    /* ── PDF 새 창 열기 ── */
+    function openPdf(url) {
+        if (url != null && url !== '') {
+            window.open(url, '_blank', 'width=800,height=900');
+        } else {
+            alert('등록된 강의계획서가 없습니다.');
+        }
     }
-    function closePdf() {
-        document.getElementById('pdfModal').classList.remove('open');
-        document.getElementById('pdfFrame').src = '';
+
+    /* ── 모든 row 배열 (순서 고정) ── */
+    function getAllRows() {
+        return Array.from(document.querySelectorAll('#courseTableBody tr.course-row'));
     }
-    document.getElementById('pdfModal').addEventListener('click', function(e) {
-        if (e.target === this) closePdf();
-    });
+
+    /* ── 현재 필터를 통과한 row 배열 ── */
+    function getVisibleRows() {
+        return getAllRows().filter(function(row) {
+            return row.dataset.visible !== '0';
+        });
+    }
+
+    /* ── 페이지 렌더링 ── */
+    function renderPage(page) {
+        const visibleRows = getVisibleRows();
+        const totalPages  = Math.max(1, Math.ceil(visibleRows.length / PAGE_SIZE));
+        currentPage = Math.min(Math.max(1, page), totalPages);
+
+        const start = (currentPage - 1) * PAGE_SIZE;
+        const end   = start + PAGE_SIZE;
+
+        getAllRows().forEach(function(row) {
+            row.style.display = 'none';
+        });
+        visibleRows.forEach(function(row, idx) {
+            row.style.display = (idx >= start && idx < end) ? '' : 'none';
+        });
+
+        reNumberRows(start);
+        renderPagination(visibleRows.length, totalPages);
+        updateCount(visibleRows.length);
+    }
+
+    /* ── 번호 재계산 ── */
+    function reNumberRows(start) {
+        let i = start + 1;
+        getAllRows().forEach(function(row) {
+            if (row.style.display !== 'none') {
+                row.querySelector('.cell-no').textContent = i++;
+            }
+        });
+    }
+
+    /* ── 페이지네이션 버튼 렌더링 ── */
+    function renderPagination(total, totalPages) {
+        const wrap = document.getElementById('paginationWrap');
+        wrap.innerHTML = '';
+
+        if (totalPages <= 1) return;
+
+        function makeBtn(label, page, isActive) {
+            const a = document.createElement('a');
+            a.textContent = label;
+            if (isActive) a.classList.add('active');
+            a.style.cursor = 'pointer';
+            a.addEventListener('click', function() { renderPage(page); });
+            return a;
+        }
+
+        if (currentPage > 1) wrap.appendChild(makeBtn('<', currentPage - 1, false));
+        for (let p = 1; p <= totalPages; p++) {
+            wrap.appendChild(makeBtn(p, p, p === currentPage));
+        }
+        if (currentPage < totalPages) wrap.appendChild(makeBtn('>', currentPage + 1, false));
+    }
+
+    /* ── 카운트 업데이트 ── */
+    function updateCount(count) {
+        if (count === undefined) count = getVisibleRows().length;
+        document.getElementById('visibleCount').textContent = count;
+    }
+
+    /* ── 필터 공통 적용 ── */
+    function applyFilters() {
+        const statusVal = document.getElementById('statusFilter').value;
+        const courseBtn = document.querySelector('.filter-btn.active') ? 
+            (document.getElementById('btn-active').classList.contains('active') ? 'active' :
+             document.getElementById('btn-pending').classList.contains('active') ? 'pending' : 'all') : 'all';
+        const keyword   = document.getElementById('searchInput').value.toLowerCase().trim();
+        const type      = document.getElementById('searchType').value;
+
+        getAllRows().forEach(function(row) {
+            const s          = row.getAttribute('data-status');
+            const profName   = (row.getAttribute('data-prof-name')   || '').toLowerCase();
+            const courseName = (row.getAttribute('data-course-name') || '').toLowerCase();
+            const classroom  = (row.getAttribute('data-classroom')   || '').toLowerCase();
+
+            // 상태 버튼 필터
+            let showBtn = true;
+            if (courseBtn === 'active')  showBtn = (s === 'APPROVED');
+            if (courseBtn === 'pending') showBtn = (s === 'PENDING' || s === 'CANCELED' || s === 'APPLIED');
+
+            // 헤더 상태 셀렉트 필터
+            const showStatus = (!statusVal || s === statusVal);
+
+            // 검색 필터
+            let showSearch = true;
+            if (keyword) {
+                if (type === 'profName')        showSearch = profName.includes(keyword);
+                else if (type === 'courseName') showSearch = courseName.includes(keyword);
+                else if (type === 'classroom')  showSearch = classroom.includes(keyword);
+                else                            showSearch = profName.includes(keyword) || courseName.includes(keyword);
+            }
+
+            row.dataset.visible = (showBtn && showStatus && showSearch) ? '1' : '0';
+        });
+
+        renderPage(1);
+    }
+
+    /* ── 상태 필터 (헤더 셀렉트) ── */
+    function filterStatus() { applyFilters(); }
+
+    /* ── 진행중 / 대기중 필터 버튼 ── */
+    function filterCourseStatus(type) {
+        document.getElementById('btn-all').classList.toggle('active',     type === 'all');
+        document.getElementById('btn-active').classList.toggle('active',  type === 'active');
+        document.getElementById('btn-pending').classList.toggle('active', type === 'pending');
+        applyFilters();
+    }
+
+    /* ── 검색 ── */
+    function searchTable() { applyFilters(); }
 
     /* ── 정렬 ── */
     const sortState = { profName: 'none', courseName: 'none', applyDate: 'none', dayOfWeek: 'none' };
@@ -405,7 +465,7 @@
 
     function sortTable(key) {
         const tbody = document.getElementById('courseTableBody');
-        const rows  = Array.from(tbody.querySelectorAll('tr.course-row'));
+        const rows  = getAllRows();
         const cur   = sortState[key];
         const next  = (cur === 'none' || cur === 'desc') ? 'asc' : 'desc';
 
@@ -423,50 +483,7 @@
             return next === 'asc' ? cmp : -cmp;
         });
         rows.forEach(function(row) { tbody.appendChild(row); });
-        reNumberRows();
-    }
-
-    /* ── 번호 재계산 ── */
-    function reNumberRows() {
-        let i = 1;
-        document.querySelectorAll('#courseTableBody tr.course-row').forEach(function(row) {
-            if (row.style.display !== 'none') row.querySelector('.cell-no').textContent = i++;
-        });
-    }
-
-    /* ── 상태 필터 (헤더 셀렉트) ── */
-    function filterStatus() {
-        const val = document.getElementById('statusFilter').value;
-        document.querySelectorAll('.course-row').forEach(function(row) {
-            row.style.display = (!val || row.getAttribute('data-status') === val) ? '' : 'none';
-        });
-        reNumberRows();
-    }
-
-    /* ── 진행중 / 대기중 필터 버튼 ── */
-    function filterCourseStatus(type) {
-        document.getElementById('btn-all').classList.toggle('active',     type === 'all');
-        document.getElementById('btn-active').classList.toggle('active',  type === 'active');
-        document.getElementById('btn-pending').classList.toggle('active', type === 'pending');
-
-        document.querySelectorAll('.course-row').forEach(function(row) {
-            const s = row.getAttribute('data-status');
-            let show = false;
-            if (type === 'all')     show = true;
-            if (type === 'active')  show = (s === 'APPROVED');
-            if (type === 'pending') show = (s === 'PENDING' || s === 'CANCELED' || s ==='APPLIED');
-            row.style.display = show ? '' : 'none';
-        });
-        reNumberRows();
-    }
-
-    /* ── 검색 ── */
-    function searchTable() {
-        const keyword = document.getElementById('searchInput').value.toLowerCase().trim();
-        document.querySelectorAll('.course-row').forEach(function(row) {
-            row.style.display = row.innerText.toLowerCase().includes(keyword) ? '' : 'none';
-        });
-        reNumberRows();
+        renderPage(1);
     }
 
     /* ── 전체 체크박스 ── */
@@ -499,6 +516,10 @@
         document.body.appendChild(form);
         form.submit();
     }
+
+    /* ── 초기 렌더링 ── */
+    getAllRows().forEach(function(row) { row.dataset.visible = '1'; });
+    renderPage(1);
 </script>
 </body>
 </html>

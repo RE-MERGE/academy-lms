@@ -203,10 +203,11 @@ public class CourseController {
 
 		Set<Integer> favSet = courseService.selectFavoriteSet(userNo);
 
+		mav.addObject("userRole", role.name());
 		mav.addObject("enrolledList", enrolledList);
 		mav.addObject("otherList", otherList);
 		mav.addObject("favSet", favSet);
-		mav.setViewName("course/home");
+		mav.setViewName("course/courseHome");
 		return mav;
 	}
 	

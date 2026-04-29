@@ -209,4 +209,12 @@ public class CourseService {
 	public List<Course> getFavoriteCourses(int userNo) {
 		return coursedao.getFavoriteCourse(userNo);
 	}
+
+	public List<Course> selectCourseByProfessor(Integer userNo) {
+		return coursedao.getCourseByProfessor(userNo);
+	}
+
+	public List<Course> selectCourseByStudent(Integer userNo) {
+		return coursedao.getCourseByStudent(userNo);
+	}
 }

@@ -140,4 +140,10 @@ public class CourseDao {
 	public int hasProfessorConflictExcludeSelf(Course course) {
 		return template.getMapper(cls).hasProfessorConflictExcludeSelf(course);
 	}
+	public List<Course> getCourseByProfessor(Integer userNo) {
+		return template.getMapper(cls).getCourseByProfessor(userNo);
+	}
+	public List<Course> getCourseByStudent(Integer userNo) {
+		return template.getMapper(cls).getCourseByStudent(userNo);
+	}
 }

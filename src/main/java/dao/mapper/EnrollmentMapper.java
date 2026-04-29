@@ -82,5 +82,10 @@ public interface EnrollmentMapper {
             "ORDER BY c.course_name ASC")
 	List<AdminAllStudentGrade> getAllStudentGrades();
 
+    @Select("SELECT COALESCE(SUM(c.credits), 0) FROM ENROLLMENT e " +
+            "JOIN COURSE c ON c.course_no = e.course_no " +
+            "WHERE e.student_no = #{userNo} AND c.semester = #{semester}")
+    int getTotalCredits(@Param("userNo") int userNo, @Param("semester") String semester);
+
 
 }

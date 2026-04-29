@@ -102,8 +102,7 @@ public class EnrollmentController {
 	        String pdfUrl = storageService.uploadPdf(curriculumPdf, params.get("semester"));
 	        course.setCurriculum_pdf(pdfUrl);
 
-	        int success = courseService.insertCourse(course);
-	        result.put("success", success > 0);
+	        result = courseService.insertCourse(course);
 	    } catch (Exception e) {
 	        result.put("success", false);
 	        result.put("message", e.getMessage());
@@ -207,8 +206,7 @@ public class EnrollmentController {
 	        String pdfUrl = storageService.uploadPdf(curriculumPdf, params.get("semester"));
 	        if (pdfUrl != null) course.setCurriculum_pdf(pdfUrl);
 
-	        int success = courseService.updateCourse(course);
-	        result.put("success", success > 0);
+	        result = courseService.updateCourse(course);
 	    } catch (Exception e) {
 	        result.put("success", false);
 	        result.put("message", e.getMessage());

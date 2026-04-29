@@ -49,4 +49,7 @@ public class EnrollmentDao {
 		 return template.getMapper(cls).getAllStudentGrades();
 
     }
+    public int getTotalCredits(int userNo, String semester) {
+		return template.getMapper(cls).getTotalCredits(userNo, semester);
+	}
 }

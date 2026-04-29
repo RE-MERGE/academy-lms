@@ -130,6 +130,10 @@ public class MvcConfig implements WebMvcConfigurer {
         registry.addInterceptor(new SavePrevUrlInterceptor())
                 .order(3)
                 .addPathPatterns("/admin/**");
+        
+        /*registry.addInterceptor(new EnrollmentPeriodInterceptor())
+        .order(4)
+        .addPathPatterns("/enrollment/**"); */
     }
 
     @Bean

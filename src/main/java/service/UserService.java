@@ -238,4 +238,8 @@ public class UserService {
 	public int getUserCodeByProfNo(int professor_no) {
 		return dao.getUserCode(professor_no);
 	}
+
+	public String getNameByUserCode(int userCode) {
+		return dao.getNameByUserCode(userCode);
+	}
 }

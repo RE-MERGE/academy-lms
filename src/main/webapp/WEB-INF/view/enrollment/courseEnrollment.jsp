@@ -370,6 +370,12 @@
     .tt-cell { border-right: 1px solid var(--gray-100); padding: .3rem; position: relative; }
     .tt-cell:last-child { border-right: none; }
     .tt-course-block { height: 100%; background: var(--primary-pale); border: 1.5px solid var(--primary-tint); border-left: 3.5px solid var(--primary); border-radius: var(--radius-sm); padding: .3rem .45rem; font-size: .7rem; font-weight: 600; color: var(--primary-dark); line-height: 1.35; cursor: default; }
+    .tt-course-block.status-approved { background: #eff6ff; border-color: #bfdbfe; border-left-color: #1d4ed8; color: #1e3a8a; }
+    .tt-course-block.status-approved .tt-room { color: #3b82f6; }
+    .tt-course-block.status-pending  { background: #fffbeb; border-color: #fde68a; border-left-color: #ca8a04; color: #78350f; }
+    .tt-course-block.status-pending  .tt-room { color: #d97706; }
+    .tt-course-block.status-applied  { background: var(--gray-100); border-color: var(--gray-200); border-left-color: var(--gray-400); color: var(--gray-600); }
+    .tt-course-block.status-applied  .tt-room { color: var(--gray-400); }
     .tt-course-block .tt-room { font-size: .62rem; font-weight: 500; color: var(--primary-light); margin-top: .15rem; }
     .tt-course-block .tt-status { font-size: .58rem; font-weight: 700; margin-top: .15rem; }
 
@@ -553,7 +559,7 @@
             <option value="GENERAL_REQUIRED">교양필수</option>
             <option value="GENERAL_ELECTIVE">교양선택</option>
             <option value="FREE_ELECTIVE">일반선택</option>
-          </select>
+          </select> 
           <select class="filter-select" id="filterCredits" onchange="loadAllCourses(1)">
             <option value="">전체 학점</option>
             <option value="1">1학점</option>
@@ -602,11 +608,11 @@
                   </c:if>
                   <th style="width:42px; text-align:center;">번호</th>
                   <th>강의명</th>
-                  <th style="width:80px;">유형</th>
+                  <th style="width:80px;text-align: center;">유형</th>
                   <th style="width:70px; text-align:center;">학점</th>
                   <th style="width:55px; text-align:center;">요일</th>
                   <th style="width:105px;">시간</th>
-                  <th style="width:65px;">강의실</th>
+                  <th style="width:70px;">강의실</th>
                   <th style="width:140px;">정원</th>
                   <%-- 역할별 마지막 컬럼 --%>
                   <c:choose>
@@ -643,13 +649,13 @@
                   <tr>
                     <th style="width:42px; text-align:center;">번호</th>
                     <th>강의명</th>
-                    <th style="width:80px;">유형</th>
+                    <th style="width:80px;text-align: center">유형</th>
                     <th style="width:70px; text-align:center;">학점</th>
                     <th style="width:55px; text-align:center;">요일</th>
                     <th style="width:105px;">시간</th>
-                    <th style="width:65px;">강의실</th>
+                    <th style="width:70px;">강의실</th>
                     <%-- 공통: 상태 배지 --%>
-                    <th style="width:90px; text-align:center;">상태</th>
+                    <c:if test="${user.role != 'STUDENT'}"><th style="width:90px; text-align:center;">상태</th></c:if>
                     <%-- STUDENT only: 취소 버튼 --%>
                     <c:if test="${user.role == 'STUDENT'}">
                       <th style="width:85px; text-align:center;">취소</th>
@@ -714,12 +720,12 @@
         <label class="status-option">
           <input type="radio" name="statusChoice" value="APPROVED">
           <span>🟢</span>
-          <label>승인 (APPROVED) — 수강신청 가능, 시간표 노출</label>
+          <label>승인</label>
         </label>
         <label class="status-option">
           <input type="radio" name="statusChoice" value="PENDING">
           <span>🟡</span>
-          <label>승인대기 (PENDING) — 관리자 검토 중</label>
+          <label>대기</label>
         </label>
       </div>
       <div class="status-modal-actions">
@@ -968,7 +974,7 @@ function renderMineTable() {
       <td style="text-align:center;">\${c.day_of_week || '-'}</td>
       <td style="font-size:.78rem;">\${formatTime(c.start_time)} ~ \${formatTime(c.end_time)}</td>
       <td style="font-size:.78rem;color:var(--gray-500);">\${c.room_info || '-'}</td>
-      <td style="text-align:center;">\${statusBadge}</td>
+      \${USER_ROLE === 'STUDENT' ? '' : `<td style="text-align:center;">\${statusBadge}</td>`}
       \${lastCell}
     </tr>`;
   }).join('');
@@ -1187,10 +1193,7 @@ function renderTimetable() {
   const body = document.getElementById('timetableBody');
   body.innerHTML = '';
 
-  // PROFESSOR는 ACTIVE 강의만
-  const displayCourses = USER_ROLE === 'PROFESSOR'
-    ? myCourses.filter(c => c.status === 'APPROVED')
-    : myCourses;
+  const displayCourses = myCourses;
 
   const DAY_IDX = {'월':0,'화':1,'수':2,'목':3,'금':4};
 
@@ -1217,15 +1220,11 @@ function renderTimetable() {
 
       if (course) {
         const block = document.createElement('div');
-        block.className = 'tt-course-block';
-        let extra = '';
-        if (USER_ROLE === 'PROFESSOR') {
-          extra = `<div class="tt-status" style="color:#15803d;">● APPROVED</div>`;
-        }
+        const statusClass = { APPROVED: 'status-approved', PENDING: 'status-pending', APPLIED: 'status-applied' }[course.status] || '';
+        block.className = 'tt-course-block ' + statusClass;
         block.innerHTML = `
           <div>\${escHtml(course.course_name)}</div>
-          <div class="tt-room">\${escHtml(course.room_info || '')}</div>
-          \${extra}`;
+          <div class="tt-room">\${escHtml(course.room_info || '')}</div>`;
         cell.appendChild(block);
       }
       row.appendChild(cell);
@@ -1236,8 +1235,8 @@ function renderTimetable() {
   if (!displayCourses.length) {
     body.innerHTML = `<div class="empty-state">
       <div class="empty-icon">🗓</div>
-      <div class="empty-text">\${USER_ROLE === 'PROFESSOR' ? '승인(APPROVED) 강의가 없습니다' : '신청된 수강이 없습니다'}</div>
-      <div class="empty-sub">\${USER_ROLE === 'PROFESSOR' ? '강의 상태가 APPROVED인 경우 시간표에 표시됩니다' : '수강신청 후 시간표가 표시됩니다'}</div>
+      <div class="empty-text">\${USER_ROLE === 'PROFESSOR' ? '담당 강의가 없습니다' : '신청된 수강이 없습니다'}</div>
+      <div class="empty-sub">\${USER_ROLE === 'PROFESSOR' ? '배정된 강의가 시간표에 표시됩니다' : '수강신청 후 시간표가 표시됩니다'}</div>
     </div>`;
   }
 }

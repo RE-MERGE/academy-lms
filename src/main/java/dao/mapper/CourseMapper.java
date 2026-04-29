@@ -14,7 +14,8 @@ import dto.Course;
 import dto.user.User;
 
 public interface CourseMapper {
-    @Select("select * from COURSE")
+    @Select("SELECT * FROM COURSE " +
+            "ORDER BY FIELD(course_type, 'MAJOR_REQUIRED', 'MAJOR_ELECTIVE', 'GENERAL_REQUIRED', 'GENERAL_ELECTIVE', 'FREE_ELECTIVE')")
     List<Course> list();
 
     @Insert("INSERT INTO COURSE (professor_no, course_name, course_type, room_info, day_of_week, " +
@@ -66,7 +67,8 @@ public interface CourseMapper {
             "FROM COURSE c " +
             "JOIN USERS u ON c.professor_no = u.user_no " +
             "WHERE c.semester = #{semester} " +
-            "AND c.course_no IN (SELECT course_no FROM ENROLLMENT WHERE student_no = #{userNo})")
+            "AND c.course_no IN (SELECT course_no FROM ENROLLMENT WHERE student_no = #{userNo}) " +
+            "ORDER BY FIELD(c.course_type, 'MAJOR_REQUIRED', 'MAJOR_ELECTIVE', 'GENERAL_REQUIRED', 'GENERAL_ELECTIVE', 'FREE_ELECTIVE')")
     List<Course> getStudentCourseList(@Param("userNo") int userNo, @Param("semester") String semester);
 
     @Select("SELECT " +
@@ -75,7 +77,9 @@ public interface CourseMapper {
             "FROM COURSE c " +
             "JOIN USERS u ON c.professor_no = u.user_no " +
             "WHERE c.semester = #{semester} " +
-            "AND c.professor_no = #{userNo}")
+            "AND c.professor_no = #{userNo})" +
+            "ORDER BY FIELD(c.course_type, 'MAJOR_REQUIRED', 'MAJOR_ELECTIVE', 'GENERAL_REQUIRED', 'GENERAL_ELECTIVE', 'FREE_ELECTIVE')")
+
     List<Course> getMyCourse(@Param("userNo") int userNo, @Param("semester") String semester);
 
     @Select("SELECT * FROM COURSE WHERE course_no IN (SELECT course_no FROM ENROLLMENT WHERE student_no = #{userNo}) AND semester = #{semester}")
@@ -106,6 +110,7 @@ public interface CourseMapper {
     FROM COURSE c
     JOIN USERS u ON c.professor_no = u.user_no
     WHERE c.semester = #{semester}
+    ORDER BY FIELD(c.course_type, 'MAJOR_REQUIRED', 'MAJOR_ELECTIVE', 'GENERAL_REQUIRED', 'GENERAL_ELECTIVE', 'FREE_ELECTIVE')
 """)
     List<Map<String, Object>> getListWithProfessorName(String semester);
 

@@ -79,7 +79,7 @@ public class UserService {
 
 
     private MyPageData buildStudentData(int userNo, String semester) {
-        List<Course> courseList = courseDao.getStudentMyCourseMap(userNo, semester);
+        List<Course> courseList = courseDao.getStudentCourseList(userNo, semester);
         List<MyGrade> gradeList = enrollmentDao.getStudentMyGradeList(userNo);
 
         System.err.println("courseList size: " + courseList.size());
@@ -323,7 +323,7 @@ public class UserService {
 
             for (String day : days) {
                 day = day.trim();
-                
+
                 System.err.println("day='" + day + "' length=" + day.length() + " colIndex=" + dayCol.getOrDefault(day, 2));
 
                 int startHour = parseHour(course.getStart_time());

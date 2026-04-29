@@ -314,12 +314,18 @@ public class UserService {
         );
 
         List<TimetableData> cells = new ArrayList<>();
+
+
+
         for (Course course : courseList) {
             if (course.getDay_of_week() == null || course.getDay_of_week().isEmpty()) continue; // 추가
             String[] days = course.getDay_of_week().split(",");
 
             for (String day : days) {
                 day = day.trim();
+                
+                System.err.println("day='" + day + "' length=" + day.length() + " colIndex=" + dayCol.getOrDefault(day, 2));
+
                 int startHour = parseHour(course.getStart_time());
                 int endHour = parseHour(course.getEnd_time());
 
@@ -334,6 +340,11 @@ public class UserService {
                 cells.add(cell);
             }
         }
+
+        cells.forEach(c -> System.err.println(
+                c.getCourseName() + " rowStart=" + c.getRowStart() + " rowSpan=" + c.getRowSpan() + " colIndex=" + c.getColIndex()
+        ));
+
         return cells;
     }
 

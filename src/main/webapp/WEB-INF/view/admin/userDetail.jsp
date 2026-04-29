@@ -227,8 +227,8 @@
         <div class="profile-actions">
             <a href="${pageContext.request.contextPath}/admin/editProfileForAdmin/${userDetail.userNo}"
                class="btn-action btn-action-primary">회원정보 수정</a>
-            <a href="${pageContext.request.contextPath}/admin/updatePwForm/${userDetail.userNo}"
-               class="btn-action btn-action-outline">비밀번호 변경</a>
+<%--            <a href="${pageContext.request.contextPath}/admin/updatePwForm/${userDetail.userNo}"--%>
+<%--               class="btn-action btn-action-outline">비밀번호 변경</a>--%>
         </div>
     </div>
 
@@ -262,7 +262,9 @@
                             <c:choose>
                                 <c:when test="${course.course_type eq 'MAJOR_REQUIRED'}"><c:set var="badgeText" value="전공필수"/><c:set var="badgeClass" value="badge-red"/></c:when>
                                 <c:when test="${course.course_type eq 'MAJOR_ELECTIVE'}"><c:set var="badgeText" value="전공선택"/><c:set var="badgeClass" value="badge-green"/></c:when>
-                                <c:when test="${course.course_type eq 'GENERAL_REQUIRED'}"><c:set var="badgeText" value="일반필수"/><c:set var="badgeClass" value="badge-yellow"/></c:when>
+                                <c:when test="${course.course_type eq 'GENERAL_REQUIRED'}"><c:set var="badgeText" value="일반필수"/><c:set var="badgeClass" value="badge-orange"/></c:when>
+                                <c:when test="${course.course_type eq 'GENERAL_ELECTIVE'}"><c:set var="badgeText" value="일반선택"/><c:set var="badgeClass" value="badge-gray"/></c:when>
+                                <c:when test="${course.course_type eq 'FREE_ELECTIVE'}"><c:set var="badgeText" value="자율선택"/><c:set var="badgeClass" value="badge-yellow"/></c:when>
                                 <c:otherwise><c:set var="badgeText" value="일반선택"/><c:set var="badgeClass" value="badge-blue"/></c:otherwise>
                             </c:choose>
                             <span class="course-badge ${badgeClass}">${badgeText}</span>

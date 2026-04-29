@@ -372,7 +372,7 @@
     .tt-course-block { height: 100%; background: var(--primary-pale); border: 1.5px solid var(--primary-tint); border-left: 3.5px solid var(--primary); border-radius: var(--radius-sm); padding: .3rem .45rem; font-size: .7rem; font-weight: 600; color: var(--primary-dark); line-height: 1.35; cursor: default; }
     .tt-course-block.status-approved { background: #eff6ff; border-color: #bfdbfe; border-left-color: #1d4ed8; color: #1e3a8a; }
     .tt-course-block.status-approved .tt-room { color: #3b82f6; }
-    .tt-course-block.status-pending  { background: #fffbeb; border-color: #fde68a; border-left-color: #ca8a04; color: #78350f; }
+
     .tt-course-block.status-pending  .tt-room { color: #d97706; }
     .tt-course-block.status-applied  { background: var(--gray-100); border-color: var(--gray-200); border-left-color: var(--gray-400); color: var(--gray-600); }
     .tt-course-block.status-applied  .tt-room { color: var(--gray-400); }

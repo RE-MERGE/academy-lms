@@ -516,6 +516,7 @@
                                             <c:if test="${grade.courseType eq 'MAJOR_ELECTIVE'}"><c:set var="gBadgeClass" value="badge-green" /><c:set var="gBadgeText" value="전공선택" /></c:if>
                                             <c:if test="${grade.courseType eq 'GENERAL_REQUIRED'}"><c:set var="gBadgeClass" value="badge-orange" /><c:set var="gBadgeText" value="일반필수" /></c:if>
                                             <c:if test="${grade.courseType eq 'GENERAL_ELECTIVE'}"><c:set var="gBadgeClass" value="badge-gray" /><c:set var="gBadgeText" value="일반선택" /></c:if>
+                                            <c:if test="${grade.courseType eq 'FREE_ELECTIVE'}"><c:set var="gBadgeClass" value="badge-yellow" /><c:set var="gBadgeText" value="자율선택" /></c:if>
                                             <span class="grade-badge ${gBadgeClass}">${gBadgeText}</span>
                                         </td>
                                         <td style="font-weight: 700;">${grade.midterm.score}</td>   <%-- 중간고사 --%>
@@ -540,7 +541,9 @@
                                             <c:if test="${grade.courseType eq 'MAJOR_ELECTIVE'}"><c:set var="gBadgeClass" value="badge-green" /><c:set var="gBadgeText" value="전공선택" /></c:if>
                                             <c:if test="${grade.courseType eq 'GENERAL_REQUIRED'}"><c:set var="gBadgeClass" value="badge-orange" /><c:set var="gBadgeText" value="일반필수" /></c:if>
                                             <c:if test="${grade.courseType eq 'GENERAL_ELECTIVE'}"><c:set var="gBadgeClass" value="badge-gray" /><c:set var="gBadgeText" value="일반선택" /></c:if>
-                                            <span class="grade-badge ${gBadgeClass}">${gBadgeText}</span>
+                                                <c:if test="${grade.courseType eq 'FREE_ELECTIVE'}"><c:set var="gBadgeClass" value="badge-yellow" /><c:set var="gBadgeText" value="자율선택" /></c:if>
+
+                                                <span class="grade-badge ${gBadgeClass}">${gBadgeText}</span>
                                         </td>
                                         <c:choose>
                                             <c:when test="${sessionUser.role == 'ADMIN'}">

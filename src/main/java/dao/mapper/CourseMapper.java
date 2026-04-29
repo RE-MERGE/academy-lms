@@ -67,7 +67,7 @@ public interface CourseMapper {
             "JOIN USERS u ON c.professor_no = u.user_no " +
             "WHERE c.semester = #{semester} " +
             "AND c.course_no IN (SELECT course_no FROM ENROLLMENT WHERE student_no = #{userNo})")
-    List<Course> getStudentMyCourseMap(@Param("userNo") int userNo, @Param("semester") String semester);
+    List<Course> getStudentCourseList(@Param("userNo") int userNo, @Param("semester") String semester);
 
     @Select("SELECT " +
             "    c.*, " +

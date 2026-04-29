@@ -14,10 +14,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-import service.FileService;
-import service.MailService;
-import service.NaverLoginService;
-import service.UserService;
+import service.*;
 
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
@@ -32,9 +29,10 @@ public class UserController {
     private final UserService userService;
     private final NaverLoginConfig naverLoginConfig;
     private final NaverLoginService naverLoginService;
-    private final MailService mailService;
     private final BCryptPasswordEncoder passwordEncoder;
     private final FileService fileService;
+    private final SupabaseStorageService storageService;
+
 
     @GetMapping("joinForm")
     public String joinForm(Model model) {

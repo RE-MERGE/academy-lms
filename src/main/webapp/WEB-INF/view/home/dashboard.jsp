@@ -13,7 +13,7 @@ body {
   font-family: 'Noto Sans KR', Arial, sans-serif;
   min-height: 100vh;
   margin: 0;
-  padding: 20px;
+  padding: 0;
 }
 
 /* ── 전체 2열 레이아웃 ── */
@@ -21,20 +21,23 @@ body {
   display: grid;
   grid-template-columns: 1fr 30%;
   gap: 18px;
-  align-items: start;
+  /* start 대신 stretch를 사용하여 두 칼럼의 높이를 맞춥니다 */
+  align-items: stretch; 
   width: 100%;
 }
 
-.col-left {
+.col-left, .col-right {
   display: flex;
   flex-direction: column;
   gap: 18px;
+  justify-content: space-around;	
 }
 
-.col-right {
-  display: flex;
-  flex-direction: column;
-  gap: 18px;
+/* 왼쪽 마지막 섹션(빠른 메뉴)과 오른쪽 마지막 섹션(게시판)이 
+   남은 공간을 다 차지해서 밑바닥을 맞추게 합니다. */
+.col-left > *:last-child,
+.col-right > *:last-child {
+  flex-grow: 1;
 }
 
 /* ── card (main.css 확장) ── */
@@ -445,7 +448,7 @@ body {
 
 <script>
   function openModal(id) {
-    document.getElementById('modal-' + id).classList.add('open');
+    window.location.href = '${pageContext.request.contextPath}/enrollment/courseEnrollment';
   }
   function closeModal(id) {
     document.getElementById('modal-' + id).classList.remove('open');

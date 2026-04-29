@@ -119,4 +119,9 @@ public interface BoardMapper {
 
     @Update("UPDATE BOARD SET views = views + 1 WHERE board_no = #{value}")
     void viewCount(int boardNo);
+
+    @Update("UPDATE BOARD " +
+            "SET is_answered = #{isAnswered} " +
+            "WHERE board_no = #{boardNo}")
+    void updateIsAnswered(@Param("boardNo") int boardNo,@Param("isAnswered") boolean isAnswered);
 }

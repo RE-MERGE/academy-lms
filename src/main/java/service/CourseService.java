@@ -217,4 +217,12 @@ public class CourseService {
 	public List<Course> selectCourseByStudent(Integer userNo) {
 		return coursedao.getCourseByStudent(userNo);
 	}
+
+	public boolean isCourseOwner(int userNo, int courseNo) {
+		// 1. DB에서 해당 강의의 담당 교수 번호를 조회
+		Integer professorNo = coursedao.selectProfessorNoByCourseNo(courseNo);
+
+		// 2. 강의가 존재하고, 담당 교수 번호가 로그인한 유저 번호와 같은지 확인
+		return professorNo != null && professorNo == userNo;
+	}
 }

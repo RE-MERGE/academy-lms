@@ -28,13 +28,21 @@ public class CommentController {
 
     // ── 원댓글 등록 ───────────────────────────────────────────────
     @PostMapping("/write")
-    public ResponseEntity<?> write(@RequestBody Comment dto, @Login SessionUser sessionUser) {
+    public ResponseEntity<?> write(@RequestBody Comment dto, @Login SessionUser sessionUser,@RequestParam(required = false) String boardType) {
         if (sessionUser == null) {
             return ResponseEntity.status(401).body(Map.of("msg", "로그인이 필요합니다."));
         }
         if (dto.getContent() == null || dto.getContent().isBlank()) {
             return ResponseEntity.badRequest().body(Map.of("msg", "내용을 입력해주세요."));
         }
+
+        // 교수가 댓글 달면 답변완료
+        if (sessionUser.getRole() == UserRole.PROFESSOR) {
+            if ("QNA".equals(boardType)) {
+                commentService.updateIsAnswered(dto.getBoardNo(), true);
+            }
+        }
+
         dto.setWriterNo(sessionUser.getUserNo());
         commentService.writeComment(dto);
         // 등록 후 최신 목록 반환
@@ -60,6 +68,7 @@ public class CommentController {
     public ResponseEntity<?> delete(
             @PathVariable int commentNo,
             @RequestParam int boardNo,
+            @RequestParam(required = false) String boardType,
             @Login SessionUser sessionUser) {
 
         if (sessionUser == null) {
@@ -71,6 +80,14 @@ public class CommentController {
         if (!deleted) {
             return ResponseEntity.status(403).body(Map.of("msg", "삭제 권한이 없습니다."));
         }
+
+        // 교수 댓글 삭제하면 미답변으로
+        if (sessionUser.getRole() == UserRole.PROFESSOR) {
+            if ("QNA".equals(boardType)) {
+                commentService.updateIsAnswered(boardNo, false);
+            }
+        }
+
         return ResponseEntity.ok(commentService.getCommentTree(boardNo));
     }
 }

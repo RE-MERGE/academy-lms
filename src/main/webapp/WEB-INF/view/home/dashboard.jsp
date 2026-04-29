@@ -463,7 +463,7 @@ body {
   });
   
   function openAttendance() {
-	    window.location.href = '<%=request.getContextPath()%>/course/subject';
+	    window.location.href = '${pageContext.request.contextPath}/WEB-INF/views/course/subject';
 	}
 </script>
 

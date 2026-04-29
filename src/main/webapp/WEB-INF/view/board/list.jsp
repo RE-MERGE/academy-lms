@@ -159,41 +159,6 @@
               </c:otherwise>
           </c:choose>
       </nav>
-<%--      <nav class="pagination-wrap">--%>
-<%--          &lt;%&ndash; 처음(«) / 이전 블록(‹) &ndash;%&gt;--%>
-<%--          <c:choose>--%>
-<%--              <c:when test="${startPage > 1}">--%>
-<%--                  <a class="page-btn arrow" href="?boardType=${boardType}&courseNo=${course.course_no}&page=1&keyword=${keyword}&searchType=${searchType}">«</a>--%>
-<%--                  <a class="page-btn arrow" href="?boardType=${boardType}&courseNo=${course.course_no}&page=${prevBlock}&keyword=${keyword}&searchType=${searchType}">‹</a>--%>
-<%--              </c:when>--%>
-<%--              <c:otherwise>--%>
-<%--                  <span class="page-btn disabled">«</span>--%>
-<%--                  <span class="page-btn disabled">‹</span>--%>
-<%--              </c:otherwise>--%>
-<%--          </c:choose>--%>
-<%--          &lt;%&ndash; 숫자 페이지 버튼 &ndash;%&gt;--%>
-<%--          <c:forEach begin="${startPage}" end="${endPage}" var="p">--%>
-<%--              <c:choose>--%>
-<%--                  <c:when test="${p == currentPage}">--%>
-<%--                      <span class="page-btn active">${p}</span>--%>
-<%--                  </c:when>--%>
-<%--                  <c:otherwise>--%>
-<%--                      <a class="page-btn" href="?boardType=${boardType}&courseNo=${course.course_no}&page=${p}&keyword=${keyword}&searchType=${searchType}">${p}</a>--%>
-<%--                  </c:otherwise>--%>
-<%--              </c:choose>--%>
-<%--          </c:forEach>--%>
-<%--          &lt;%&ndash; 다음 블록(›) / 마지막(») &ndash;%&gt;--%>
-<%--          <c:choose>--%>
-<%--              <c:when test="${endPage < totalPages}">--%>
-<%--                  <a class="page-btn arrow" href="?boardType=${boardType}&courseNo=${course.course_no}&page=${nextBlock}&keyword=${keyword}&searchType=${searchType}">›</a>--%>
-<%--                  <a class="page-btn arrow" href="?boardType=${boardType}&courseNo=${course.course_no}&page=${totalPages}&keyword=${keyword}&searchType=${searchType}">»</a>--%>
-<%--              </c:when>--%>
-<%--              <c:otherwise>--%>
-<%--                  <span class="page-btn disabled">›</span>--%>
-<%--                  <span class="page-btn disabled">»</span>--%>
-<%--              </c:otherwise>--%>
-<%--          </c:choose>--%>
-<%--      </nav>--%>
     <!-- 오른쪽: 수정 / 글쓰기 -->
           <c:if test="${((boardType eq 'NOTICE') and (sessionScope.sessionUser.role eq 'ADMIN' or sessionScope.sessionUser.role eq 'PROFESSOR')) || boardType eq 'FREE'}">
             <div class="board-footer-right">

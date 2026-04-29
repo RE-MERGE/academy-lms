@@ -52,6 +52,9 @@ public class BoardController {
     public String write(PostCreate board,
                         @Login SessionUser sessionUser) {
         boardService.insertPost(board, sessionUser.getUserNo());
+        if (board.getCourseNo() != null && board.getBoardType().equals("QNA")){
+            return "redirect:/board/list_qna?boardType=QNA&courseNo=" + board.getCourseNo();
+        }
         return "redirect:/board/list?courseNo=" + board.getCourseNo() + "&boardType=" + board.getBoardType();
     }
 
@@ -114,12 +117,11 @@ public class BoardController {
     }
 
     @GetMapping("update")
-    public String update(@Login SessionUser sessionUser, int boardNo, Model model) {
+    public String update(@Login SessionUser sessionUser, Integer boardNo, Model model) {
         PostDetail postDetail = boardService.detailPost(boardNo);
         if (sessionUser.getRole() != UserRole.ADMIN && sessionUser.getUserNo() != postDetail.getWriterNo()) {
             throw new PostAccessDeniedException();
         }
-        ModelAndView mav = new ModelAndView();
         model.addAttribute("post", postDetail);
         return "board/update";
     }

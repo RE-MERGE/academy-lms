@@ -146,4 +146,8 @@ public class CourseDao {
 	public List<Course> getCourseByStudent(Integer userNo) {
 		return template.getMapper(cls).getCourseByStudent(userNo);
 	}
+
+	public Integer selectProfessorNoByCourseNo(int courseNo) {
+		return template.getMapper(cls).selectProfessorNoByCourseNo(courseNo);
+	}
 }

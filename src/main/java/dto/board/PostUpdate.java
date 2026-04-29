@@ -15,5 +15,5 @@ public class PostUpdate {
     private String content;
     private MultipartFile uploadFile;
     private String fileUrl;      // nullable
-    private int isSecret;
+    private boolean isAnswered;
 }

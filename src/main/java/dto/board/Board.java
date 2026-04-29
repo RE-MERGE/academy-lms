@@ -19,7 +19,7 @@ public class Board {
     private String content;          // 게시글 내용
     private String fileUrl;          // 첨부파일 경로 (nullable)
     private int views;               // 조회수 (기본값 0)
-    private int isSecret;            // 비밀글 여부 (기본값 0)
+    private boolean isAnswered;      // 답변 여부 (기본값 0)
     private LocalDateTime createdAt; // 게시글 생성 일자
 
 }

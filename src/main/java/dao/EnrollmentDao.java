@@ -52,4 +52,8 @@ public class EnrollmentDao {
     public int getTotalCredits(int userNo, String semester) {
 		return template.getMapper(cls).getTotalCredits(userNo, semester);
 	}
+	// 수강신천 확인 로직
+	public boolean isEnrolled(int studentNo, int courseNo) {
+		return template.getMapper(cls).isEnrolled(studentNo, courseNo);
+	}
 }

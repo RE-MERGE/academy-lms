@@ -55,11 +55,9 @@
     
     <%-- courseNo가 있으면 과목별 리스트로 --%>
     <c:otherwise>
-        <a href="list_subject?course_no=${post.courseNo}&boardType=${post.boardType}" class="btn-search">목록으로</a>
+        <a href="list?boardType=${post.boardType}&courseNo=${post.courseNo}" class="btn-search">목록으로</a>
     </c:otherwise>
 </c:choose>
-
-  <a href="list?boardType=${post.boardType}" class="btn-search">목록으로</a>
       <c:if test="${sessionScope.sessionUser.role eq 'ADMIN'
                    or sessionScope.sessionUser.userNo eq post.writerNo}">
         <a href="update?boardNo=${post.boardNo}&boardType=${post.boardType}&courseNo=${post.courseNo}"

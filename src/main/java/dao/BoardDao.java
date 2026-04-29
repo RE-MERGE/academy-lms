@@ -43,4 +43,8 @@ public class BoardDao {
     public void viewCount(int boardNo) {
         template.getMapper(cls).viewCount(boardNo);
     }
+
+    public void updateIsAnswered(int boardNo, boolean isAnswered) {
+        template.getMapper(cls).updateIsAnswered(boardNo, isAnswered);
+    }
 }

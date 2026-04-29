@@ -87,6 +87,7 @@ public interface CourseMapper {
         c.course_name,
         c.course_type,
         c.room_info,
+        c.day_of_week,
         c.start_time,
         c.end_time,
         u.name AS professor_name

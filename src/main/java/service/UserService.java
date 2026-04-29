@@ -99,12 +99,13 @@ public class UserService {
     }
 
     private MyPageData buildProfessorData(int userNo, String semester) {
+
         List<Course> courseList = courseDao.getProfessorMyCourseMap(userNo, semester);
 
         return MyPageData.builder()
                 .courseList(courseList)
                 .gradeList(enrollmentDao.getProfessorMyGradeList(userNo, semester))
-//                .timetableData(courseList) // 추가
+                .timeTableData(buildTimetableData(courseList)) // 추가
                 .build();
     }
 
@@ -311,7 +312,9 @@ public class UserService {
 
         List<TimetableData> cells = new ArrayList<>();
         for (Course course : courseList) {
+            if (course.getDay_of_week() == null || course.getDay_of_week().isEmpty()) continue; // 추가
             String[] days = course.getDay_of_week().split(",");
+
             for (String day : days) {
                 day = day.trim();
                 int startHour = parseHour(course.getStart_time());

@@ -95,10 +95,7 @@ public class AdminController {
         model.addAttribute("timetable", data.getTimeTableData());
         model.addAttribute(UserConst.DETAIL_USER, targetUser);
 
-        data.getTimeTableData().getCells().forEach(c -> System.err.println(
-                c.getCourseName() + " colIndex=" + c.getColIndex() +
-                        " rowStart=" + c.getRowStart() + " rowSpan=" + c.getRowSpan()
-        ));
+        System.err.println("timetable cells: " + data.getTimeTableData().getCells().size());
 
 
         return "admin/userDetail";

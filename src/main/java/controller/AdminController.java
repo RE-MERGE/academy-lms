@@ -178,8 +178,41 @@ public class AdminController {
         return userDetailForAdmin;
     }
 
+
+    private String getSemester() {
+
+        String year = String.valueOf(LocalDate.now().getYear());
+        int month = LocalDate.now().getMonthValue();
+
+        String semester = "-";
+
+        if (month <= 6) {
+            month = 1;
+        } else {
+            month = 2;
+        }
+
+        return year += semester += String.valueOf(month);
+    }
+
+
+    @GetMapping("courselist")
+    @ResponseBody
+    public Map<String, Object> getCourseListJson(
+            @RequestParam(defaultValue = "") String semester,
+            @RequestParam(defaultValue = "100") int size) {
+
+    	List<AdminCourseList> courses = adminService.getAllCourseList();
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("courses", courses);
+        return result;
+    }
+    
+//github.com/RE-MERGE/academy-lms
     @GetMapping("roomTimetable")
     public String getRoomTimetable() {
         return "admin/roomTimetable";
     }
 }
+

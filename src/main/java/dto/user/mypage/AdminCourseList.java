@@ -23,4 +23,5 @@ public class AdminCourseList {
     private String semester;
     private String prof_name;       // USERS.name
     private String user_code;     // USERS.user_code
+    private String curriculum_pdf;
 }

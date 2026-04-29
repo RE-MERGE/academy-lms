@@ -401,6 +401,7 @@
                             <thead>
                             <tr>
                                 <th>과목명</th>
+                                <th>구분</th>
                                 <th>수강인원</th>
                                 <th>평균 점수</th>
                                 <th>최고 / 최저</th>
@@ -411,6 +412,8 @@
                                 <tr>
                                     <td>
                                         <div style="font-weight: bold; margin-bottom: 4px;">${stat.courseName}</div>
+                                    </td>
+                                    <td>
                                         <c:set var="gBadgeClass" value="badge-gray" />
                                         <c:set var="gBadgeText" value="교양" />
                                         <c:if test="${stat.courseType eq 'MAJOR_REQUIRED'}"><c:set var="gBadgeClass" value="badge-red" /><c:set var="gBadgeText" value="전공필수" /></c:if>
@@ -467,6 +470,7 @@
                             <c:choose>
                                 <c:when test="${sessionUser.role == 'ADMIN'}">
                                     <th>과목명</th>
+                                    <th>구분</th>
                                     <th>수강인원</th>
                                     <th>중간 평균</th>
                                     <th>기말 평균</th>
@@ -528,6 +532,8 @@
                                     <tr>
                                         <td>
                                             <div style="font-weight: bold; margin-bottom: 4px;">${grade.courseName}</div>
+                                        </td>
+                                            <td>
                                             <c:set var="gBadgeClass" value="badge-gray" />
                                             <c:set var="gBadgeText" value="${gTypeText}" />
                                             <c:if test="${grade.courseType eq 'MAJOR_REQUIRED'}"><c:set var="gBadgeClass" value="badge-red" /><c:set var="gBadgeText" value="전공필수" /></c:if>

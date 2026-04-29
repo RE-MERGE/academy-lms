@@ -83,10 +83,6 @@ public class UserService {
                 .gradeList(gradeList)
                 .gradeRows(convertToGradeRows(gradeList))
                 .build();
-//        return MyPageData.builder()
-//                .courseList(courseDao.getStudentMyCourseMap(userNo, semester))
-//                .gradeList(enrollmentDao.getStudentMyGradeList(userNo))
-//                .build();
     }
 
     private List<MyGradeRow> convertToGradeRows(List<MyGrade> gradeList) {

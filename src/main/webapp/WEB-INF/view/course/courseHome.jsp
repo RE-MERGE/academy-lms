@@ -175,7 +175,7 @@
     <c:forEach var="course" items="${enrolledList}">
       <c:set var="isFav" value="${favSet.contains(course.course_no)}"/>
       <c:if test="${!isFav}">
-        <a href="${pageContext.request.contextPath}/board/subjectHome?subjectHome=${course.course_no}"
+        <a href="${pageContext.request.contextPath}/board/subjectHome?courseNo=${course.course_no}"
            class="course-card" data-name="${course.course_name}" data-fav="false" data-courseno="${course.course_no}">
           <div class="card-accent"></div>
           <button class="star-btn" title="즐겨찾기 추가" onclick="toggleStar(event,this,${course.course_no})">

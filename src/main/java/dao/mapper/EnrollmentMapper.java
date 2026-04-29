@@ -91,5 +91,10 @@ public interface EnrollmentMapper {
             "WHERE e.student_no = #{userNo} AND c.semester = #{semester}")
     int getTotalCredits(@Param("userNo") int userNo, @Param("semester") String semester);
 
-
+	// 수강신천 확인 로직
+	@Select("SELECT COUNT(*) > 0 " +
+			"FROM ENROLLMENT " +
+			"WHERE student_no = #{studentNo} " +
+			"AND course_no = #{courseNo}")
+    boolean isEnrolled(@Param("studentNo") int studentNo,@Param("courseNo") int courseNo);
 }

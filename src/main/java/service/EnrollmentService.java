@@ -41,6 +41,9 @@ public class EnrollmentService {
 	public void cancel(int userNo, Integer courseNo) {
 		enrollmentDao.cancel(userNo,courseNo);
 		courseDao.minusCounts(courseNo);
-		
+	}
+	// 수강신천 확인 로직
+	public boolean isEnrolled(int studentNo, int courseNo) {
+		return enrollmentDao.isEnrolled(studentNo, courseNo);
 	}
 }

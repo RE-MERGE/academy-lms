@@ -170,7 +170,7 @@ public class CourseController {
 		return "ok";
 	}
 
-	@GetMapping("home")
+	@GetMapping("courseHome")
 	public ModelAndView getHome(HttpSession session) {
 		ModelAndView mav = new ModelAndView();
 		SessionUser user = (SessionUser) session.getAttribute("sessionUser");
@@ -217,7 +217,7 @@ public class CourseController {
 		mav.addObject("enrolledList", enrolledList);
 		mav.addObject("otherList", otherList);
 		mav.addObject("favSet", favSet);
-		mav.setViewName("course/home");
+		mav.setViewName("course/courseHome");
 		return mav;
 	}
 	

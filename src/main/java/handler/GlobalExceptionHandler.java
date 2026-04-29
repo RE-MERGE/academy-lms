@@ -41,9 +41,13 @@ public class GlobalExceptionHandler {
 //    }
 
     @ExceptionHandler(PostAccessDeniedException.class)
-    public String handlePostAccessDenied(RedirectAttributes redirectAttributes) {
-        redirectAttributes.addFlashAttribute("errorMsg", "해당 게시글에 대한 권한이 없습니다.");
-        return "redirect:/board/list";
+    public String handlePostAccessDenied(HttpServletRequest request, RedirectAttributes redirectAttributes) {
+        redirectAttributes.addFlashAttribute("errorMsg", "접근 권한이 없습니다.");
+        String referer = request.getHeader("Referer");
+        if (referer != null) {
+            return "redirect:" + referer; // 이전 페이지로 돌아감
+        }
+        return "redirect:/home/dashboard";
     }
 
     @ExceptionHandler(UnauthorizedException.class)

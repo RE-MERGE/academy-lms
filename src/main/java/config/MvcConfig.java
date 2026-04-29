@@ -1,8 +1,10 @@
 package config;
 
 import interceptor.AdminCheckInterceptor;
+import interceptor.BoardAccessInterceptor;
 import interceptor.LoginCheckInterceptor;
 import interceptor.SavePrevUrlInterceptor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.*;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
@@ -22,6 +24,8 @@ import org.springframework.web.servlet.handler.SimpleMappingExceptionResolver;
 import org.springframework.web.servlet.i18n.FixedLocaleResolver;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 import org.springframework.web.servlet.view.InternalResourceViewResolver;
+import service.CourseService;
+import service.EnrollmentService;
 
 import java.util.List;
 import java.util.Locale;
@@ -33,6 +37,12 @@ import java.util.Properties;
 @EnableAspectJAutoProxy
 @EnableWebMvc
 public class MvcConfig implements WebMvcConfigurer {
+
+    @Autowired
+    private EnrollmentService enrollmentService;
+    @Autowired
+    private CourseService courseService;
+
     @Bean
     public HandlerMapping handlerMapping() {
         RequestMappingHandlerMapping hm = new RequestMappingHandlerMapping();
@@ -130,7 +140,9 @@ public class MvcConfig implements WebMvcConfigurer {
         registry.addInterceptor(new SavePrevUrlInterceptor())
                 .order(3)
                 .addPathPatterns("/admin/**");
-        
+
+        registry.addInterceptor(new BoardAccessInterceptor(enrollmentService, courseService))
+                .addPathPatterns("/board/**");
         /*registry.addInterceptor(new EnrollmentPeriodInterceptor())
         .order(4)
         .addPathPatterns("/enrollment/**"); */

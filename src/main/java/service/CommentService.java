@@ -1,5 +1,6 @@
 package service;
 
+import dao.BoardDao;
 import dao.CommentDao;
 import dao.mapper.CommentMapper;
 import dto.board.Comment;
@@ -17,6 +18,7 @@ import java.util.Map;
 public class CommentService {
 
     private final CommentDao commentDao;
+    private final BoardDao boardDao;
 
     // 댓글 목록 (원댓글 아래 대댓글 조립)
     public List<Comment> getCommentTree(int boardNo) {
@@ -65,5 +67,9 @@ public class CommentService {
             ? commentDao.deleteByAdmin(commentNo)
             : commentDao.deleteByWriter(commentNo, requesterNo);
         return affected > 0;
+    }
+
+    public void updateIsAnswered(int boardNo, boolean isAnswered) {
+        boardDao.updateIsAnswered(boardNo, isAnswered);
     }
 }

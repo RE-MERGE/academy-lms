@@ -80,7 +80,7 @@
             <div class="sidebar-divider"></div>
 
             <span class="sidebar-section-label">학습</span>
-            <a href="${ctx}/course/home" class="sidebar-item" id="course-menu">
+            <a href="${ctx}/course/courseHome" class="sidebar-item" id="course-menu">
                 <img src="${ctx}/img/icon_courses.png" alt="전체과목" width="50px" height="50px">
                 <span class="si-label">전체 과목</span>
             </a>
@@ -138,7 +138,7 @@
                 </c:choose>
             </ul>
             <div class="sidebar-divider"></div>
-            <a href="${ctx}/course/home" class="flyout-all-link">전체 과목 보기 →</a>
+            <a href="${ctx}/course/courseHome" class="flyout-all-link">전체 과목 보기 →</a>
         </div>
 
 

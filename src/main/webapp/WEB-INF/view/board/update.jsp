@@ -13,7 +13,7 @@
 <body>
 <div class="board-wrap">
   <!-- 뒤로가기 -->
-  <a href="detail?boardNo=${post.boardNo}" class="back-link">&#8592; 게시글로 돌아가기</a>
+  <a href="javascript:history.back()" class="back-link">&#8592; 게시글로 돌아가기</a>
   <!-- 헤더 -->
   <div class="write-header">
     <div class="header-title">
@@ -26,7 +26,7 @@
         enctype="multipart/form-data">
     <input type="hidden" name="boardNo" value="${post.boardNo}">
     <input type="hidden" name="boardType" value="${post.boardType}">
-    <input type="hidden" name="boardNo" value="${post.boardNo}">
+    <input type="hidden" name="courseNo" value="${post.courseNo}">
     <!-- 제목 -->
     <div class="form-group" style="margin-bottom: 1rem;">
       <label>제목</label>
@@ -62,14 +62,6 @@
           <span class="file-icon">📁</span>
           <span id="file-name-display">새 파일을 선택하려면 클릭하세요</span>
         </label>
-      </div>
-    </div>
-    <!-- 비밀글 -->
-    <div class="form-group" style="margin-bottom: 1rem;">
-      <div class="secret-toggle">
-        <input type="checkbox" name="isSecret" id="isSecret" value="1"
-               ${post.isSecret == 1 ? 'checked' : ''}>
-        <label for="isSecret">🔒 비밀글로 설정</label>
       </div>
     </div>
     <!-- 하단 버튼 -->

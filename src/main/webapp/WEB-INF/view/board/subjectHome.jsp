@@ -66,7 +66,7 @@
           </c:when>
           <c:otherwise>
             <c:forEach var="post" items="${postList}">
-              <tr onclick="location='${pageContext.request.contextPath}/board/detail?boardNo=${post.boardNo}&boardType=NOTICE&course_no=${course.course_no}'">
+              <tr onclick="location='${pageContext.request.contextPath}/board/detail?boardNo=${post.boardNo}&boardType=NOTICE&courseNo=${course.course_no}'">
                 <td class="td-no">
                   <span class="notice-badge">공지</span>
                 </td>

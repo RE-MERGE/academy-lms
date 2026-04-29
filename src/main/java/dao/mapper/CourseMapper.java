@@ -269,4 +269,9 @@ public interface CourseMapper {
             "JOIN ENROLLMENT e ON c.course_no = e.course_no " +
             "WHERE e.student_no = #{userNo}")
 	List<Course> getCourseByStudent(Integer userNo);
+
+    @Select("SELECT professor_no " +
+            "FROM COURSE " +
+            "WHERE course_no = #{courseNo}")
+    Integer selectProfessorNoByCourseNo(int courseNo);
 }

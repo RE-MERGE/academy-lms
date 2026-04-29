@@ -14,6 +14,8 @@ import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.web.servlet.view.RedirectView;
+
 import service.*;
 
 import javax.servlet.http.HttpSession;
@@ -86,10 +88,12 @@ public class UserController {
         return "home/home";
     }
 
-    @GetMapping("logout")
-    public String logout(HttpSession session, Model model) {
+    @RequestMapping("logout")
+    public RedirectView logout(HttpSession session) {
         session.invalidate();
-        return "redirect:/home/home";
+        RedirectView rv = new RedirectView("/academy-lms/home/home");
+        rv.setExposeModelAttributes(false); // 모델 속성을 URL 파라미터로 노출하지 않음
+        return rv;
     }
 
     @PostMapping("login")

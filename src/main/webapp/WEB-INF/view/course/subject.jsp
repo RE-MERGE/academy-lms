@@ -181,7 +181,7 @@
     <span style="margin-left: 10px; color: #666;">${Course.credits}학점</span>
 </div>
         <div style="margin-top: 10px; color: #888; font-size: 13px; line-height: 1.5;">
-            <p style="margin: 0;">${Course.course_type }</p>
+            <p style="margin: 0;">${Course.course_type}</p>
             <p style="margin: 0;">&lt;강의실&gt; ${Course.room_info} </p>
         </div>
     </div>

@@ -4,13 +4,14 @@ import dao.AdminDao;
 import dao.UserDao;
 import dto.user.AdminUserList;
 import dto.user.User;
+import dto.user.mypage.MyPageData;
 import dto.user.mypage.UserDetailForAdmin;
-import dto.user.mypage.UserEditFormForAdmin;
 import dto.user.mypage.AdminCourseList;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Service
@@ -48,12 +49,12 @@ public class AdminService {
         return adminDao.selectUser(userNo);
     }
 
-    public List<AdminUserList> getUserListPaged(int offset, int size, String role) {
-        return adminDao.getUserListPaged(offset, size, role);
+    public List<AdminUserList> searchUserListPaged(int offset, int size, String role, String keyword, String searchType) {
+        return adminDao.getUserListPaged(offset, size, role, keyword, searchType);
     }
 
-    public int getTotalUserCount(String role) {
-        return adminDao.getTotalUserCount(role);
+    public int countSearchUsers(String role, String keyword, String searchType) {
+        return adminDao.getTotalUserCount(role, keyword, searchType);
     }
 
     @Transactional
@@ -76,4 +77,25 @@ public class AdminService {
     public void resetLockCount(int userNo) {
         adminDao.resetLockCount(userNo);
     }
+
+    public int getTotalAllUserCount() {
+        return adminDao.getTotalAllUserCount();
+    }
+
+    public String getSemester() {
+
+        String year = String.valueOf(LocalDate.now().getYear());
+        int month = LocalDate.now().getMonthValue();
+
+        String semester = "-";
+
+        if (month <= 6) {
+            month = 1;
+        } else {
+            month = 2;
+        }
+
+        return year += semester += String.valueOf(month);
+    }
+
 }

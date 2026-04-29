@@ -38,17 +38,19 @@ public interface EnrollmentMapper {
 	void cancel(@Param("userNo") int userNo, @Param("courseNo") Integer courseNo);
 
 
-    @Select("SELECT " +
-            "    c.course_name AS courseName, " +
-            "    c.course_type AS courseType," +
-            "    g.score AS score," +
-            "    g.type AS examType " +
-            "FROM ENROLLMENT e " +
-            "JOIN COURSE c ON e.course_no = c.course_no " +
-            "JOIN GRADE g ON e.enrollment_no = g.enrollment_no " +
-            "WHERE e.student_no = #{userNo}")
-    List<MyGrade> getStudentMyGradeList(int userNo);
-
+	@Select("SELECT " +
+			"    c.course_name AS courseName, " +
+			"    c.course_type AS courseType," +
+			"    g.score AS score," +
+			"    g.type AS examType, " +
+			"    g.alphabet AS alphabet " +
+			"FROM ENROLLMENT e " +
+			"JOIN COURSE c ON e.course_no = c.course_no " +
+			"JOIN GRADE g ON e.enrollment_no = g.enrollment_no " +
+			"WHERE e.student_no = #{userNo} " +
+			"ORDER BY FIELD(c.course_type, 'MAJOR_REQUIRED', 'MAJOR_ELECTIVE', 'GENERAL_REQUIRED', 'GENERAL_ELECTIVE', 'FREE_ELECTIVE')"
+	)
+	List<MyGrade> getStudentMyGradeList(int userNo);
 
 	@Select("SELECT " +
 			"    c.course_no, " +
@@ -64,8 +66,10 @@ public interface EnrollmentMapper {
 			"WHERE c.professor_no = #{userNo} " +
 			"  AND c.semester = #{semester} " +
 			"GROUP BY c.course_no, c.course_name, c.course_type " +
-			"ORDER BY avg_score DESC")
+			"ORDER BY FIELD(c.course_type, 'MAJOR_REQUIRED', 'MAJOR_ELECTIVE', 'GENERAL_REQUIRED', 'GENERAL_ELECTIVE', 'FREE_ELECTIVE') "
+	)
 	List<MyProfessorGrade> getProfessorMyGradeList(@Param("userNo") int userNo, @Param("semester") String semester);
+
 
     @Select("SELECT " +
             "c.course_name AS courseName, " +
@@ -79,7 +83,7 @@ public interface EnrollmentMapper {
             "LEFT JOIN ENROLLMENT e ON c.course_no = e.course_no " +
             "LEFT JOIN GRADE g ON e.enrollment_no = g.enrollment_no " +
             "GROUP BY c.course_no, c.course_name, c.course_type " +
-            "ORDER BY c.course_name ASC")
+			"ORDER BY FIELD(c.course_type, 'MAJOR_REQUIRED', 'MAJOR_ELECTIVE', 'GENERAL_REQUIRED', 'GENERAL_ELECTIVE', 'FREE_ELECTIVE')")
 	List<AdminAllStudentGrade> getAllStudentGrades();
 
     @Select("SELECT COALESCE(SUM(c.credits), 0) FROM ENROLLMENT e " +

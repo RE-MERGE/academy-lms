@@ -4,7 +4,6 @@ import dao.mapper.AdminMapper;
 import dto.user.AdminUserList;
 import dto.user.User;
 import dto.user.mypage.UserDetailForAdmin;
-import dto.user.mypage.UserEditFormForAdmin;
 import dto.user.mypage.AdminCourseList;
 import org.mybatis.spring.SqlSessionTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,12 +41,12 @@ public class AdminDao {
         return template.getMapper(cls).getSelectUser(userNo);
     }
 
-    public List<AdminUserList> getUserListPaged(int offset, int size, String role) {
-        return template.getMapper(cls).getUserListPaged(offset, size, role);
+    public List<AdminUserList> getUserListPaged(int offset, int size, String role, String keyword, String searchType) {
+        return template.getMapper(cls).getUserListPaged(offset, size, role, keyword, searchType);
     }
 
-    public int getTotalUserCount(String role) {
-        return template.getMapper(cls).getTotalUserCount(role);
+    public int getTotalUserCount(String role, String keyword, String searchType) {
+        return template.getMapper(cls).getTotalUserCount(role, keyword, searchType);
     }
 
     public void updateInfoFormAdmin(int userNo, UserDetailForAdmin userDetailForAdmin) {
@@ -56,5 +55,9 @@ public class AdminDao {
 
     public void resetLockCount(int userNo) {
         template.getMapper(cls).resetLockCount(userNo);
+    }
+
+    public int getTotalAllUserCount() {
+        return template.getMapper(cls).getTotalAllUserCount();
     }
 }

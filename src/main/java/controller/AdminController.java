@@ -180,8 +180,22 @@ public class AdminController {
     }
 
 
+    @GetMapping("courselist")
+    @ResponseBody
+    public Map<String, Object> getCourseListJson(
+            @RequestParam(defaultValue = "") String semester,
+            @RequestParam(defaultValue = "100") int size) {
+
+    	List<AdminCourseList> courses = adminService.getAllCourseList();
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("courses", courses);
+        return result;
+    }
+    
     @GetMapping("roomTimetable")
     public String getRoomTimetable() {
         return "admin/roomTimetable";
     }
 }
+

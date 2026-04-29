@@ -3,6 +3,7 @@ package dao.mapper;
 import java.util.List;
 import java.util.Map;
 
+import dto.user.grade.MyGrade;
 import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Param;
@@ -275,13 +276,13 @@ public interface CourseMapper {
             "WHERE course_no = #{courseNo}")
     Integer selectProfessorNoByCourseNo(int courseNo);
 
-    @Insert("INSERT INTO grade (\n" +
+    @Insert("INSERT INTO GRADE (\n" +
             "        enrollment_no, \n" +
             "        score, \n" +
             "        type, \n" +
             "        alphabet\n" +
             "    ) VALUES (\n" +
-            "        #{enrollment_no}, \n" +
+            "        #{enrollmentNo}, \n" +
             "        #{score}, \n" +
             "        #{type}, \n" +
             "        #{alphabet}\n" +
@@ -289,5 +290,32 @@ public interface CourseMapper {
             "    ON DUPLICATE KEY UPDATE\n" +
             "        score = #{score},\n" +
             "        alphabet = #{alphabet}")
-    void upsertGrade(int userNo, int courseNo, String midterm1, String alphabet);
+    void upsertGrade(@Param("enrollmentNo") int enrollmentNo,
+                     @Param("score") int score,
+                     @Param("type") String type,
+                     @Param("alphabet") String alphabet);
+
+    @Select("SELECT " +
+            "    e.course_no AS courseNo, " +        // DB 컬럼명 -> DTO 필드명 매핑
+            "    u.user_no AS userNo, " +          // DB 컬럼명 -> DTO 필드명 매핑
+            "    u.name, " +
+            "    u.user_code AS userCode, " +
+            "    u.email, " +
+            "    e.enrollment_no AS enrollmentNo, " +
+            "    MAX(CASE WHEN g.type = 'MIDTERM' THEN g.score END) AS midterm, " +
+            "    MAX(CASE WHEN g.type = 'FINAL' THEN g.score END) AS finalScore, " +
+            "    MAX(CASE WHEN g.type = 'ATTENDANCE' THEN g.score END) AS attendance, " +
+            "    MAX(g.alphabet) AS alphabet " +
+            "FROM USERS u " +
+            "JOIN ENROLLMENT e ON u.user_no = e.student_no " +
+            "LEFT JOIN GRADE g ON e.enrollment_no = g.enrollment_no " +
+            "WHERE e.course_no = #{courseNo} " +
+            "GROUP BY e.course_no, u.user_no, e.enrollment_no")
+    List<MyGrade> selectStudentList(Integer courseNo);
+
+    @Select("SELECT c.*, u.name AS professor_name " +
+            "FROM COURSE c " +
+            "JOIN USERS u ON c.professor_no = u.user_no " +
+            "WHERE c.course_no = #{courseNo}")
+    Course selectCourse(Integer courseNo);
 }

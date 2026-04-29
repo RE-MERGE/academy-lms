@@ -27,7 +27,6 @@ import dto.Attendance;
 import dto.Course;
 import dto.user.SessionUser;
 import dto.user.User;
-import dto.user.UserConst;
 import dto.user.UserRole;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import service.CourseService;
@@ -225,38 +224,33 @@ public class CourseController {
 	}
 
 	@GetMapping("score")
-	public void score(@Login SessionUser sessionUser, Integer courseNo, Model model){
-		List<User> studentList = courseService.selectStudentList(courseNo);
-		Course course = courseService.selectCourse(courseNo);
-		MyPageData data = userService.getMyPageData(sessionUser, userService.getSemester());
+	public void score(@Login SessionUser sessionUser, @RequestParam(value="courseNo", required=false) Integer courseNo, Model model){
+		if (courseNo == null) courseNo = 1;
+
+		List<MyGrade> studentList = courseService.getStudentList(courseNo);
+		Course course = courseService.getCourse(courseNo);
 
 		model.addAttribute("course", course);
 		model.addAttribute("studentList", studentList);
 
-		List<?> gradeList = data.getGradeList();
+		if (studentList != null && sessionUser != null) {
+			// [수정 포인트] == 대신 equals()를 사용하여 객체 안의 '값'만 비교합니다.
+			MyGrade myData = studentList.stream()
+					.filter(u -> Integer.valueOf(u.getUserNo()).equals(sessionUser.getUserNo()))
+					.findFirst()
+					.orElse(null);
 
-		// 리스트가 비어있지 않고 MyGrade 타입일 때만 처리
-		if (gradeList != null && !gradeList.isEmpty() && gradeList.get(0) instanceof MyGrade) {
-			List<MyGrade> myGradeList = (List<MyGrade>) gradeList;
-
-			MyGrade midterm = myGradeList.stream()
-					.filter(g -> g.getCourseNo() == courseNo && "MIDTERM".equals(g.getExamType()))
-					.findFirst().orElse(null);
-
-			MyGrade finalGrade = myGradeList.stream()
-					.filter(g -> g.getCourseNo() == courseNo && "FINAL".equals(g.getExamType()))
-					.findFirst().orElse(null);
-
-			MyGrade attendance = myGradeList.stream()
-					.filter(g -> g.getCourseNo() == courseNo && "ATTENDANCE".equals(g.getExamType()))
-					.findFirst().orElse(null);
-
-			model.addAttribute("midtermGrade", midterm);
-			model.addAttribute("finalGrade", finalGrade);
-			model.addAttribute("attendanceGrade", attendance);
+			if (myData != null) {
+				model.addAttribute("midtermGrade", myData);
+				model.addAttribute("finalGrade", myData);
+				model.addAttribute("attendanceGrade", myData);
+				System.out.println("로그: 드디어 찾았다! 이름 = " + myData.getName());
+			} else {
+				// 못 찾을 경우 로그 출력 (디버깅용)
+				System.out.println("로그: 세션번호(" + sessionUser.getUserNo() + ")와 리스트 번호 불일치");
+			}
 		}
 	}
-
 	@PostMapping("saveGradeList")
 	public String saveGrades(GradeForm gradeForm, RedirectAttributes rttr) {
 		try {

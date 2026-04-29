@@ -8,6 +8,7 @@ import java.util.Set;
 
 import dto.user.grade.GradeForm;
 import dto.user.grade.GradeRow;
+import dto.user.grade.MyGrade;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -231,11 +232,19 @@ public class CourseService {
 	public void saveGradesList(GradeForm form) {
 		for (GradeRow row : form.getGradeList()) {
 			// 중간고사
-			coursedao.upsertGrade(row.getEnrollment_no(), row.getMidterm(), "MIDTERM", row.getAlphabet());
+			coursedao.upsertGrade(row.getEnrollmentNo(), row.getMidterm(), "MIDTERM", row.getAlphabet());
 			// 기말고사
-			coursedao.upsertGrade(row.getEnrollment_no(), row.getFinal_score(), "FINAL", row.getAlphabet());
+			coursedao.upsertGrade(row.getEnrollmentNo(), row.getFinal_score(), "FINAL", row.getAlphabet());
 			// 출석
-			coursedao.upsertGrade(row.getEnrollment_no(), row.getAttendance(), "ATTENDANCE", row.getAlphabet());
+			coursedao.upsertGrade(row.getEnrollmentNo(), row.getAttendance(), "ATTENDANCE", row.getAlphabet());
 		}
+	}
+
+	public List<MyGrade> getStudentList(Integer courseNo) {
+		return coursedao.selectStudentList(courseNo);
+	}
+
+	public Course getCourse(Integer courseNo) {
+		return coursedao.getCourse(courseNo);
 	}
 }

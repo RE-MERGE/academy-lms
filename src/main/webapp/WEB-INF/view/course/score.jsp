@@ -57,7 +57,7 @@
                         <c:forEach var="student" items="${studentList}" varStatus="vs">
                             <tr data-idx="${vs.index}">
                                 <%-- 학생 번호를 hidden으로 전송 --%>
-                                <input type="hidden" name="gradeList[${vs.index}].enrollment_no" value="${student.enrollmentNo}" />
+                                <input type="hidden" name="gradeList[${vs.index}].enrollmentNo" value="${student.enrollmentNo}" />
                                 <input type="hidden" name="gradeList[${vs.index}].course_no" value="${course.course_no}" />
                                 <td class="td-title" style="text-align:center !important;">${student.userCode}</td>
 
@@ -71,19 +71,19 @@
                                            inputmode="numeric"
                                            pattern="[0-9]*"
                                            placeholder="0 ~ 100"
-<%--                                           value="${student.midterm}"--%>
+                                           value="${student.midterm}"
                                            maxlength="3" />
                                 </td>
 
                                 <%-- 기말 --%>
                                 <td>
                                     <input type="text"
-                                           name="gradeList[${vs.index}].final_score"
+                                           name="gradeList[${vs.index}].finalScore"
                                            class="score final"
                                            inputmode="numeric"
                                            pattern="[0-9]*"
                                            placeholder="0 ~ 100"
-<%--                                           value="${student.finalScore}"--%>
+                                           value="${student.finalScore}"
                                            maxlength="3" />
                                 </td>
 
@@ -95,7 +95,7 @@
                                            inputmode="numeric"
                                            pattern="[0-9]*"
                                            placeholder="0 ~ 100"
-<%--                                           value="${student.attendance}"--%>
+                                           value="${student.attendance}"
                                            maxlength="3" />
                                 </td>
 
@@ -103,12 +103,13 @@
                                 <td class="td-no">
                                     <input type="hidden"
                                            name="gradeList[${vs.index}].alphabet"
-                                           class="grade-hidden" />
+                                           class="grade-hidden"
+                                           value="${student.alphabet}" />
                                     <span class="grade-display badge">
-<%--                                        <c:choose>--%>
-<%--                                            <c:when test="${not empty student.alphabet}">${student.alphabet}</c:when>--%>
-<%--                                            <c:otherwise>—</c:otherwise>--%>
-<%--                                        </c:choose>--%>
+                                        <c:choose>
+                                            <c:when test="${not empty student.alphabet}">${student.alphabet}</c:when>
+                                            <c:otherwise>—</c:otherwise>
+                                        </c:choose>
                                     </span>
                                 </td>
                             </tr>
@@ -254,40 +255,44 @@
     </c:when>
 
     <%-- ══════════════════════════════════════
-         [CASE 2] 학생: 본인 성적 조회 (읽기 전용)
-    ══════════════════════════════════════ --%>
+      [CASE 2] 학생: 본인 성적 조회 (읽기 전용)
+ ══════════════════════════════════════ --%>
     <c:when test="${role eq 'STUDENT'}">
 
-        <c:choose>
-                <%-- 요약 카드 --%>
-            <c:when test="${not empty midtermGrade or not empty finalGrade}">
+        <%-- 1. 리스트를 뒤져서 본인(userNo=23) 데이터 찾기 --%>
+        <c:set var="myInfo" value="${null}" />
+        <c:forEach var="s" items="${studentList}">
+            <c:if test="${s.userNo eq sessionScope.sessionUser.userNo}">
+                <c:set var="myInfo" value="${s}" />
+            </c:if>
+        </c:forEach>
 
+        <c:choose>
+            <%-- 2. 내 데이터(myInfo)가 존재할 때만 출력 --%>
+            <c:when test="${not empty myInfo}">
                 <div class="stat-grid" style="margin-bottom:1.5rem;">
                     <div class="stat-card">
                         <div class="stat-label">중간고사</div>
                         <div class="stat-value">
-                                ${not empty midtermGrade ? midtermGrade.score : '—'}
-                            <small style="font-size:1rem;color:var(--gray-400)">/100</small>
+                                ${myInfo.midterm} <small>/100</small>
                         </div>
                     </div>
                     <div class="stat-card">
                         <div class="stat-label">기말고사</div>
                         <div class="stat-value">
-                                ${not empty finalGrade ? finalGrade.score : '—'}
-                            <small style="font-size:1rem;color:var(--gray-400)">/100</small>
+                                ${myInfo.finalScore} <small>/100</small>
                         </div>
                     </div>
                     <div class="stat-card">
                         <div class="stat-label">출석</div>
                         <div class="stat-value">
-                                ${not empty attendanceGrade ? attendanceGrade.score : '—'}
-                            <small style="font-size:1rem;color:var(--gray-400)">/100</small>
+                                ${myInfo.attendance} <small>/100</small>
                         </div>
                     </div>
                     <div class="stat-card">
                         <div class="stat-label">최종 학점</div>
-                        <div class="stat-value" style="font-family:'DM Serif Display',serif;">
-                                ${not empty midtermGrade ? midtermGrade.alphabet : '—'}
+                        <div class="stat-value" style="color:var(--lms-accent); font-weight:bold;">
+                                ${myInfo.alphabet}
                         </div>
                     </div>
                 </div>
@@ -295,73 +300,36 @@
                 <%-- 상세 테이블 --%>
                 <div class="board-card">
                     <table class="board-table">
-                        <colgroup>
-                            <col style="width:25%">
-                            <col style="width:25%">
-                            <col style="width:25%">
-                            <col style="width:25%">
-                        </colgroup>
                         <thead>
-                            <tr>
-                                <th>중간고사 (40%)</th>
-                                <th>기말고사 (40%)</th>
-                                <th>출석 (20%)</th>
-                                <th>환산 총점</th>
-                            </tr>
+                        <tr>
+                            <th>중간(40%)</th>
+                            <th>기말(40%)</th>
+                            <th>출석(20%)</th>
+                            <th>총점</th>
+                        </tr>
                         </thead>
                         <tbody>
                         <tr>
-                            <td>${not empty midtermGrade ? midtermGrade.score : '—'}점</td>
-                            <td>${not empty finalGrade ? finalGrade.score : '—'}점</td>
-                            <td>${not empty attendanceGrade ? attendanceGrade.score : '—'}점</td>
-                            </tr>
+                            <td>${myInfo.midterm}점</td>
+                            <td>${myInfo.finalScore}점</td>
+                            <td>${myInfo.attendance}점</td>
+                            <td style="font-weight:bold;">
+                                    ${myInfo.midterm * 0.4 + myInfo.finalScore * 0.4 + myInfo.attendance * 0.2}점
+                            </td>
+                        </tr>
                         </tbody>
                     </table>
                 </div>
-
-                <div class="board-footer" style="margin-top:1rem;">
-                    <div class="board-footer-left">
-                        <span class="td-date">성적 이의 신청은 담당 교수에게 문의하세요.</span>
-                    </div>
-                    <div class="board-footer-right">
-                        <c:choose>
-                            <c:when test="${not empty midtermGrade and (midtermGrade.alphabet eq 'A+' or midtermGrade.alphabet eq 'A')}">
-                                <span class="badge badge-green">우수 성적</span>
-                            </c:when>
-                            <c:when test="${not empty midtermGrade and midtermGrade.alphabet eq 'F'}">
-                                <span class="badge badge-red">재수강 대상</span>
-                            </c:when>
-                            <c:otherwise></c:otherwise>
-                        </c:choose>
-                    </div>
-                </div>
-
             </c:when>
+
+            <%-- 3. 내 데이터가 없을 때 --%>
             <c:otherwise>
-                <%-- 아직 성적 미입력 상태 --%>
-                <div class="board-card">
-                    <table class="board-table">
-                        <thead>
-                            <tr>
-                                <th>중간고사</th>
-                                <th>기말고사</th>
-                                <th>출석</th>
-                                <th>학점</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr class="empty-row">
-                                <td colspan="4">
-                                    <div class="empty-icon">📋</div>
-                                    <div class="empty-text">아직 성적이 입력되지 않았습니다.</div>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
+                <div class="board-card" style="padding:3rem; text-align:center;">
+                    <div class="empty-icon">📋</div>
+                    <div class="empty-text">아직 성적이 등록되지 않았습니다.</div>
                 </div>
             </c:otherwise>
         </c:choose>
-
     </c:when>
 
     <%-- ══════════════════════════════════════

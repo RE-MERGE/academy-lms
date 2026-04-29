@@ -3,6 +3,7 @@ package dao;
 import java.util.List;
 import java.util.Map;
 
+import dto.user.grade.MyGrade;
 import org.mybatis.spring.SqlSessionTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
@@ -189,7 +190,15 @@ public class CourseDao {
         return template.getMapper(cls).selectProfessorNoByCourseNo(courseNo);
     }
 
-    public void upsertGrade(int userNo, int courseNo, String midterm1, String alphabet) {
-        template.getMapper(cls).upsertGrade(userNo, courseNo, midterm1, alphabet);
+    public void upsertGrade(int enrollmentNo, int score, String type, String alphabet) {
+        template.getMapper(cls).upsertGrade(enrollmentNo, score, type, alphabet);
+    }
+
+    public List<MyGrade> selectStudentList(Integer courseNo) {
+        return template.getMapper(cls).selectStudentList(courseNo);
+    }
+
+    public Course getCourse(Integer courseNo) {
+        return template.getMapper(cls).selectCourse(courseNo);
     }
 }

@@ -27,7 +27,9 @@ public class EnrollmentService {
 
 	    if (enrollmentDao.hasTimeConflict(userNo, courseNo) > 0)
 	        throw new IllegalStateException("시간표가 겹치는 강의가 있습니다.");
-
+	    int totalCredits = enrollmentDao.getTotalCredits(userNo, course.getSemester());
+	    if (totalCredits + course.getCredits() > 18)
+	        throw new IllegalStateException("최대 신청 학점(18학점)을 초과합니다. 현재 " + totalCredits + "학점");
 	    Enrollment enrollment = new Enrollment();
 	    enrollment.setCourse_no(courseNo);
 	    enrollment.setStudent_no(userNo);

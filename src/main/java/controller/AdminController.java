@@ -86,13 +86,20 @@ public class AdminController {
         String semester = adminService.getSemester();
 
         UserDetailForAdmin targetUser = createdUserDetail(selectUser);
-
         MyPageData data = userService.getMyPageData(targetUser, semester);
 
         model.addAttribute("courseList", data.getCourseList());
         model.addAttribute("myGradeList", data.getGradeList());
+        model.addAttribute("gradeRows", data.getGradeRows());
         model.addAttribute("semester", semester);
+        model.addAttribute("timetable", data.getTimeTableData());
         model.addAttribute(UserConst.DETAIL_USER, targetUser);
+
+        data.getTimeTableData().getCells().forEach(c -> System.err.println(
+                c.getCourseName() + " colIndex=" + c.getColIndex() +
+                        " rowStart=" + c.getRowStart() + " rowSpan=" + c.getRowSpan()
+        ));
+
 
         return "admin/userDetail";
     }

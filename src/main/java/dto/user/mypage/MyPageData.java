@@ -12,4 +12,5 @@ public class MyPageData {
     private List<?> courseList;
     private List<?> gradeList;
     private List<MyGradeRow> gradeRows;
+    private TimetableResult timeTableData;
 }

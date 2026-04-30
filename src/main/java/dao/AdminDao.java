@@ -41,12 +41,12 @@ public class AdminDao {
         return template.getMapper(cls).getSelectUser(userNo);
     }
 
-    public List<AdminUserList> getUserListPaged(int offset, int size, String role, String keyword, String searchType) {
-        return template.getMapper(cls).getUserListPaged(offset, size, role, keyword, searchType);
+    public List<AdminUserList> getUserListPaged(int offset, int size, String role, String keyword, String searchType, String status) {
+        return template.getMapper(cls).getUserListPaged(offset, size, role, keyword, searchType, status);
     }
 
-    public int getTotalUserCount(String role, String keyword, String searchType) {
-        return template.getMapper(cls).getTotalUserCount(role, keyword, searchType);
+    public int getTotalUserCount(String role, String keyword, String searchType, String status) {
+        return template.getMapper(cls).getTotalUserCount(role, keyword, searchType, status);
     }
 
     public void updateInfoFormAdmin(int userNo, UserDetailForAdmin userDetailForAdmin) {

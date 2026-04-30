@@ -91,6 +91,7 @@ public interface AdminMapper {
             "  <when test=\"role != null and role == 'student'\">AND role = 'STUDENT' </when>" +
             "  <when test=\"role != null and role == 'professor'\">AND role = 'PROFESSOR' </when>" +
             "</choose>" +
+            "<if test=\"status != null and status != ''\">AND status = #{status} </if>" +
             "<if test=\"keyword != null and keyword != ''\">" +
             "  <choose>" +
             "    <when test=\"searchType == 'name'\">AND name LIKE CONCAT('%', #{keyword}, '%') </when>" +
@@ -103,12 +104,17 @@ public interface AdminMapper {
             "ORDER BY created_at DESC " +
             "LIMIT #{size} OFFSET #{offset}" +
             "</script>")
-    List<AdminUserList> getUserListPaged(@Param("offset") int offset, @Param("size") int size, @Param("role") String role, @Param("keyword") String keyword, @Param("searchType") String searchType);
+    List<AdminUserList> getUserListPaged(@Param("offset") int offset, @Param("size") int size, @Param("role") String role, @Param("keyword") String keyword, @Param("searchType") String searchType, @Param("status") String status);
 
     @Select("<script>" +
             "SELECT COUNT(*) FROM USERS " +
-            "WHERE role != 'ADMIN' " +
-            "<if test=\"role != null and role != 'all'\">AND role = #{role} </if>" +
+            "WHERE 1=1 " +
+            "<choose>" +
+            "  <when test=\"role != null and role == 'admin'\">AND role = 'ADMIN' </when>" +
+            "  <when test=\"role != null and role == 'student'\">AND role = 'STUDENT' </when>" +
+            "  <when test=\"role != null and role == 'professor'\">AND role = 'PROFESSOR' </when>" +
+            "</choose>" +
+            "<if test=\"status != null and status != ''\">AND status = #{status} </if>" +
             "<if test=\"keyword != null and keyword != ''\">" +
             "  <choose>" +
             "    <when test=\"searchType == 'name'\">AND name LIKE CONCAT('%', #{keyword}, '%') </when>" +
@@ -119,7 +125,7 @@ public interface AdminMapper {
             "  </choose>" +
             "</if>" +
             "</script>")
-    int getTotalUserCount(@Param("role") String role, @Param("keyword") String keyword, @Param("searchType") String searchType);
+    int getTotalUserCount(@Param("role") String role, @Param("keyword") String keyword, @Param("searchType") String searchType, @Param("status") String status);
 
     @Update({
             "UPDATE USERS " +

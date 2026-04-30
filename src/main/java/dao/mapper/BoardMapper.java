@@ -124,4 +124,31 @@ public interface BoardMapper {
             "SET is_answered = #{isAnswered} " +
             "WHERE board_no = #{boardNo}")
     void updateIsAnswered(@Param("boardNo") int boardNo,@Param("isAnswered") boolean isAnswered);
+
+    @Select("SELECT " +
+            "    b.board_no AS boardNo, " + // 상세보기를 위해 추가
+            "    b.title, " +
+            "    u.name AS writerName, " +   // DTO 필드명과 일치시킴
+            "    b.created_at AS createdAt, " + // DTO 필드명과 일치시킴
+            "    b.board_type AS boardType " + // [공지] 배지 판단을 위해 추가
+            "FROM BOARD b " +
+            "JOIN USERS u ON b.writer_no = u.user_no " +
+            "WHERE b.board_type = 'NOTICE' " +
+            "AND u.role = 'ADMIN' " +
+            "ORDER BY b.created_at DESC " +
+            "LIMIT 3")
+    List<PostDetail> getNoticeListInDashboard();
+
+    @Select("SELECT " +
+            "    b.board_no AS boardNo, " +      // 상세 페이지 이동 키
+            "    b.title, " +
+            "    u.name AS writerName, " +        // DTO의 writerName과 매핑
+            "    b.created_at AS createdAt, " +   // 최신순 정렬 기준 및 DTO 매핑
+            "    b.board_type AS boardType " +    // 게시판 타입 구분
+            "FROM BOARD b " +
+            "JOIN USERS u ON b.writer_no = u.user_no " +
+            "WHERE b.board_type = 'FREE' " +      // 자유게시판 데이터만 추출
+            "ORDER BY b.created_at DESC " +       // 최신글이 맨 위로 오도록 정렬
+            "LIMIT 3")
+    List<PostDetail> getFreeListInDashboard();
 }

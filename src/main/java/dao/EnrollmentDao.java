@@ -1,5 +1,6 @@
 package dao;
 
+import dto.EnrollmentPending;
 import dto.user.grade.AdminAllStudentGrade;
 import dto.user.grade.MyGrade;
 import dto.user.grade.MyProfessorGrade;
@@ -55,5 +56,9 @@ public class EnrollmentDao {
 	// 수강신천 확인 로직
 	public boolean isEnrolled(int studentNo, int courseNo) {
 		return template.getMapper(cls).isEnrolled(studentNo, courseNo);
+	}
+
+	public List<EnrollmentPending> getPendingEnrollmentList() {
+		return template.getMapper(cls).getPendingEnrollmentList();
 	}
 }

@@ -3,6 +3,7 @@ package dao;
 import java.util.List;
 import java.util.Map;
 
+import dto.CourseListInDashboard;
 import org.mybatis.spring.SqlSessionTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
@@ -50,8 +51,8 @@ public class CourseDao {
 	public List<Map<String, Object>> getlist(String semester, String type, String credits, String keyword, String status, int offset, int size) {
 		return template.getMapper(cls).getlist(semester, type, credits, keyword, status, offset, size);
     }
-	public List<Course> getStudentMyCourseMap(int userNo, String semester) {
-		return template.getMapper(cls).getStudentMyCourseMap(userNo, semester);
+	public List<Course> getStudentCourseList(int userNo, String semester) {
+		return template.getMapper(cls).getStudentCourseList(userNo, semester);
 	}
 	public List<Course> getMyCourse(int userNo, String semester) {
 		return template.getMapper(cls).getMyCourse(userNo, semester);
@@ -150,4 +151,20 @@ public class CourseDao {
 	public Integer selectProfessorNoByCourseNo(int courseNo) {
 		return template.getMapper(cls).selectProfessorNoByCourseNo(courseNo);
 	}
+
+    public List<CourseListInDashboard> getMyCourseInDashboard(int userNo) {
+		return template.getMapper(cls).getMyCourseInDashboard(userNo);
+    }
+
+    public List<Course> getCourseListWithProfessorInDashboard(int userNo) {
+		return template.getMapper(cls).getCourseListWithProfessorInDashboard(userNo);
+    }
+
+    public List<String> getRoomList(String semester) {
+		return template.getMapper(cls).getRoomList(semester);
+    }
+
+    public List<Course> getAllCoursesForTimetable(String semester) {
+		return template.getMapper(cls).getAllCoursesForTimetable(semester);
+    }
 }

@@ -1,5 +1,6 @@
 package dao.mapper;
 
+import dto.EnrollmentPending;
 import dto.user.grade.AdminAllStudentGrade;
 import dto.user.grade.MyGrade;
 import dto.user.grade.MyProfessorGrade;
@@ -97,4 +98,13 @@ public interface EnrollmentMapper {
 			"WHERE student_no = #{studentNo} " +
 			"AND course_no = #{courseNo}")
     boolean isEnrolled(@Param("studentNo") int studentNo,@Param("courseNo") int courseNo);
+
+	@Select("SELECT c.course_no, c.course_name, u.name AS student_name, c.day_of_week " +
+			"FROM ENROLLMENT e " +
+			"JOIN COURSE c ON e.course_no = c.course_no " +
+			"JOIN USERS u ON e.student_no = u.user_no " +
+			"WHERE e.status = 'PENDING' " +
+			"ORDER BY e.enrolled_at DESC LIMIT 5")
+	List<EnrollmentPending> getPendingEnrollmentList();
+
 }

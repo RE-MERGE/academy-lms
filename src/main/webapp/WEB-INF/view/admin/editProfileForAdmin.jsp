@@ -409,7 +409,7 @@
                 <c:choose>
                     <c:when test="${not empty userDetail.currentProfileImg}">
                         <img id="previewImg"
-                             src="${pageContext.request.contextPath}/upload/profiles/${userDetail.currentProfileImg}"
+                             src="${userDetail.currentProfileImg}"
                              class="edit-img-preview"
                              onerror="this.src='${pageContext.request.contextPath}/img/default-profile.png'"/>
                     </c:when>

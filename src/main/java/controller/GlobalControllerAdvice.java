@@ -3,6 +3,7 @@ package controller;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
 import dto.user.login.Login;
@@ -27,8 +28,14 @@ public class GlobalControllerAdvice {
 	}
 
 	@ModelAttribute("favoriteNos")
-	public List<Integer> favoriteNos(@Login SessionUser sessionUser) {
+	public List<Integer> favoriteNos(@Login SessionUser sessionUser, HttpServletRequest request) {
 		if (sessionUser == null) return new ArrayList<>();
+
+		String uri = request.getRequestURI();
+
+		if (uri.contains("/home/home") || uri.contains("/user/editProfile") || uri.contains("/user/myPage"))
+			return new ArrayList<>();
+
 		return courseService.getFavoriteCourseNos(sessionUser.getUserNo());
 	}
 }

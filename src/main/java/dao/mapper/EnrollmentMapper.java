@@ -96,7 +96,8 @@ public interface EnrollmentMapper {
 	@Select("SELECT COUNT(*) > 0 " +
 			"FROM ENROLLMENT " +
 			"WHERE student_no = #{studentNo} " +
-			"AND course_no = #{courseNo}")
+			"AND course_no = #{courseNo} " +
+			"AND status = 'APPROVED'")
     boolean isEnrolled(@Param("studentNo") int studentNo,@Param("courseNo") int courseNo);
 
 	@Select("SELECT c.course_no, c.course_name, u.name AS student_name, c.day_of_week " +

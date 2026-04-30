@@ -45,6 +45,14 @@
 
     <!-- 본문 -->
     <div class="detail-body">${post.content}</div>
+
+    <%-- ── 좋아요 버튼 ── --%>
+    <div style="padding: 0.8rem 0; border-bottom: 1px solid var(--lms-border); margin-bottom: 1rem; display:flex; justify-content:center;">
+      <button id="likeBtn" onclick="toggleLike(${post.boardNo})" class="btn-cancel" style="gap:6px;">
+        <span id="likeIcon">🤍</span>
+        <span id="likeCount">${post.likeCount}</span>
+      </button>
+    </div>
 <div class="detail-actions">
     <!-- 하단 버튼 -->
   <c:choose>
@@ -213,7 +221,8 @@
     [
       { name: 'boardNo',    value: boardNo },
       { name: 'writerNo',   value: ${post.writerNo} },
-      { name: 'boardType',  value: '${post.boardType}' }
+      { name: 'boardType',  value: '${post.boardType}' },
+      { name: 'courseNo',  value: '${post.courseNo}' }
     ].forEach(({ name, value }) => {
       const input = document.createElement('input');
       input.type  = 'hidden';
@@ -231,6 +240,39 @@
     document.getElementById('reply-box-' + n).classList.toggle('open');
   }
 
+  /* ── 좋아요 토글 ── */
+  async function toggleLike(boardNo) {
+    try {
+      const res = await fetch(CTX + '/board/like', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ boardNo: boardNo })
+      });
+
+      const data = await res.json();
+
+      if (data.status === 'success') {
+        const countElem = document.getElementById('likeCount');
+        const iconElem = document.getElementById('likeIcon');
+        let currentCount = parseInt(countElem.textContent);
+
+        if (data.action === 'liked') {
+          countElem.textContent = currentCount + 1;
+          iconElem.textContent = '❤️'; // 채워진 하트로 변경
+          // alert('좋아요를 눌렀습니다.');
+        } else {
+          countElem.textContent = currentCount - 1;
+          iconElem.textContent = '🤍'; // 빈 하트로 변경
+          // alert('좋아요를 취소했습니다.');
+        }
+      } else {
+        alert(data.message || '오류가 발생했습니다.');
+      }
+    } catch (error) {
+      console.error('Like error:', error);
+      alert('서버와의 통신에 실패했습니다.');
+    }
+  }
   /* ── XSS 방지 ── */
   function escHtml(s) {
     return String(s).replace(/[&<>"']/g, m => ({

@@ -1,6 +1,7 @@
 package service;
 
 import dao.BoardDao;
+import dto.EnrollmentStudent;
 import dto.board.*;
 import dto.user.UserRole;
 import exception.PostAccessDeniedException;
@@ -93,7 +94,7 @@ public class BoardService {
 
     public Map<String, Object> getBoardList(Integer courseNo, String boardType, String keyword,
                                             String searchType, int page, Integer writerNo) {
-        int totalCount = boardDao.getTotalCount(courseNo,boardType, keyword, searchType, writerNo);
+        int totalCount = boardDao.getTotalCount(courseNo, boardType, keyword, searchType, writerNo);
         PageInfo pageInfo = new PageInfo(page, totalCount, PAGE_SIZE, BLOCK_SIZE);
 
         BoardListRequest dto = new BoardListRequest();
@@ -129,5 +130,25 @@ public class BoardService {
 
     public List<PostDetail> getFreeListInDashboard() {
         return boardDao.getFreeListInDashboard();
+    }
+
+    public List<EnrollmentStudent> getStudentList(int courseNo) {
+        return boardDao.getStudentList(courseNo);
+    }
+
+    public void approveEnrollment(int enrollmentNo) {
+        boardDao.approveEnrollment(enrollmentNo);
+    }
+
+    public String toggleLike(BoardLike boardLike) {
+        int count = boardDao.checkLike(boardLike);
+
+        if (count == 0) {
+            boardDao.insertLike(boardLike);
+            return "liked";
+        } else {
+            boardDao.deleteLike(boardLike);
+            return "unliked";
+        }
     }
 }

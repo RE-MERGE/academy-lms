@@ -8,14 +8,11 @@
 <%-- URI 추출 후 조건 체크 (사이드바 표시 여부) --%>
 <c:set var="uri" value="${requestScope['javax.servlet.forward.request_uri']}"/>
 <c:set var="ctx" value="${pageContext.request.contextPath}"/>
-<c:set var="showSubjectSidebar" value=
-        "${fn:contains(uri, '/board/list_subject') or
-           fn:contains(uri, '/course/mainSubject') or
+<c:set var="showSubjectSidebar" value="${
            fn:contains(uri, '/board/subjectHome') or
-           fn:contains(uri, '/course/profScore') or
-           fn:contains(uri, '/course/stuScore') or
+           fn:contains(uri, '/course/score') or
            fn:contains(uri, '/board/list_qna') or
-           fn:contains(uri, '/course/score')
+           fn:contains(uri, '/board/subjectStudents')
            }"/>
 
 <!DOCTYPE html>
@@ -164,10 +161,11 @@
                             <img src="${ctx}/img/icon_qna.png" alt="QNA" width="40px" height="40px">Q&A
                         </a>
                         <div class="sidebar-divider"></div>
-
-                        <a href="#" class="subject-nav-item">
-                            <img src="${ctx}/img/icon_studentList.png" alt="학생 리스트" width="40px" height="40px">학생 리스트
-                        </a>
+                        <c:if test="${sessionScope.sessionUser.role eq 'ADMIN' || sessionScope.sessionUser.role eq 'PROFESSOR'}">
+                            <a href="${ctx}/board/subjectStudents?courseNo=${course.course_no}" class="subject-nav-item">
+                                <img src="${ctx}/img/icon_studentList.png" alt="학생 리스트" width="40px" height="40px">학생 리스트
+                            </a>
+                        </c:if>
                     </nav>
                 </aside>
             </c:if>

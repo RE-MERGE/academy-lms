@@ -14,7 +14,7 @@
 
   <!-- 타이틀 -->
   <div class="page-header">
-    <h2 class="page-title">❓ Q&amp;A</h2>
+    <h2 class="page-title">Q&amp;A</h2>
     <div class="page-breadcrumb">
       <a href="${pageContext.request.contextPath}/board/subjectHome?courseNo=${course.course_no}">${courseName}</a>
       <span>›</span>

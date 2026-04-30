@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpSession;
 
+import dto.user.grade.GradeForm;
 import dto.user.grade.MyGrade;
 import dto.user.login.Login;
 import dto.user.mypage.MyPageData;
@@ -26,8 +27,8 @@ import dto.Attendance;
 import dto.Course;
 import dto.user.SessionUser;
 import dto.user.User;
-import dto.user.UserConst;
 import dto.user.UserRole;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import service.CourseService;
 import service.UserService;
 
@@ -203,14 +204,21 @@ public class CourseController {
 					.collect(Collectors.toList());
 
 		} else {
-			// 학생: 수강신청한 강의 / 나머지 전체
-			enrolledList = courseService.selectCoursesByStudent(userNo);
+			// 학생: APPROVED(수강중) / PENDING(신청중) / 나머지 전체
+			enrolledList = courseService.selectCoursesByStatus(userNo, "APPROVED");
+			List<Course> pendingList = courseService.selectCoursesByStatus(userNo, "PENDING");
+
 			List<Integer> enrolledNos = enrolledList.stream()
-					.map(Course::getCourse_no)
-					.collect(Collectors.toList());
+					.map(Course::getCourse_no).collect(Collectors.toList());
+			List<Integer> pendingNos = pendingList.stream()
+					.map(Course::getCourse_no).collect(Collectors.toList());
+
 			otherList = courseService.selectAllCourses().stream()
 					.filter(c -> !enrolledNos.contains(c.getCourse_no()))
+					.filter(c -> !pendingNos.contains(c.getCourse_no()))
 					.collect(Collectors.toList());
+
+			mav.addObject("pendingList", pendingList);
 		}
 
 		Set<Integer> favSet = courseService.selectFavoriteSet(userNo);
@@ -221,15 +229,46 @@ public class CourseController {
 		mav.setViewName("course/courseHome");
 		return mav;
 	}
-	
+
 	@GetMapping("score")
-	public void score(@Login SessionUser sessionUser, Integer courseNo, Model model){
-		List<User> studentList = courseService.selectStudentList(courseNo);
-		Course course = courseService.selectCourse(courseNo);
-		MyPageData data = userService.getMyPageData(sessionUser, userService.getSemester());
+	public void score(@Login SessionUser sessionUser, @RequestParam(value="courseNo", required=false) Integer courseNo, Model model){
+		if (courseNo == null) courseNo = 1;
+
+		List<MyGrade> studentList = courseService.getStudentList(courseNo);
+		Course course = courseService.getCourse(courseNo);
+
 		model.addAttribute("course", course);
-		model.addAttribute("myGrade", data.getGradeList());
 		model.addAttribute("studentList", studentList);
+
+		if (studentList != null && sessionUser != null) {
+			// [수정 포인트] == 대신 equals()를 사용하여 객체 안의 '값'만 비교합니다.
+			MyGrade myData = studentList.stream()
+					.filter(u -> Integer.valueOf(u.getUserNo()).equals(sessionUser.getUserNo()))
+					.findFirst()
+					.orElse(null);
+
+			if (myData != null) {
+				model.addAttribute("midtermGrade", myData);
+				model.addAttribute("finalGrade", myData);
+				model.addAttribute("attendanceGrade", myData);
+			}
+		}
+	}
+	@PostMapping("saveGradeList")
+	public String saveGrades(GradeForm gradeForm, RedirectAttributes rttr) {
+		try {
+			// 서비스에 데이터 전달
+			courseService.saveGradesList(gradeForm);
+
+			// 성공 시 메시지 전달
+			rttr.addFlashAttribute("saveResult", "ok");
+		} catch (Exception e) {
+			e.printStackTrace();
+			rttr.addFlashAttribute("saveResult", "fail");
+		}
+
+		// 다시 성적 관리 페이지로 리다이렉트 (courseNo를 쿼리스트링으로 전달)
+		return "redirect:/course/score?courseNo=" + gradeForm.getCourse_no();
 	}
 //	@GetMapping("*")
 //	public void getCourse(Course course) {

@@ -6,6 +6,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import dto.user.grade.GradeForm;
+import dto.user.grade.GradeRow;
+import dto.user.grade.MyGrade;
 import dto.CourseListInDashboard;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -207,6 +210,10 @@ public class CourseService {
 	    return coursedao.selectCoursesByStudent(userNo);
 	}
 
+	public List<Course> selectCoursesByStatus(int userNo, String status){
+		return coursedao.selectCoursesByStatus(userNo, status);
+	}
+
 	public Set<Integer> selectFavoriteSet(int userNo) {
 	    return new HashSet<>(coursedao.getFavoriteCourseNos(userNo));
 	}
@@ -230,6 +237,25 @@ public class CourseService {
 
 		// 2. 강의가 존재하고, 담당 교수 번호가 로그인한 유저 번호와 같은지 확인
 		return professorNo != null && professorNo == userNo;
+	}
+
+	public void saveGradesList(GradeForm form) {
+		for (GradeRow row : form.getGradeList()) {
+			// 중간고사
+			coursedao.upsertGrade(row.getEnrollmentNo(), row.getMidterm(), "MIDTERM", row.getAlphabet());
+			// 기말고사
+			coursedao.upsertGrade(row.getEnrollmentNo(), row.getFinalScore(), "FINAL", row.getAlphabet());
+			// 출석
+			coursedao.upsertGrade(row.getEnrollmentNo(), row.getAttendance(), "ATTENDANCE", row.getAlphabet());
+		}
+	}
+
+	public List<MyGrade> getStudentList(Integer courseNo) {
+		return coursedao.selectStudentList(courseNo);
+	}
+
+	public Course getCourse(Integer courseNo) {
+		return coursedao.getCourse(courseNo);
 	}
 
 	public List<Course> getCourseListWithProfessorInDashboard(int userNo) {

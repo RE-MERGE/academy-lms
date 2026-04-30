@@ -38,12 +38,15 @@ public class GlobalExceptionHandler {
         return "error/500";
     }
 
-    @ExceptionHandler(PostAccessDeniedException.class)
-    public String handlePostAccessDenied(HttpServletRequest request, RedirectAttributes redirectAttributes) {
-        redirectAttributes.addFlashAttribute("errorMsg", "접근 권한이 없습니다.");
+    @ExceptionHandler(PostAccessDeniedException.class) // 예외 핸들러 선언 확인
+    public String handlePostAccessDenied(PostAccessDeniedException e, HttpServletRequest request, RedirectAttributes redirectAttributes) {
+
+        // e.getMessage()를 사용해야 인터셉터에서 작성한 상세 메시지가 전달됩니다.
+        redirectAttributes.addFlashAttribute("errorMsg", e.getMessage());
+
         String referer = request.getHeader("Referer");
-        if (referer != null) {
-            return "redirect:" + referer; // 이전 페이지로 돌아감
+        if (referer != null && !referer.isEmpty()) {
+            return "redirect:" + referer;
         }
         return "redirect:/home/dashboard";
     }

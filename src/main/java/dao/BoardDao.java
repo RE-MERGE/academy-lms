@@ -1,6 +1,7 @@
 package dao;
 
 import dao.mapper.BoardMapper;
+import dto.EnrollmentStudent;
 import dto.board.*;
 import org.mybatis.spring.SqlSessionTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,5 +55,25 @@ public class BoardDao {
 
     public List<PostDetail> getFreeListInDashboard() {
         return template.getMapper(cls).getFreeListInDashboard();
+    }
+
+    public List<EnrollmentStudent> getStudentList(int courseNo) {
+        return template.getMapper(cls).getStudentList(courseNo);
+    }
+
+    public void approveEnrollment(int enrollmentNo) {
+        template.getMapper(cls).approveEnrollment(enrollmentNo);
+    }
+
+    public int checkLike(BoardLike boardLike) {
+        return template.getMapper(cls).checkLike(boardLike);
+    }
+
+    public void insertLike(BoardLike boardLike) {
+        template.getMapper(cls).insertLike(boardLike);
+    }
+
+    public void deleteLike(BoardLike boardLike) {
+        template.getMapper(cls).deleteLike(boardLike);
     }
 }

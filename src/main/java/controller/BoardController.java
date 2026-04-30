@@ -24,6 +24,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.file.Files;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -296,5 +297,20 @@ public class BoardController {
                         URLEncoder.encode(fileUrl.substring(fileUrl.indexOf("_") + 1), "UTF-8") + "\"");
 
         Files.copy(file.toPath(), response.getOutputStream());
+    }
+
+    @PostMapping("/like")
+    @ResponseBody // AJAX 응답을 위해 필요 (또는 클래스에 @RestController 사용)
+    public Map<String, Object> toggleLike(@RequestBody BoardLike boardLike, @Login SessionUser sessionUser) {
+        Map<String, Object> result = new HashMap<>();
+
+        boardLike.setUserNo(sessionUser.getUserNo());
+
+        // 3. 서비스 로직 호출 (좋아요 추가 또는 취소)
+        String status = boardService.toggleLike(boardLike);
+
+        result.put("status", "success");
+        result.put("action", status); // "liked" 또는 "unliked"
+        return result;
     }
 }

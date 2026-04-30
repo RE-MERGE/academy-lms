@@ -56,4 +56,16 @@ public class BoardDao {
     public void approveEnrollment(int enrollmentNo) {
         template.getMapper(cls).approveEnrollment(enrollmentNo);
     }
+
+    public int checkLike(BoardLike boardLike) {
+        return template.getMapper(cls).checkLike(boardLike);
+    }
+
+    public void insertLike(BoardLike boardLike) {
+        template.getMapper(cls).insertLike(boardLike);
+    }
+
+    public void deleteLike(BoardLike boardLike) {
+        template.getMapper(cls).deleteLike(boardLike);
+    }
 }

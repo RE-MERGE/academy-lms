@@ -22,4 +22,5 @@ public class PostDetail {
     private int views;
     private boolean isAnswered;
     private Date createdAt;
+    private int likeCount;
 }

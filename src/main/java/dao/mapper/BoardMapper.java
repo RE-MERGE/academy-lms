@@ -22,7 +22,8 @@ public interface BoardMapper {
             "        b.file_url AS fileUrl,\n" +
             "        b.views,\n" +
             "        b.is_answered AS isAnswered,\n" +
-            "        b.created_at AS createdAt\n" +
+            "        b.created_at AS createdAt,\n" +
+            "        (SELECT COUNT(*) FROM BOARD_LIKE WHERE board_no = b.board_no) as likeCount " +
             "        FROM BOARD b" +
             "        JOIN USERS u ON b.writer_no = u.user_no" +
             "        WHERE board_no=#{value}")
@@ -136,4 +137,16 @@ public interface BoardMapper {
 
     @Update("UPDATE ENROLLMENT SET status = 'APPROVED' WHERE enrollment_no = #{enrollmentNo}")
     void approveEnrollment(int enrollmentNo);
+
+    // 1. 좋아요 여부 확인 (데이터가 있는지 SELECT 해서 개수를 반환)
+    @Select("SELECT COUNT(*) FROM BOARD_LIKE WHERE board_no = #{boardNo} AND user_no = #{userNo}")
+    int checkLike(BoardLike boardLike);
+
+    // 2. 좋아요 추가 (데이터 삽입)
+    @Insert("INSERT INTO BOARD_LIKE (board_no, user_no) VALUES (#{boardNo}, #{userNo})")
+    void insertLike(BoardLike boardLike);
+
+    // 3. 좋아요 취소 (데이터 삭제)
+    @Delete("DELETE FROM BOARD_LIKE WHERE board_no = #{boardNo} AND user_no = #{userNo}")
+    void deleteLike(BoardLike boardLike);
 }

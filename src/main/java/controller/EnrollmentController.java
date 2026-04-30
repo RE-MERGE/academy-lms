@@ -44,9 +44,11 @@ public class EnrollmentController {
 	
 	
 	@GetMapping("courseCreate")
-	public String courseCreate(Model model) {
-	    
-
+	public String courseCreate(Model model,@Login SessionUser sessionUser) {
+		if (sessionUser.getRole() != UserRole.PROFESSOR && sessionUser.getRole() != UserRole.ADMIN) {
+	        return "redirect:/enrollment/courseEnrollment";
+	    }
+		
 	    model.addAttribute("currentSemester", enrollment_semester());
 	    return "enrollment/courseCreate";
 	}

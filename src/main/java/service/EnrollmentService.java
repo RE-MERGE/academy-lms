@@ -37,7 +37,7 @@ public class EnrollmentService {
 	    Enrollment enrollment = new Enrollment();
 	    enrollment.setCourse_no(courseNo);
 	    enrollment.setStudent_no(userNo);
-	    enrollment.setStatus("APPLIED");
+	    enrollment.setStatus("PENDING");
 	    enrollmentDao.insert(enrollment); 
 	    courseDao.addCounts(courseNo);
 	}

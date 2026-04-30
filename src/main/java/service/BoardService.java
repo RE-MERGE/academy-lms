@@ -1,6 +1,7 @@
 package service;
 
 import dao.BoardDao;
+import dto.EnrollmentStudent;
 import dto.board.*;
 import dto.user.UserRole;
 import exception.PostAccessDeniedException;
@@ -121,5 +122,13 @@ public class BoardService {
 
     public void viewCount(int boardNo) {
         boardDao.viewCount(boardNo);
+    }
+
+    public List<EnrollmentStudent> getStudentList(int courseNo) {
+        return boardDao.getStudentList(courseNo);
+    }
+
+    public void approveEnrollment(int enrollmentNo) {
+        boardDao.approveEnrollment(enrollmentNo);
     }
 }

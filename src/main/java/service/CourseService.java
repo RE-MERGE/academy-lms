@@ -204,6 +204,10 @@ public class CourseService {
 	    return coursedao.selectCoursesByStudent(userNo);
 	}
 
+	public List<Course> selectCoursesByStatus(int userNo, String status){
+		return coursedao.selectCoursesByStatus(userNo, status);
+	}
+
 	public Set<Integer> selectFavoriteSet(int userNo) {
 	    return new HashSet<>(coursedao.getFavoriteCourseNos(userNo));
 	}
@@ -234,7 +238,7 @@ public class CourseService {
 			// 중간고사
 			coursedao.upsertGrade(row.getEnrollmentNo(), row.getMidterm(), "MIDTERM", row.getAlphabet());
 			// 기말고사
-			coursedao.upsertGrade(row.getEnrollmentNo(), row.getFinal_score(), "FINAL", row.getAlphabet());
+			coursedao.upsertGrade(row.getEnrollmentNo(), row.getFinalScore(), "FINAL", row.getAlphabet());
 			// 출석
 			coursedao.upsertGrade(row.getEnrollmentNo(), row.getAttendance(), "ATTENDANCE", row.getAlphabet());
 		}

@@ -1,5 +1,6 @@
 package dao.mapper;
 
+import dto.EnrollmentStudent;
 import dto.board.*;
 import org.apache.ibatis.annotations.*;
 
@@ -124,4 +125,15 @@ public interface BoardMapper {
             "SET is_answered = #{isAnswered} " +
             "WHERE board_no = #{boardNo}")
     void updateIsAnswered(@Param("boardNo") int boardNo,@Param("isAnswered") boolean isAnswered);
+
+    @Select("SELECT e.enrollment_no AS enrollmentNo, e.student_no AS studentNo, e.status, " +
+            "       u.user_code AS userCode, u.name, u.email, u.phone " +
+            "FROM ENROLLMENT e " +
+            "JOIN USERS u ON e.student_no = u.user_no " +
+            "WHERE e.course_no = #{courseNo} " +
+            "ORDER BY e.enrollment_no")
+    List<EnrollmentStudent> getStudentList(int courseNo);
+
+    @Update("UPDATE ENROLLMENT SET status = 'APPROVED' WHERE enrollment_no = #{enrollmentNo}")
+    void approveEnrollment(int enrollmentNo);
 }

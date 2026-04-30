@@ -1,18 +1,18 @@
 package controller;
 
 import dto.Course;
+import dto.EnrollmentStudent;
 import dto.board.*;
 import dto.user.SessionUser;
 import dto.user.UserRole;
+import dto.user.grade.MyGrade;
 import dto.user.login.Login;
 import exception.PostAccessDeniedException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 import service.BoardService;
 import service.CourseService;
@@ -49,13 +49,20 @@ public class BoardController {
     }
 
     @PostMapping("write")
-    public String write(PostCreate board,
-                        @Login SessionUser sessionUser) {
+    public String write(PostCreate board, @Login SessionUser sessionUser) {
         boardService.insertPost(board, sessionUser.getUserNo());
-        if (board.getCourseNo() != null && board.getBoardType().equals("QNA")){
+
+        // QNA인 경우 list_qna로, 그 외엔 일반 list로 리다이렉트
+        if ("QNA".equals(board.getBoardType()) && board.getCourseNo() != null) {
             return "redirect:/board/list_qna?boardType=QNA&courseNo=" + board.getCourseNo();
         }
-        return "redirect:/board/list?courseNo=" + board.getCourseNo() + "&boardType=" + board.getBoardType();
+
+        // NOTICE나 일반 게시판이라도 courseNo가 있다면 유지해주는 것이 좋습니다.
+        String url = "redirect:/board/list?boardType=" + board.getBoardType();
+        if (board.getCourseNo() != null) {
+            url += "&courseNo=" + board.getCourseNo();
+        }
+        return url;
     }
 
     @GetMapping("list")
@@ -119,29 +126,68 @@ public class BoardController {
     @GetMapping("update")
     public String update(@Login SessionUser sessionUser, Integer boardNo, Model model) {
         PostDetail postDetail = boardService.detailPost(boardNo);
+
         if (sessionUser.getRole() != UserRole.ADMIN && sessionUser.getUserNo() != postDetail.getWriterNo()) {
             throw new PostAccessDeniedException();
         }
+
         model.addAttribute("post", postDetail);
+        // 폼에서 courseNo를 hidden으로 넘길 수 있도록 추가
+        model.addAttribute("courseNo", postDetail.getCourseNo());
         return "board/update";
     }
 
     @PostMapping("update")
-    public String update(PostUpdate postUpdate, String boardType) {
+    public String update(PostUpdate postUpdate,
+                         @RequestParam String boardType,
+                         @RequestParam(required = false) Integer courseNo) {
         boardService.updatePost(postUpdate);
-        return "redirect:/board/list?boardType=" + boardType;
+
+        // 리다이렉트 경로 결정
+        if ("QNA".equals(boardType) && courseNo != null) {
+            return "redirect:/board/list_qna?boardType=QNA&courseNo=" + courseNo;
+        }
+
+        String url = "redirect:/board/list?boardType=" + boardType;
+        if (courseNo != null) {
+            url += "&courseNo=" + courseNo;
+        }
+        return url;
     }
 
     @PostMapping("delete")
-    public String delete(String boardNo, String boardType, @Login SessionUser sessionUser) {
-        boardService.deletePost(boardNo, sessionUser.getUserNo(), sessionUser.getRole());
-        return "redirect:/board/list?boardType=" + boardType;
+    public String delete(@RequestParam int boardNo,
+                         @RequestParam String boardType,
+                         @RequestParam(required = false) Integer courseNo,
+                         @Login SessionUser sessionUser) {
+
+        // 1. 권한 체크
+        PostDetail post = boardService.detailPost(boardNo);
+        if (sessionUser.getRole() != UserRole.ADMIN && sessionUser.getUserNo() != post.getWriterNo()) {
+            throw new PostAccessDeniedException("삭제 권한이 없습니다.");
+        }
+
+        // 2. 삭제 실행
+        boardService.deletePost(String.valueOf(boardNo), sessionUser.getUserNo(), sessionUser.getRole());
+
+        // 3. 리다이렉트 경로 처리
+        // 기본적으로 QNA는 list_qna로, 나머지는 list로 보냅니다.
+        String redirectPath = "QNA".equals(boardType) ? "list_qna" : "list";
+
+        StringBuilder url = new StringBuilder("redirect:/board/" + redirectPath);
+        url.append("?boardType=").append(boardType);
+
+        if (courseNo != null) {
+            url.append("&courseNo=").append(courseNo);
+        }
+
+        return url.toString();
     }
 
-    @GetMapping({"subjectHome", "list_qna"})
-    public String subjectBoard(@RequestParam(required = false) Integer courseNo,
+    @GetMapping("list_qna")
+    public String list_qna(@RequestParam(required = false) Integer courseNo,
                                @RequestParam(defaultValue = "1") int page,
-                               @RequestParam(defaultValue = "NOTICE") String boardType,
+                               @RequestParam(defaultValue = "QNA") String boardType,
                                @RequestParam(defaultValue = "") String keyword,
                                @RequestParam(defaultValue = "title") String searchType,
                                @RequestParam(defaultValue = "") String answerStatus,
@@ -165,14 +211,81 @@ public class BoardController {
         model.addAttribute("professorName", professorName);
         model.addAllAttributes(((PageInfo) data.get("pageInfo")).toMap());
         model.addAttribute("boardType", boardType);
+        model.addAttribute("answerStatus", answerStatus);
+        return "board/list_qna";
 
-        // QNA면 다른 뷰
-        if ("QNA".equals(boardType)) {
-            model.addAttribute("answerStatus", answerStatus);
-            return "board/list_qna";
+    }
+
+    @GetMapping("subjectHome")
+    public String subjectHome(@RequestParam Integer courseNo,
+                              @Login SessionUser sessionUser,
+                              Model model) {
+
+        // 1. 기본 정보 (과목명, 교수명)
+        Course course = courseService.getBoardCourse(courseNo);
+        String professorName = courseService.selectProfessorName(courseNo);
+
+        // 2. 공지사항 리스트 (3개 추출)
+        Map<String, Object> noticeData = boardService.getBoardList(courseNo, "NOTICE", "", "title", 1, null);
+        List<PostList> noticeList = (List<PostList>) noticeData.get("postList");
+
+        // 리스트가 존재하고 3개보다 많을 때만 자름 (오류 방지)
+        if (noticeList != null && noticeList.size() > 3) {
+            noticeList = noticeList.subList(0, 3);
         }
+        model.addAttribute("postList", noticeList);
+
+        // 3. Q&A 리스트 (5개 추출)
+        Integer writerNo = (sessionUser.getRole() == UserRole.STUDENT) ? sessionUser.getUserNo() : null;
+        Map<String, Object> qnaData = boardService.getBoardList(courseNo, "QNA", "", "title", 1, writerNo);
+        List<PostList> qnaList = (List<PostList>) qnaData.get("postList");
+
+        // 리스트가 존재하고 5개보다 많을 때만 자름 (오류 방지)
+        if (qnaList != null && qnaList.size() > 3) {
+            qnaList = qnaList.subList(0, 3);
+        }
+        model.addAttribute("qnaList", qnaList);
+
+        // 4. 성적 데이터 (기존과 동일)
+        List<MyGrade> studentList = courseService.getStudentList(courseNo);
+        if (studentList != null && studentList.size() > 3) {
+            studentList = studentList.subList(0, 3);
+        }
+        model.addAttribute("studentList", studentList);
+
+        if (sessionUser.getRole() == UserRole.STUDENT) {
+            MyGrade myInfo = studentList.stream()
+                    .filter(s -> Integer.valueOf(s.getUserNo()).equals(sessionUser.getUserNo()))
+                    .findFirst().orElse(null);
+            model.addAttribute("myInfo", myInfo);
+        }
+
+        model.addAttribute("course", course);
+        model.addAttribute("professorName", professorName);
+
         return "board/subjectHome";
     }
+
+    @GetMapping("subjectStudents")
+    public String subjectStudents(@RequestParam int courseNo,
+                                  @Login SessionUser sessionUser,
+                                  Model model) {
+        Course course = courseService.getBoardCourse(courseNo);
+        List<EnrollmentStudent> students = boardService.getStudentList(courseNo);
+        String professorName = courseService.selectProfessorName(courseNo);
+        model.addAttribute("professorName", professorName);
+        model.addAttribute("course", course);
+        model.addAttribute("students", students);
+        return "board/subjectStudents";
+    }
+
+    @PostMapping("approveEnrollment")
+    @ResponseBody
+    public ResponseEntity<?> approveEnrollment(@RequestParam int enrollmentNo) {
+        boardService.approveEnrollment(enrollmentNo);
+        return ResponseEntity.ok().build();
+    }
+
     @GetMapping("fileDownload")
     public void fileDownload(@RequestParam String fileUrl, HttpServletResponse response) throws IOException {
         File file = new File("C:/upload/profiles/" + fileUrl);

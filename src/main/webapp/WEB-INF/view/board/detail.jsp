@@ -213,7 +213,8 @@
     [
       { name: 'boardNo',    value: boardNo },
       { name: 'writerNo',   value: ${post.writerNo} },
-      { name: 'boardType',  value: '${post.boardType}' }
+      { name: 'boardType',  value: '${post.boardType}' },
+      { name: 'courseNo',  value: '${post.courseNo}' }
     ].forEach(({ name, value }) => {
       const input = document.createElement('input');
       input.type  = 'hidden';

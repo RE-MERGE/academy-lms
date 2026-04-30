@@ -47,13 +47,6 @@
         <col class="col-title">
         <col class="col-date">
       </colgroup>
-      <thead>
-        <tr>
-          <th>No</th>
-          <th style="text-align:left; padding-left:14px;">제목</th>
-          <th>작성일</th>
-        </tr>
-      </thead>
       <tbody>
         <c:choose>
           <c:when test="${empty postList}">
@@ -93,156 +86,179 @@
   </div>
 
   <!-- ══════════════════════════════════════
-       하단 — 강의일정 + 성적현황 나란히
-  ══════════════════════════════════════ -->
+     하단 — 성적현황 + QNA 나란히
+══════════════════════════════════════ -->
   <div class="flex">
 
-    <!-- ── 왼쪽: 강의 일정 ── -->
+    <!-- ── 왼쪽: 내 성적 현황 ── -->
     <div class="left">
       <div class="board-card">
 
         <div class="board-toolbar" style="padding: 1rem 1.2rem 0;">
           <h3 style="font-size: 0.95rem; font-weight: 700; color: var(--lms-primary); display: flex; align-items: center; gap: 6px;">
-            📅 강의 일정
+            📊 성적
           </h3>
+          <a href="${pageContext.request.contextPath}/course/score?courseNo=${course.course_no}"
+             class="back-link" style="margin-bottom: 0;">전체보기 →</a>
         </div>
 
-        <table class="board-table">
-          <colgroup>
-            <col style="width: 60px;">
-            <col>
-            <col style="width: 90px;">
-          </colgroup>
-          <thead>
-            <tr>
-              <th>주차</th>
-              <th style="text-align:left; padding-left:14px;">강의 내용</th>
-              <th>상태</th>
-            </tr>
-          </thead>
-          <tbody>
-            <c:choose>
-              <c:when test="${empty scheduleList}">
-                <tr class="empty-row">
-                  <td colspan="3">
-                    <div class="empty-icon">📅</div>
-                    <div class="empty-text">등록된 강의 일정이 없습니다.</div>
-                  </td>
-                </tr>
-              </c:when>
-              <c:otherwise>
-                <c:forEach var="schedule" items="${scheduleList}">
-                  <tr>
-                    <td class="td-no">${schedule.weekNo}주차</td>
-                    <td class="td-title">
-                      <div class="title-inner">
-                        <span class="title-text">${schedule.topic}</span>
-                      </div>
-                    </td>
-                    <td>
-                      <c:choose>
-                        <c:when test="${schedule.status == 'DONE'}">
-                          <span class="badge badge-gray">완료</span>
-                        </c:when>
-                        <c:when test="${schedule.status == 'CURRENT'}">
-                          <span class="badge badge-blue">진행중</span>
-                        </c:when>
-                        <c:otherwise>
-                          <span class="badge badge-gray" style="opacity:0.5;">예정</span>
-                        </c:otherwise>
-                      </c:choose>
+        <c:choose>
+          <%-- 교수/관리자: 전체 학생 수만 요약 표시 --%>
+          <c:when test="${sessionScope.sessionUser.role eq 'PROFESSOR' or sessionScope.sessionUser.role eq 'ADMIN'}">
+            <table class="board-table">
+              <colgroup>
+                <col style="width:110px"><col style="width:120px"><col><col style="width:80px">
+              </colgroup>
+              <tbody>
+              <c:choose>
+                <c:when test="${empty studentList}">
+                  <tr class="empty-row">
+                    <td colspan="4">
+                      <div class="empty-icon">📋</div>
+                      <div class="empty-text">수강 학생이 없습니다.</div>
                     </td>
                   </tr>
-                </c:forEach>
+                </c:when>
+                <c:otherwise>
+                  <c:forEach var="s" items="${studentList}">
+                    <tr>
+                      <td class="td-no">${s.userCode}</td>
+                      <td class="td-title"><div class="title-inner"><span class="title-text">${s.name}</span></div></td>
+                      <td class="td-views">
+                        <c:choose>
+                          <c:when test="${not empty s.midterm and not empty s.finalScore and not empty s.attendance}">
+                            ${s.midterm * 0.4 + s.finalScore * 0.4 + s.attendance * 0.2}점
+                          </c:when>
+                          <c:otherwise><span style="color:var(--lms-text-sub);">미입력</span></c:otherwise>
+                        </c:choose>
+                      </td>
+                      <td class="td-no">
+                        <c:choose>
+                          <c:when test="${not empty s.alphabet}">
+                              <span class="category-tag
+                                <c:choose>
+                                  <c:when test="${s.alphabet.startsWith('A')}">cat-QNA</c:when>
+                                  <c:when test="${s.alphabet.startsWith('B')}">cat-FREE</c:when>
+                                  <c:when test="${s.alphabet eq 'F'}">cat-NOTICE</c:when>
+                                  <c:otherwise>cat-FREE</c:otherwise>
+                                </c:choose>
+                              ">${s.alphabet}</span>
+                          </c:when>
+                          <c:otherwise><span style="color:var(--lms-text-sub);">—</span></c:otherwise>
+                        </c:choose>
+                      </td>
+                    </tr>
+                  </c:forEach>
+                </c:otherwise>
+              </c:choose>
+              </tbody>
+            </table>
+          </c:when>
+
+          <%-- 학생: 본인 성적만 카드로 --%>
+          <c:otherwise>
+            <c:set var="myInfo" value="${null}"/>
+            <c:forEach var="s" items="${studentList}">
+              <c:if test="${s.userNo eq sessionScope.sessionUser.userNo}">
+                <c:set var="myInfo" value="${s}"/>
+              </c:if>
+            </c:forEach>
+
+            <c:choose>
+              <c:when test="${not empty myInfo}">
+                <div style="padding: 1.2rem;">
+                  <div class="stat-grid" style="grid-template-columns: repeat(2,1fr); gap: 10px; margin-bottom: 1rem;">
+                    <div class="stat-card">
+                      <div class="stat-label">중간고사</div>
+                      <div class="stat-value">${myInfo.midterm}<small style="font-size:1rem;">/100</small></div>
+                    </div>
+                    <div class="stat-card">
+                      <div class="stat-label">기말고사</div>
+                      <div class="stat-value">${myInfo.finalScore}<small style="font-size:1rem;">/100</small></div>
+                    </div>
+                    <div class="stat-card">
+                      <div class="stat-label">출석</div>
+                      <div class="stat-value">${myInfo.attendance}<small style="font-size:1rem;">/100</small></div>
+                    </div>
+                    <div class="stat-card">
+                      <div class="stat-label">최종 학점</div>
+                      <div class="stat-value" style="color:var(--lms-accent);">${myInfo.alphabet}</div>
+                    </div>
+                  </div>
+                    <%-- 진행률 바 --%>
+                  <div style="display:flex; justify-content:space-between; font-size:0.78rem; color:var(--lms-text-sub); margin-bottom:4px;">
+                    <span>총점</span>
+                    <span>${myInfo.midterm * 0.4 + myInfo.finalScore * 0.4 + myInfo.attendance * 0.2}점 / 100점</span>
+                  </div>
+                  <div class="progress">
+                    <div style="width:${myInfo.midterm * 0.4 + myInfo.finalScore * 0.4 + myInfo.attendance * 0.2}%;"></div>
+                  </div>
+                </div>
+              </c:when>
+              <c:otherwise>
+                <div style="padding:2.5rem; text-align:center;">
+                  <div class="empty-icon">📋</div>
+                  <div class="empty-text">아직 성적이 등록되지 않았습니다.</div>
+                </div>
               </c:otherwise>
             </c:choose>
-          </tbody>
-        </table>
+          </c:otherwise>
+        </c:choose>
+
       </div>
     </div>
 
-    <!-- ── 오른쪽: 성적 현황 ── -->
+    <!-- ── 오른쪽: Q&A 최근글 ── -->
     <div class="right">
       <div class="board-card">
 
         <div class="board-toolbar" style="padding: 1rem 1.2rem 0;">
           <h3 style="font-size: 0.95rem; font-weight: 700; color: var(--lms-primary); display: flex; align-items: center; gap: 6px;">
-            📊 내 성적 현황
+            💬 Q&amp;A
           </h3>
+          <a href="${pageContext.request.contextPath}/board/list_qna?boardType=QNA&courseNo=${course.course_no}"
+             class="back-link" style="margin-bottom: 0;">전체보기 →</a>
         </div>
 
         <table class="board-table">
           <colgroup>
-            <col>
-            <col style="width: 70px;">
-            <col style="width: 70px;">
+            <col class="col-title">
+            <col style="width:90px;">
           </colgroup>
-          <thead>
-            <tr>
-              <th style="text-align:left; padding-left:14px;">항목</th>
-              <th>만점</th>
-              <th>내 점수</th>
-            </tr>
-          </thead>
           <tbody>
-            <c:choose>
-              <c:when test="${empty gradeList}">
-                <tr class="empty-row">
-                  <td colspan="3">
-                    <div class="empty-icon">📊</div>
-                    <div class="empty-text">아직 성적이 없습니다.</div>
+          <c:choose>
+            <c:when test="${empty qnaList}">
+              <tr class="empty-row">
+                <td colspan="2">
+                  <div class="empty-icon">💬</div>
+                  <div class="empty-text">등록된 Q&amp;A가 없습니다.</div>
+                </td>
+              </tr>
+            </c:when>
+            <c:otherwise>
+              <c:forEach var="qna" items="${qnaList}">
+                <tr onclick="location='${pageContext.request.contextPath}/board/detail_qna?boardNo=${qna.boardNo}&courseNo=${course.course_no}'">
+                  <td class="td-title">
+                    <div class="title-inner">
+                      <span class="title-text">${qna.title}</span>
+                    </div>
+                  </td>
+                  <td>
+                    <c:choose>
+                      <c:when test="${qna.answerStatus eq 'ANSWERED'}">
+                        <span class="category-tag cat-QNA" style="font-size:0.72rem;">답변완료</span>
+                      </c:when>
+                      <c:otherwise>
+                        <span class="category-tag cat-FREE" style="font-size:0.72rem;">대기중</span>
+                      </c:otherwise>
+                    </c:choose>
                   </td>
                 </tr>
-              </c:when>
-              <c:otherwise>
-                <c:forEach var="grade" items="${gradeList}">
-                  <tr>
-                    <td class="td-title">
-                      <span class="title-text">${grade.itemName}</span>
-                    </td>
-                    <td class="td-views">${grade.fullScore}</td>
-                    <td class="td-views">
-                      <c:choose>
-                        <c:when test="${grade.myScore == null}">
-                          <span style="color: var(--lms-text-sub);">-</span>
-                        </c:when>
-                        <c:when test="${grade.myScore >= grade.fullScore * 0.8}">
-                          <span style="color: var(--green); font-weight: 700;">${grade.myScore}</span>
-                        </c:when>
-                        <c:when test="${grade.myScore < grade.fullScore * 0.6}">
-                          <span class="views-high">${grade.myScore}</span>
-                        </c:when>
-                        <c:otherwise>
-                          <span style="font-weight: 600;">${grade.myScore}</span>
-                        </c:otherwise>
-                      </c:choose>
-                    </td>
-                  </tr>
-                </c:forEach>
-
-                <!-- 합계 행 -->
-                <tr style="border-top: 2px solid var(--lms-border); background: var(--lms-bg-light);">
-                  <td class="td-title"><strong>합계</strong></td>
-                  <td class="td-views"><strong>${totalFullScore}</strong></td>
-                  <td class="td-views"><strong>${totalMyScore}</strong></td>
-                </tr>
-              </c:otherwise>
-            </c:choose>
+              </c:forEach>
+            </c:otherwise>
+          </c:choose>
           </tbody>
         </table>
-
-        <!-- 진행률 바 -->
-        <c:if test="${not empty gradeList}">
-          <div style="padding: 1rem 1.2rem;">
-            <div style="display:flex; justify-content:space-between; font-size:0.78rem; color:var(--lms-text-sub); margin-bottom:4px;">
-              <span>취득률</span>
-              <span>${totalMyScore} / ${totalFullScore}점</span>
-            </div>
-            <div class="progress">
-              <div style="width: ${totalMyScore / totalFullScore * 100}%;"></div>
-            </div>
-          </div>
-        </c:if>
 
       </div>
     </div>

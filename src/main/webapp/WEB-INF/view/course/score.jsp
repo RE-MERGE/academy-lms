@@ -6,7 +6,6 @@
 <c:set var="canEdit" value="${role eq 'ADMIN' or role eq 'PROFESSOR'}" />
 <link rel="stylesheet" href="${pageContext.request.contextPath}/css/board.css">
 <h1 class="page-title">${course.course_name} — 성적 관리</h1>
-
 <c:choose>
 
     <%-- ══════════════════════════════════════

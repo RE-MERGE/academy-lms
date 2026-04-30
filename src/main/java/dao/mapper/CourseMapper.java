@@ -227,6 +227,11 @@ public interface CourseMapper {
 
     @Select("SELECT * FROM COURSE WHERE course_no IN (SELECT course_no FROM ENROLLMENT WHERE student_no = #{userNo})")
     List<Course> selectCoursesByStudent(@Param("userNo") int userNo);
+
+    @Select("SELECT * FROM COURSE WHERE course_no IN " +
+            "(SELECT course_no FROM ENROLLMENT WHERE student_no = #{userNo} AND status = #{status})")
+    List<Course> selectCoursesByStatus(@Param("userNo") int userNo, @Param("status") String status);
+
     @Select("SELECT c.* " +
             "FROM COURSE c " +
             "JOIN FAVORITE f ON c.course_no = f.course_no " +
@@ -305,11 +310,12 @@ public interface CourseMapper {
             "    MAX(CASE WHEN g.type = 'MIDTERM' THEN g.score END) AS midterm, " +
             "    MAX(CASE WHEN g.type = 'FINAL' THEN g.score END) AS finalScore, " +
             "    MAX(CASE WHEN g.type = 'ATTENDANCE' THEN g.score END) AS attendance, " +
-            "    MAX(g.alphabet) AS alphabet " +
+            "    MIN(g.alphabet) AS alphabet " +
             "FROM USERS u " +
             "JOIN ENROLLMENT e ON u.user_no = e.student_no " +
             "LEFT JOIN GRADE g ON e.enrollment_no = g.enrollment_no " +
             "WHERE e.course_no = #{courseNo} " +
+            "AND e.status = 'APPROVED' " +
             "GROUP BY e.course_no, u.user_no, e.enrollment_no")
     List<MyGrade> selectStudentList(Integer courseNo);
 

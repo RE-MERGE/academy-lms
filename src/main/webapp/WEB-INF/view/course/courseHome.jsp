@@ -207,7 +207,40 @@
     </c:if>
   </div>
 </div>
-
+<%-- ════════════ 수강신청중인 강의 ════════════ --%>
+<c:if test="${not empty pendingList}">
+  <hr class="section-divider"/>
+  <div class="section-wrap">
+    <div class="section-title">
+      수강신청중인 강의 <span class="badge type-free">${pendingList.size()}</span>
+    </div>
+  </div>
+  <div class="grid-wrap">
+    <div class="course-grid">
+      <c:forEach var="course" items="${pendingList}">
+        <a href="${pageContext.request.contextPath}/course/subject?no=${course.course_no}"
+           class="course-card" data-name="${course.course_name}" data-fav="false" data-courseno="${course.course_no}">
+          <div class="card-accent" style="background:#f59e0b;"></div>
+          <c:choose>
+            <c:when test="${course.course_type == 'MAJOR_REQUIRED'}"><c:set var="typeClass" value="type-major-req"/><c:set var="typeLabel" value="전공필수"/></c:when>
+            <c:when test="${course.course_type == 'MAJOR_ELECTIVE'}"><c:set var="typeClass" value="type-major-elec"/><c:set var="typeLabel" value="전공선택"/></c:when>
+            <c:when test="${course.course_type == 'GENERAL_REQUIRED'}"><c:set var="typeClass" value="type-gen-req"/><c:set var="typeLabel" value="교양필수"/></c:when>
+            <c:when test="${course.course_type == 'GENERAL_ELECTIVE'}"><c:set var="typeClass" value="type-gen-elec"/><c:set var="typeLabel" value="교양선택"/></c:when>
+            <c:otherwise><c:set var="typeClass" value="type-free"/><c:set var="typeLabel" value="일반선택"/></c:otherwise>
+          </c:choose>
+          <div class="card-type-badge ${typeClass}">${typeLabel}</div>
+          <div class="card-name">${course.course_name}</div>
+          <div class="card-info">${course.semester} &nbsp;|&nbsp; ${course.credits}학점</div>
+          <hr class="card-divider"/>
+          <div class="card-meta" style="display:flex; justify-content:space-between; align-items:center;">
+            <span>${course.day_of_week}요일 &nbsp;${course.start_time} ~ ${course.end_time}</span>
+            <span style="font-size:11px; font-weight:700; color:#f59e0b;">⏳ 승인대기</span>
+          </div>
+        </a>
+      </c:forEach>
+    </div>
+  </div>
+</c:if>
 <c:if test="${userRole != 'ADMIN'}"><hr class="section-divider"/></c:if>
 
 <%-- ════════════ 전체 강의 (수강중 제외) ════════════ --%>

@@ -204,14 +204,21 @@ public class CourseController {
 					.collect(Collectors.toList());
 
 		} else {
-			// 학생: 수강신청한 강의 / 나머지 전체
-			enrolledList = courseService.selectCoursesByStudent(userNo);
+			// 학생: APPROVED(수강중) / PENDING(신청중) / 나머지 전체
+			enrolledList = courseService.selectCoursesByStatus(userNo, "APPROVED");
+			List<Course> pendingList = courseService.selectCoursesByStatus(userNo, "PENDING");
+
 			List<Integer> enrolledNos = enrolledList.stream()
-					.map(Course::getCourse_no)
-					.collect(Collectors.toList());
+					.map(Course::getCourse_no).collect(Collectors.toList());
+			List<Integer> pendingNos = pendingList.stream()
+					.map(Course::getCourse_no).collect(Collectors.toList());
+
 			otherList = courseService.selectAllCourses().stream()
 					.filter(c -> !enrolledNos.contains(c.getCourse_no()))
+					.filter(c -> !pendingNos.contains(c.getCourse_no()))
 					.collect(Collectors.toList());
+
+			mav.addObject("pendingList", pendingList);
 		}
 
 		Set<Integer> favSet = courseService.selectFavoriteSet(userNo);
@@ -244,10 +251,6 @@ public class CourseController {
 				model.addAttribute("midtermGrade", myData);
 				model.addAttribute("finalGrade", myData);
 				model.addAttribute("attendanceGrade", myData);
-				System.out.println("로그: 드디어 찾았다! 이름 = " + myData.getName());
-			} else {
-				// 못 찾을 경우 로그 출력 (디버깅용)
-				System.out.println("로그: 세션번호(" + sessionUser.getUserNo() + ")와 리스트 번호 불일치");
 			}
 		}
 	}

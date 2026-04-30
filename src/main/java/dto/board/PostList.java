@@ -21,4 +21,12 @@ public class PostList {
     private Date createdAt;
     private String fileUrl;
     private Boolean isAnswered;
+
+    public String getAnswerStatus() {
+        // isAnswered가 true이면 "ANSWERED", false(또는 null)이면 "WAITING" 반환
+        if (this.isAnswered != null && this.isAnswered) {
+            return "ANSWERED";
+        }
+        return "WAITING";
+    }
 }

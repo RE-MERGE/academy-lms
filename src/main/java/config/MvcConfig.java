@@ -24,6 +24,7 @@ import org.springframework.web.servlet.handler.SimpleMappingExceptionResolver;
 import org.springframework.web.servlet.i18n.FixedLocaleResolver;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 import org.springframework.web.servlet.view.InternalResourceViewResolver;
+import service.BoardService;
 import service.CourseService;
 import service.EnrollmentService;
 
@@ -42,6 +43,8 @@ public class MvcConfig implements WebMvcConfigurer {
     private EnrollmentService enrollmentService;
     @Autowired
     private CourseService courseService;
+    @Autowired
+    private BoardService boardService;
 
     @Bean
     public HandlerMapping handlerMapping() {
@@ -141,7 +144,7 @@ public class MvcConfig implements WebMvcConfigurer {
                 .order(3)
                 .addPathPatterns("/admin/**");
 
-        registry.addInterceptor(new BoardAccessInterceptor(enrollmentService, courseService))
+        registry.addInterceptor(new BoardAccessInterceptor(enrollmentService, courseService, boardService))
                 .addPathPatterns("/board/**");
         /*registry.addInterceptor(new EnrollmentPeriodInterceptor())
         .order(4)

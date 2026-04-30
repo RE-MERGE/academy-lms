@@ -387,6 +387,7 @@ function loadCourseData() {
     if (document.getElementById('userCode')) {
       console.log('[userCode 세팅]', data.professor_user_code); // 디버그
       document.getElementById('userCode').value = data.professor_user_code || '';
+      document.getElementById('userCode').dataset.original = data.professor_user_code || '';
     }
 
     var roomEl = document.getElementById('roomInfo');
@@ -419,7 +420,16 @@ function loadCourseData() {
           professorVerified = true;
           verifiedProfessorNo = vd.professorNo;
           var nameEl = document.getElementById('professorNameDisplay');
-          if (nameEl) { nameEl.textContent = '✓ ' + vd.name + ' 교수'; nameEl.style.display = 'inline'; }
+          if (nameEl) {
+            var displayText = '✓ ' + vd.name + ' 교수';
+            nameEl.textContent = displayText;
+            nameEl.style.display = 'inline';
+            /* 검증 실패 시 복원을 위해 원본 이름 저장 */
+            nameEl.dataset.originalText = displayText;
+          }
+          /* 검증 실패 시 복원을 위해 원본 교수번호 저장 */
+          var codeEl2 = document.getElementById('userCode');
+          if (codeEl2) codeEl2.dataset.originalNo = vd.professorNo;
         }
         loadBlockedSlots(function() { restoreSlots(c.day_of_week, c.start_time, c.end_time); });
       })
@@ -652,6 +662,14 @@ function verifyProfessor() {
         else { renderGrid(); updateSummary(); }
       });
     } else {
+      codeEl.value = codeEl.dataset.original || '';
+      /* 이전 교수 검증 표시 복원 */
+      if (nameEl.dataset.originalText) {
+        nameEl.textContent = nameEl.dataset.originalText;
+        nameEl.style.display = 'inline';
+        professorVerified = true;
+        verifiedProfessorNo = parseInt(codeEl.dataset.originalNo || '0');
+      }
       alert(data.message || '교수 검증에 실패했습니다.');
     }
   })

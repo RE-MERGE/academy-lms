@@ -374,8 +374,6 @@
     .tt-course-block.status-approved .tt-room { color: #3b82f6; }
     .tt-course-block.status-pending  { background: #fffbeb; border-color: #fde68a; border-left-color: #ca8a04; color: #78350f; }
     .tt-course-block.status-pending  .tt-room { color: #d97706; }
-    .tt-course-block.status-applied  { background: var(--gray-100); border-color: var(--gray-200); border-left-color: var(--gray-400); color: var(--gray-600); }
-    .tt-course-block.status-applied  .tt-room { color: var(--gray-400); }
     .tt-course-block .tt-room { font-size: .62rem; font-weight: 500; color: var(--primary-light); margin-top: .15rem; }
     .tt-course-block .tt-status { font-size: .58rem; font-weight: 700; margin-top: .15rem; }
 
@@ -572,8 +570,7 @@
             <select class="filter-select" id="filterStatus" onchange="loadAllCourses(1)">
               <option value="">전체 상태</option>
               <option value="APPROVED">승인(APPROVED)</option>
-              <option value="PENDING">승인대기(PENDING)</option>
-              <option value="APPLIED">신청(APPLIED)</option>
+              <option value="PENDING">대기(PENDING)</option>
             </select>
           </c:if>
 
@@ -1220,7 +1217,7 @@ function renderTimetable() {
 
       if (course) {
         const block = document.createElement('div');
-        const statusClass = { APPROVED: 'status-approved', PENDING: 'status-pending', APPLIED: 'status-applied' }[course.status] || '';
+        const statusClass = { APPROVED: 'status-approved', PENDING: 'status-pending' }[course.status] || '';
         block.className = 'tt-course-block ' + statusClass;
         block.innerHTML = `
           <div>\${escHtml(course.course_name)}</div>
@@ -1276,7 +1273,7 @@ function resetFilters() {
 function typeLabel(t) {
   return { MAJOR_REQUIRED:'전공필수', MAJOR_ELECTIVE:'전공선택',
            GENERAL_REQUIRED:'교양필수', GENERAL_ELECTIVE:'교양선택',
-           FREE_ELECTIVE:'일반선택' }[t] || t;
+           FREE_ELECTIVE:'자율선택' }[t] || t;
 }
 function typeClass(t) {
   return { MAJOR_REQUIRED:'type-major-req', MAJOR_ELECTIVE:'type-major-elec',
@@ -1285,7 +1282,6 @@ function typeClass(t) {
 }
 function statusBadgeHtml(s) {
   const map = {
-    APPLIED:  ['badge-blue',   '신청'],
     PENDING:  ['badge-yellow', '대기'],
     APPROVED: ['badge-green',  '승인']
   };

@@ -7,6 +7,7 @@ import dto.user.User;
 import dto.user.mypage.MyPageData;
 import dto.user.mypage.UserDetailForAdmin;
 import dto.user.mypage.AdminCourseList;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -15,19 +16,14 @@ import java.time.LocalDate;
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class AdminService {
 
     private final AdminDao adminDao;
     private final UserService userService;
     private final UserDao userDao;
-    private final FileService fileService;
+    private final SupabaseStorageService supabaseStorageService;
 
-    public AdminService(AdminDao adminDao, UserService userService, UserDao userDao, FileService fileService) {
-        this.adminDao = adminDao;
-        this.userService = userService;
-        this.userDao = userDao;
-        this.fileService = fileService;
-    }
 
     public List<AdminUserList> getAllUserList() {
         return adminDao.getAllUserList();
@@ -49,28 +45,31 @@ public class AdminService {
         return adminDao.selectUser(userNo);
     }
 
-    public List<AdminUserList> searchUserListPaged(int offset, int size, String role, String keyword, String searchType) {
-        return adminDao.getUserListPaged(offset, size, role, keyword, searchType);
+    public List<AdminUserList> searchUserListPaged(int offset, int size, String role, String keyword, String searchType, String status) {
+        return adminDao.getUserListPaged(offset, size, role, keyword, searchType, status);
     }
 
-    public int countSearchUsers(String role, String keyword, String searchType) {
-        return adminDao.getTotalUserCount(role, keyword, searchType);
+    public int countSearchUsers(String role, String keyword, String searchType, String status) {
+        return adminDao.getTotalUserCount(role, keyword, searchType, status);
     }
 
     @Transactional
     public void updateUserFormAdmin(int userNo, UserDetailForAdmin userDetailForAdmin) {
 
         MultipartFile profileImg = userDetailForAdmin.getProfileImg();
-        String originalProfileName;
+        String profileImgUrl;
 
         if (profileImg != null && !profileImg.isEmpty()) {
-            originalProfileName = fileService.saveProfileImage(profileImg);
+            try {
+                profileImgUrl = supabaseStorageService.uploadImg(profileImg);
+            } catch (Exception e) {
+                throw new IllegalArgumentException("이미지 업로드에 실패했습니다.");
+            }
         } else {
-            originalProfileName = userDetailForAdmin.getCurrentProfileImg();
+            profileImgUrl = userDetailForAdmin.getCurrentProfileImg();
         }
 
-        userDetailForAdmin.setCurrentProfileImg(originalProfileName);
-
+        userDetailForAdmin.setCurrentProfileImg(profileImgUrl);
         adminDao.updateInfoFormAdmin(userNo, userDetailForAdmin);
     }
 

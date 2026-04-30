@@ -3,6 +3,7 @@ package dao.mapper;
 import java.util.List;
 import java.util.Map;
 
+import dto.CourseListInDashboard;
 import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Param;
@@ -280,4 +281,50 @@ public interface CourseMapper {
             "FROM COURSE " +
             "WHERE course_no = #{courseNo}")
     Integer selectProfessorNoByCourseNo(int courseNo);
+
+
+    @Select("SELECT " +
+            "    c.course_no, " +
+            "    c.course_name, " +
+            "    c.start_time, " +
+            "    c.end_time, " +
+            "    u.name AS professor_name, " +
+            "    c.day_of_week, " +
+            "    e.status AS status " +
+            "FROM ENROLLMENT e " +
+            "JOIN COURSE c ON e.course_no = c.course_no " +
+            "JOIN USERS u ON c.professor_no = u.user_no " +
+            "WHERE e.student_no = #{userNo} " +
+            "AND e.status IN ('APPROVED', 'PENDING') " +
+            "ORDER BY CASE WHEN e.status = 'APPROVED' THEN 1 ELSE 2 END ASC, e.enrolled_at DESC")
+    List<CourseListInDashboard> getMyCourseInDashboard(int userNo);
+
+
+    @Select("SELECT \n" +
+            "    course_no, \n" +
+            "    professor_no, \n" +
+            "    course_name, \n" +
+            "    course_type, \n" +
+            "    room_info, \n" +
+            "    day_of_week, \n" +
+            "    start_time, \n" +
+            "    end_time, \n" +
+            "    max_students, \n" +
+            "    status, \n" +
+            "    semester, \n" +
+            "    credits,\n" +
+            "    created_at\n" +
+            "FROM COURSE\n" +
+            "WHERE professor_no = #{userNo}  " +
+            "ORDER BY created_at DESC " +
+            "LIMIT 3 ")
+    List<Course> getCourseListWithProfessorInDashboard(int userNo);
+
+    // 전체 강의실 목록 (중복 제거)
+    @Select("SELECT DISTINCT room_info FROM COURSE WHERE semester = #{semester} AND room_info IS NOT NULL ORDER BY room_info")
+    List<String> getRoomList(@Param("semester") String semester);
+
+    // 전체 강의 (강의실 시간표용)
+    @Select("SELECT course_no, course_name, room_info, day_of_week, start_time, end_time FROM COURSE WHERE semester = #{semester} AND status != 'REJECTED'")
+    List<Course> getAllCoursesForTimetable(@Param("semester") String semester);
 }

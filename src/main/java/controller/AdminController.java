@@ -33,14 +33,15 @@ public class AdminController {
                               @RequestParam(defaultValue = "all") String role,
                               @RequestParam(defaultValue = "") String keyword,
                               @RequestParam(defaultValue = "name") String searchType,
+                              @RequestParam(required = false) String status,
                               Model model) {
 
         int size = 10;
         int offset = (page - 1) * size;
 
-        List<AdminUserList> userList = adminService.searchUserListPaged(offset, size, role, keyword, searchType);
+        List<AdminUserList> userList = adminService.searchUserListPaged(offset, size, role, keyword, searchType, status);
 
-        int totalCount = adminService.countSearchUsers(role, keyword, searchType);
+        int totalCount = adminService.countSearchUsers(role, keyword, searchType, status);
         int totalUserCount = adminService.getTotalAllUserCount();
         int totalPages = (int) Math.ceil((double) totalCount / size);
 
@@ -51,6 +52,7 @@ public class AdminController {
         model.addAttribute("keyword", keyword);
         model.addAttribute("searchType", searchType);
         model.addAttribute("totalUserCount", totalUserCount);
+        model.addAttribute("currentStatus", status);
 
         return "admin/adminUserList";
     }

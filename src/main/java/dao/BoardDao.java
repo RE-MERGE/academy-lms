@@ -47,4 +47,12 @@ public class BoardDao {
     public void updateIsAnswered(int boardNo, boolean isAnswered) {
         template.getMapper(cls).updateIsAnswered(boardNo, isAnswered);
     }
+
+    public List<PostDetail> getNoticeListInDashboard() {
+        return template.getMapper(cls).getNoticeListInDashboard();
+    }
+
+    public List<PostDetail> getFreeListInDashboard() {
+        return template.getMapper(cls).getFreeListInDashboard();
+    }
 }

@@ -28,10 +28,13 @@ public class UserService {
 
     private final UserDao dao;
     private final MailService mailService;
-    private final FileService fileService;
+    private final SupabaseStorageService supabaseStorageService;
     private final CourseDao courseDao;
     private final EnrollmentDao enrollmentDao;
     private final BCryptPasswordEncoder passwordEncoder;
+    private final LoginUserRegistry loginUserRegistry;
+
+
 
     public void join(UserJoinForm form) {
 
@@ -165,7 +168,22 @@ public class UserService {
         dao.updateProfileImg(userId, currentProfileImg);
     }
 
-    public void updateInfo(UserEditForm userEditForm) {
+    public void updateInfo(UserEditForm userEditForm, SessionUser sessionUser) {
+
+        if (userEditForm.getProfileImg() != null && !userEditForm.getProfileImg().isEmpty()) {
+            String newProfileImgUrl = null;
+
+            try {
+                newProfileImgUrl = supabaseStorageService.uploadImg(userEditForm.getProfileImg());
+            } catch (Exception e) {
+                throw new IllegalArgumentException("이미지 업로드에 실패했습니다.");
+            }
+
+            userEditForm.setCurrentProfileImg(newProfileImgUrl);
+            dao.updateProfileImg(userEditForm.getUserId(), newProfileImgUrl);
+        } else {
+            userEditForm.setCurrentProfileImg(sessionUser.getProfileImg());
+        }
         dao.updateInfo(userEditForm);
     }
 
@@ -174,6 +192,10 @@ public class UserService {
     }
 
     public SessionUser login(String userId, String password) {
+
+        if (loginUserRegistry.isLoggedIn(userId)) {
+            throw new LoginFailException("error.duplicate.login");
+        }
 
         User dbUser = dao.selectUser(userId);
 
@@ -191,6 +213,7 @@ public class UserService {
         validatePassword(userId, password, dbUser);
 
         dao.resetLockCount(userId);
+        loginUserRegistry.login(userId);
         return new SessionUser(dbUser);
     }
 
@@ -270,10 +293,16 @@ public class UserService {
     }
 
     public User createUser(UserJoinForm userJoinForm) {
+
         String profileImage = "";
 
         if (userJoinForm.getProfileImg() != null && !userJoinForm.getProfileImg().isEmpty()) {
-            profileImage = fileService.saveProfileImage(userJoinForm.getProfileImg());
+
+            try {
+                profileImage = supabaseStorageService.uploadImg(userJoinForm.getProfileImg());
+            } catch (Exception e) {
+                throw new IllegalArgumentException("이미지 업로드에 실패했습니다");
+            }
         }
 
         int findUserCode = getUserCode();
@@ -386,4 +415,9 @@ public class UserService {
     }
 
 
+    public String findMaskUserId(String email) {
+        String userId = dao.selectUserIdByEmail(email);
+        if (userId == null) return null;
+        return userId.replaceAll("^(.{2}).*", "$1****");
+    }
 }

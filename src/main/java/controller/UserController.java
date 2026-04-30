@@ -31,9 +31,8 @@ public class UserController {
     private final NaverLoginConfig naverLoginConfig;
     private final NaverLoginService naverLoginService;
     private final BCryptPasswordEncoder passwordEncoder;
-    private final FileService fileService;
-    private final SupabaseStorageService storageService;
     private final UserJoinValidator userJoinValidator;
+    private final LoginUserRegistry loginUserRegistry;
 
     @GetMapping("joinForm")
     public String joinForm(Model model) {
@@ -65,7 +64,11 @@ public class UserController {
     }
 
     @GetMapping("logout")
-    public RedirectView logout(HttpSession session) {
+    public RedirectView logout(HttpSession session, @Login SessionUser sessionUser) {
+
+        if (sessionUser != null) {
+            loginUserRegistry.logout(sessionUser.getUserId());
+        }
         session.invalidate();
         RedirectView rv = new RedirectView("/academy-lms/home/home");
         rv.setExposeModelAttributes(false); // 모델 속성을 URL 파라미터로 노출하지 않음
@@ -76,7 +79,7 @@ public class UserController {
     @PostMapping("login")
     public String login(@Valid LoginForm loginForm, BindingResult bindingResult,
                          HttpSession session,
-                        @RequestParam(defaultValue = "/home/dashboard") String redirectURL) {
+                        @RequestParam(defaultValue = "/dashboard/dashboard") String redirectURL) {
 
         if (bindingResult.hasErrors()) {
             return "home/home";
@@ -121,18 +124,16 @@ public class UserController {
             return "home/findAccount";
         }
 
-        String findUserId = userService.selectUserIdByEmail(findIdForm.getEmail());
+        String maskedId = userService.findMaskUserId(findIdForm.getEmail());
 
-        if (findUserId == null) {
+        if (maskedId == null) {
             bindingResult.reject("error.mismatch.info");
             model.addAttribute("findPwForm", new FindPwForm());
             return "home/findAccount";
         }
 
-        String maskedId = findUserId.replaceAll("^(.{2}).*", "$1****");
-
         model.addAttribute("findUserId", maskedId);
-        model.addAttribute("findPwForm", new FindPwForm()); // 폼 객체 유지를 위해 추가
+        model.addAttribute("findPwForm", new FindPwForm());
 
         return "home/findAccount";
     }
@@ -228,15 +229,7 @@ public class UserController {
             return "user/editProfile";
         }
 
-        if (userEditForm.getProfileImg() != null && !userEditForm.getProfileImg().isEmpty()) {
-            String newProfileImgName = fileService.saveProfileImage(userEditForm.getProfileImg());
-            userEditForm.setCurrentProfileImg(newProfileImgName);
-            userService.updateProfileImg(userEditForm.getUserId(), userEditForm.getCurrentProfileImg());
-        } else {
-            userEditForm.setCurrentProfileImg(sessionUser.getProfileImg());
-        }
-
-        userService.updateInfo(userEditForm);
+        userService.updateInfo(userEditForm,sessionUser);
 
         session.setAttribute(UserConst.SESSION_USER, new SessionUser(userService.selectUser(sessionUser.getUserId())));
 

@@ -21,24 +21,22 @@ import java.io.PrintWriter;
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
-//    @RequestMapping("/error404")
-//    @ExceptionHandler(NoHandlerFoundException.class)
-//    @ResponseStatus(HttpStatus.NOT_FOUND)
-//    public String handle404(NoHandlerFoundException ex, Model model) {
-//        ex.printStackTrace();
-//        model.addAttribute("errorMessage", "error.page.notFound");
-//        return "error/404";
-//
-//    }
-//
-//    @RequestMapping("/error500")
-//    @ExceptionHandler(Exception.class)
-//    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-//    public String handleAllException(Exception ex, Model model) {
-//        ex.printStackTrace();
-//        model.addAttribute("errorMessage", "error.page.serverError");
-//        return "error/500";
-//    }
+    @RequestMapping("/error404")
+    @ExceptionHandler(NoHandlerFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public String handle404(NoHandlerFoundException ex, Model model) {
+        ex.printStackTrace();
+        return "error/404";
+
+    }
+
+    @RequestMapping("/error500")
+    @ExceptionHandler(Exception.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public String handleAllException(Exception ex, Model model) {
+        ex.printStackTrace();
+        return "error/500";
+    }
 
     @ExceptionHandler(PostAccessDeniedException.class)
     public String handlePostAccessDenied(HttpServletRequest request, RedirectAttributes redirectAttributes) {

@@ -21,7 +21,12 @@ public class LoginCheckInterceptor implements HandlerInterceptor {
             String contextPath = request.getContextPath();
             String redirectURL = requestURI.substring(contextPath.length());
 
-            response.sendRedirect(contextPath + "/home/home?redirectURL=" + redirectURL);
+
+            // 세션이 있었는데 만료된 경우 메시지 추가
+            boolean wasLoggedIn = session != null && session.getAttribute(UserConst.SESSION_USER) == null;
+            String expiredParam = wasLoggedIn ? "&expired=true" : "";
+
+            response.sendRedirect(contextPath + "/home/home?redirectURL=" + redirectURL + expiredParam);
 
             return false;
         }

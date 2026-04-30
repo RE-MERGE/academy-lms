@@ -1,5 +1,6 @@
 package service;
 
+import dto.EnrollmentPending;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -8,8 +9,11 @@ import dao.EnrollmentDao;
 import dto.Course;
 import dto.Enrollment;
 
+import java.util.List;
+
 @Service
 public class EnrollmentService {
+
 	@Autowired
 	private EnrollmentDao enrollmentDao;
 	@Autowired
@@ -46,4 +50,8 @@ public class EnrollmentService {
 	public boolean isEnrolled(int studentNo, int courseNo) {
 		return enrollmentDao.isEnrolled(studentNo, courseNo);
 	}
+
+    public List<EnrollmentPending> getPendingEnrollmentList() {
+        return enrollmentDao.getPendingEnrollmentList();
+    }
 }

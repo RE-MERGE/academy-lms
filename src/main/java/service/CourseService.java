@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import dto.CourseListInDashboard;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -17,9 +18,14 @@ import dto.user.User;
 
 @Service
 public class CourseService {
+
 	@Autowired
 	private CourseDao coursedao;
 	CourseMapper courseMapper;
+
+    public List<CourseListInDashboard> getMyCourseInDashboard(int userNo) {
+		return coursedao.getMyCourseInDashboard(userNo);
+    }
 
 	public List<Course> list() {
 		return coursedao.list();
@@ -225,4 +231,16 @@ public class CourseService {
 		// 2. 강의가 존재하고, 담당 교수 번호가 로그인한 유저 번호와 같은지 확인
 		return professorNo != null && professorNo == userNo;
 	}
+
+	public List<Course> getCourseListWithProfessorInDashboard(int userNo) {
+		return coursedao.getCourseListWithProfessorInDashboard(userNo);
+	}
+
+    public List<String> getRoomList(String semester) {
+		return coursedao.getRoomList(semester);
+    }
+
+    public List<Course> getAllCoursesForTimetable(String semester) {
+		return coursedao.getAllCoursesForTimetable(semester);
+    }
 }

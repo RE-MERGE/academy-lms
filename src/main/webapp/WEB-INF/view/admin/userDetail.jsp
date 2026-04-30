@@ -164,7 +164,7 @@
         <div class="profile-img-wrap">
             <c:choose>
                 <c:when test="${not empty userDetail.currentProfileImg}">
-                    <img src="${pageContext.request.contextPath}/upload/profiles/${userDetail.currentProfileImg}"
+                    <img src="${userDetail.currentProfileImg}"
                          class="profile-img"
                          onerror="this.src='${pageContext.request.contextPath}/img/default-profile.png'"/>
                 </c:when>
@@ -342,15 +342,6 @@
                 <c:otherwise>
                     <div class="grade-table-wrap">
                         <table class="grade-table grade-table--professor">
-                            <thead>
-                            <tr>
-                                <th>과목명</th>
-                                <th>구분</th>
-                                <th>수강인원</th>
-                                <th>평균 점수</th>
-                                <th>최고 / 최저</th>
-                            </tr>
-                            </thead>
                         </table>
                         <div class="grade-empty-body">
                             <div class="empty-state-icon">📊</div>

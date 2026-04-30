@@ -231,7 +231,7 @@
         <div class="profile-img-wrap">
             <c:choose>
                 <c:when test="${not empty sessionUser.profileImg}">
-                    <img src="${pageContext.request.contextPath}/upload/profiles/${sessionUser.profileImg}" alt="프로필 이미지" class="profile-img"/>
+                    <img src="${sessionUser.profileImg}" alt="프로필 이미지" class="profile-img"/>
                 </c:when>
                 <c:otherwise>
                     <img src="${pageContext.request.contextPath}/img/default-profile.png" alt="프로필 이미지" class="profile-img"/>
@@ -437,14 +437,7 @@
                 <c:otherwise>
                     <div class="grade-table-wrap">
                         <table class="grade-table">
-                            <thead>
-                            <tr>
-                                <th>과목명</th>
-                                <th>수강인원</th>
-                                <th>평균 점수</th>
-                                <th>최고 / 최저</th>
-                            </tr>
-                            </thead>
+
                         </table>
                         <div class="grade-empty-body">
                             <div class="empty-state-icon">📊</div>
@@ -791,6 +784,28 @@
         }
         document.getElementById('pwAlertModal').style.display = 'none';
     }
+
+    window.addEventListener('DOMContentLoaded', function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const tabParam = urlParams.get('tab');
+
+        if (tabParam) {
+            // 1. URL 파라미터와 실제 switchTab 인자 이름을 맞춥니다.
+            let targetName = tabParam;
+            if (tabParam === 'grade') targetName = 'grades';
+
+            // 2. 모든 탭 버튼 중, onclick 속성에 해당 이름이 포함된 버튼을 찾습니다.
+            const targetButton = Array.from(document.querySelectorAll('.mypage-tab')).find(btn =>
+                btn.getAttribute('onclick').includes(targetName)
+            );
+
+            // 3. 찾은 버튼이 있다면 '클릭' 이벤트를 강제로 발생시킵니다.
+            // 이렇게 하면 기존의 switchTab 함수가 실행되면서 파란색 불도 원래대로 들어옵니다.
+            if (targetButton) {
+                targetButton.click();
+            }
+        }
+    });
 </script>
 </body>
 </html>

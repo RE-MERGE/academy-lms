@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 
 import dto.user.grade.MyGrade;
+import dto.CourseListInDashboard;
 import org.mybatis.spring.SqlSessionTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
@@ -75,6 +76,10 @@ public class CourseDao {
 
     public Course findByCourseNo(Integer courseNo) {
         return template.getMapper(cls).find(courseNo);
+    }
+
+    public List<Course> getStudentCourseList(int userNo, String semester) {
+        return template.getMapper(cls).getStudentCourseList(userNo, semester);
     }
 
     public List<Course> getProfessorMyCourseMap(int userNo, String semester) {
@@ -190,6 +195,21 @@ public class CourseDao {
         return template.getMapper(cls).getCourseByStudent(userNo);
     }
 
+    public List<CourseListInDashboard> getMyCourseInDashboard(int userNo) {
+        return template.getMapper(cls).getMyCourseInDashboard(userNo);
+    }
+
+    public List<Course> getCourseListWithProfessorInDashboard(int userNo) {
+        return template.getMapper(cls).getCourseListWithProfessorInDashboard(userNo);
+    }
+
+    public List<String> getRoomList(String semester) {
+        return template.getMapper(cls).getRoomList(semester);
+    }
+
+    public List<Course> getAllCoursesForTimetable(String semester) {
+        return template.getMapper(cls).getAllCoursesForTimetable(semester);
+    }
     public Integer selectProfessorNoByCourseNo(int courseNo) {
         return template.getMapper(cls).selectProfessorNoByCourseNo(courseNo);
     }

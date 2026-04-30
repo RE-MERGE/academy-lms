@@ -273,9 +273,6 @@
     <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;">
     <span style="font-size:13px; color:#555;">
         전체 회원 <strong style="color:#004595;">${totalUserCount}</strong>명
-        <c:if test="${not empty keyword}">
-            &nbsp;|&nbsp; 검색 결과 <strong style="color:#e6a817;">${totalCount}</strong>명
-        </c:if>
     </span>
     </div>
 
@@ -367,25 +364,26 @@
     <!-- ✅ 수정3: 페이지네이션 - role + keyword 같이 넘기기 -->
     <div class="pagination-wrap">
         <c:if test="${currentPage > 1}">
-            <a href="?page=${currentPage - 1}&role=${currentRole}&keyword=${keyword}&searchType=${searchType}">&lt;</a>
+            <a href="?page=${currentPage - 1}&role=${currentRole}&keyword=${keyword}&searchType=${searchType}&status=${currentStatus}">&lt;</a>
         </c:if>
         <c:forEach var="p" begin="1" end="${totalPages}">
             <c:choose>
                 <c:when test="${p == currentPage}">
-                    <a href="?page=${p}&role=${currentRole}&keyword=${keyword}&searchType=${searchType}" class="active">${p}</a>
+                    <a href="?page=${p}&role=${currentRole}&keyword=${keyword}&searchType=${searchType}&status=${currentStatus}" class="active">${p}</a>
                 </c:when>
                 <c:otherwise>
-                    <a href="?page=${p}&role=${currentRole}&keyword=${keyword}&searchType=${searchType}">${p}</a>
+                    <a href="?page=${p}&role=${currentRole}&keyword=${keyword}&searchType=${searchType}&status=${currentStatus}">${p}</a>
                 </c:otherwise>
             </c:choose>
         </c:forEach>
         <c:if test="${currentPage < totalPages}">
-            <a href="?page=${currentPage + 1}&role=${currentRole}&keyword=${keyword}&searchType=${searchType}">&gt;</a>        </c:if>
+            <a href="?page=${currentPage + 1}&role=${currentRole}&keyword=${keyword}&searchType=${searchType}&status=${currentStatus}">&gt;</a>
+        </c:if>
     </div>
 
     <!-- ── 일괄 상태변경 바 (하단) ── -->
     <div class="action-bar">
-        <select id="bulkStatus">
+        <select class="status-filter-select" id="statusFilter" onchange="filterStatus()">
             <option value="">☑️ 체크한 인원 상태 변경</option>
             <option value="ACTIVE">정상</option>
             <option value="INACTIVE">휴먼</option>
@@ -454,7 +452,13 @@
         reNumberRows();
     }
 
-    function filterStatus() { applyFilters(); }
+    function filterStatus() {
+        const status = document.getElementById('statusFilter').value;
+        const params = new URLSearchParams(window.location.search);
+        params.set('page', '1');
+        params.set('status', status);
+        location.href = '?' + params.toString();
+    }
 
     /* ── 전체 체크 ── */
     function toggleAll(master) {

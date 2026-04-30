@@ -21,24 +21,22 @@ import java.io.PrintWriter;
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
-//    @RequestMapping("/error404")
-//    @ExceptionHandler(NoHandlerFoundException.class)
-//    @ResponseStatus(HttpStatus.NOT_FOUND)
-//    public String handle404(NoHandlerFoundException ex, Model model) {
-//        ex.printStackTrace();
-//        model.addAttribute("errorMessage", "error.page.notFound");
-//        return "error/404";
-//
-//    }
-//
-//    @RequestMapping("/error500")
-//    @ExceptionHandler(Exception.class)
-//    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-//    public String handleAllException(Exception ex, Model model) {
-//        ex.printStackTrace();
-//        model.addAttribute("errorMessage", "error.page.serverError");
-//        return "error/500";
-//    }
+    @RequestMapping("/error404")
+    @ExceptionHandler(NoHandlerFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public String handle404(NoHandlerFoundException ex, Model model) {
+        ex.printStackTrace();
+        return "error/404";
+
+    }
+
+    @RequestMapping("/error500")
+    @ExceptionHandler(Exception.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public String handleAllException(Exception ex, Model model) {
+        ex.printStackTrace();
+        return "error/500";
+    }
 
     @ExceptionHandler(PostAccessDeniedException.class) // 예외 핸들러 선언 확인
     public String handlePostAccessDenied(PostAccessDeniedException e, HttpServletRequest request, RedirectAttributes redirectAttributes) {
@@ -57,8 +55,6 @@ public class GlobalExceptionHandler {
     public void handleUnauthorized(UnauthorizedException ex, HttpServletRequest request, HttpServletResponse response) throws IOException {
 
         HttpSession session = request.getSession(false);
-        System.out.println("==== UnauthorizedException 처리 ====");
-        System.out.println("세션 존재: " + (session != null));
         String prevUrl = null;
 
         if (session != null) {
@@ -70,7 +66,7 @@ public class GlobalExceptionHandler {
         response.setContentType("text/html; charset=UTF-8");
         PrintWriter out = response.getWriter();
 
-        // 3. 자바스크립트 작성 및 전송
+        //자바스크립트 작성
         out.println("<script>");
         out.println("alert('" + ex.getMessage() + "');");
         out.println("location.href='" + redirectURL + "';");

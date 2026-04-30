@@ -11,6 +11,7 @@ import java.util.Date;
 @NoArgsConstructor
 @AllArgsConstructor
 public class PostDetail {
+
     private int boardNo;
     private int writerNo;
     private Integer courseNo;

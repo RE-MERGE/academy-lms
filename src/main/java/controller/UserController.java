@@ -20,7 +20,6 @@ import service.*;
 
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
-import java.time.LocalDate;
 import java.util.UUID;
 
 @Controller
@@ -32,9 +31,8 @@ public class UserController {
     private final NaverLoginConfig naverLoginConfig;
     private final NaverLoginService naverLoginService;
     private final BCryptPasswordEncoder passwordEncoder;
-    private final FileService fileService;
-    private final SupabaseStorageService storageService;
-
+    private final UserJoinValidator userJoinValidator;
+    private final LoginUserRegistry loginUserRegistry;
 
     @GetMapping("joinForm")
     public String joinForm(Model model) {
@@ -46,36 +44,13 @@ public class UserController {
     public String join(@Validated UserJoinForm userJoinForm, BindingResult bindingResult,
                        RedirectAttributes rttr) {
 
-        validatePasswordMatch(userJoinForm, bindingResult);
+        userJoinValidator.validate(userJoinForm, bindingResult);
 
         if (bindingResult.hasErrors()) {
             return "user/joinForm";
         }
 
-        User dbUser = userService.selectUser(userJoinForm.getUserId());
-
-        //아이디가 중복인 경우
-        if (dbUser != null) {
-            bindingResult.rejectValue("userId","error.duplication.userId");
-            return "user/joinForm";
-        }
-
-        //이메일이 중복인 경우
-        if (userService.selectUserIdByEmail(userJoinForm.getEmail()) != null) {
-            bindingResult.rejectValue("email", "error.duplication.email");
-            return "user/joinForm";
-        }
-
-        //비밀번호 값이 틀리거나, 없는 경우
-        if (userJoinForm.getPassword() == null || userJoinForm.getPasswordConfirm() == null ||
-                !userJoinForm.getPassword().equals(userJoinForm.getPasswordConfirm())) {
-            bindingResult.reject("password","error.mismatch.password");
-            return "user/joinForm";
-        }
-
-        User joinUser = userService.createUser(userJoinForm);
-
-        userService.join(joinUser);
+        userService.join(userJoinForm);
         rttr.addFlashAttribute("msg", "회원가입이 완료됐습니다. 관리자 승인 후 이용 가능합니다");
 
         return "redirect:/home/home";
@@ -88,17 +63,23 @@ public class UserController {
         return "home/home";
     }
 
-    @RequestMapping("logout")
-    public RedirectView logout(HttpSession session) {
+    @GetMapping("logout")
+    public RedirectView logout(HttpSession session, @Login SessionUser sessionUser) {
+
+        if (sessionUser != null) {
+            loginUserRegistry.logout(sessionUser.getUserId());
+        }
         session.invalidate();
         RedirectView rv = new RedirectView("/academy-lms/home/home");
         rv.setExposeModelAttributes(false); // 모델 속성을 URL 파라미터로 노출하지 않음
         return rv;
     }
 
+
     @PostMapping("login")
     public String login(@Valid LoginForm loginForm, BindingResult bindingResult,
-                         HttpSession session, @RequestParam(defaultValue = "/home/dashboard") String redirectURL) {
+                         HttpSession session,
+                        @RequestParam(defaultValue = "/dashboard/dashboard") String redirectURL) {
 
         if (bindingResult.hasErrors()) {
             return "home/home";
@@ -107,6 +88,7 @@ public class UserController {
         try {
             SessionUser sessionUser = userService.login(loginForm.getUserId(), loginForm.getPassword());
             userService.updateLastLogin(loginForm.getUserId());
+
             session.setAttribute(UserConst.SESSION_USER, sessionUser);
             return "redirect:" + redirectURL;
 
@@ -142,18 +124,16 @@ public class UserController {
             return "home/findAccount";
         }
 
-        String findUserId = userService.selectUserIdByEmail(findIdForm.getEmail());
+        String maskedId = userService.findMaskUserId(findIdForm.getEmail());
 
-        if (findUserId == null) {
+        if (maskedId == null) {
             bindingResult.reject("error.mismatch.info");
             model.addAttribute("findPwForm", new FindPwForm());
             return "home/findAccount";
         }
 
-        String maskedId = findUserId.replaceAll("^(.{2}).*", "$1****");
-
         model.addAttribute("findUserId", maskedId);
-        model.addAttribute("findPwForm", new FindPwForm()); // 폼 객체 유지를 위해 추가
+        model.addAttribute("findPwForm", new FindPwForm());
 
         return "home/findAccount";
     }
@@ -192,8 +172,6 @@ public class UserController {
         return "home/findAccount";
     }
 
-
-
     @GetMapping("naverLogin")
     public String naverLogin(HttpSession session) {
 
@@ -212,7 +190,6 @@ public class UserController {
             return "redirect:/home/home";
         }
 
-        // 액세스 토큰 요청
         SessionUser sessionUser = naverLoginService.processNaverLogin(code, state);
         session.setAttribute(UserConst.SESSION_USER, sessionUser);
 
@@ -252,15 +229,7 @@ public class UserController {
             return "user/editProfile";
         }
 
-        if (userEditForm.getProfileImg() != null && !userEditForm.getProfileImg().isEmpty()) {
-            String newProfileImgName = fileService.saveProfileImage(userEditForm.getProfileImg());
-            userEditForm.setCurrentProfileImg(newProfileImgName);
-            userService.updateProfileImg(userEditForm.getUserId(), userEditForm.getCurrentProfileImg());
-        } else {
-            userEditForm.setCurrentProfileImg(sessionUser.getProfileImg());
-        }
-
-        userService.updateInfo(userEditForm);
+        userService.updateInfo(userEditForm,sessionUser);
 
         session.setAttribute(UserConst.SESSION_USER, new SessionUser(userService.selectUser(sessionUser.getUserId())));
 
@@ -348,20 +317,7 @@ public class UserController {
             rttr.addFlashAttribute("error", "system");
             return "redirect:/user/editProfile";
         }
-
     }
-
-    private static void validatePasswordMatch(UserJoinForm userJoinForm, BindingResult bindingResult) {
-
-        if(bindingResult.hasFieldErrors("passwordConfirm")) return;
-
-        if (userJoinForm.getPassword() != null && userJoinForm.getPasswordConfirm() != null) {
-            if (!userJoinForm.getPassword().equals(userJoinForm.getPasswordConfirm())) {
-                bindingResult.rejectValue("passwordConfirm", "error.mismatch.password", null);
-            }
-        }
-    }
-
 
 
 }

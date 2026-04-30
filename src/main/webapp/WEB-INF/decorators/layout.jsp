@@ -36,7 +36,7 @@
     <div class="header-wrapper">
         <div class="header-topbar"></div>
         <header class="lms-header">
-            <a href="${ctx}/home/dashboard" class="lms-logo-wrap">
+            <a href="${ctx}/dashboard/dashboard" class="lms-logo-wrap">
                 <div class="lms-logo-text">
                     <span class="lms-logo-main">re<span>·</span>merge</span>
                     <span class="lms-logo-sub">Learning Management System</span>
@@ -70,7 +70,7 @@
     <div class="layout-body">
         <nav class="sidebar">
             <span class="sidebar-section-label">메인</span>
-            <a href="${ctx}/home/dashboard" class="sidebar-item">
+            <a href="${ctx}/dashboard/dashboard" class="sidebar-item">
                 <img src="${ctx}/img/icon_dashboard.png" alt="대시보드" width="50px" height="50px">
                 <span class="si-label">대시보드</span>
             </a>

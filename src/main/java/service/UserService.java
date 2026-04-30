@@ -28,15 +28,31 @@ public class UserService {
 
     private final UserDao dao;
     private final MailService mailService;
-    private final FileService fileService;
+    private final SupabaseStorageService supabaseStorageService;
     private final CourseDao courseDao;
     private final EnrollmentDao enrollmentDao;
     private final BCryptPasswordEncoder passwordEncoder;
+    private final LoginUserRegistry loginUserRegistry;
 
 
-    public void join(User user) {
 
+    public void join(UserJoinForm form) {
+
+        validateDuplicateUser(form);
+
+        User user = createUser(form);
         dao.join(user);
+    }
+
+    private void validateDuplicateUser(UserJoinForm form) {
+
+        if (selectUser(form.getUserId()) != null) {
+            throw new IllegalStateException("이미 존재하는 아이디입니다.");
+        }
+
+        if (selectUserIdByEmail(form.getEmail()) != null) {
+            throw new IllegalStateException("이미 존재하는 이메일입니다");
+        }
     }
 
     public User selectUser(String userId) {
@@ -79,7 +95,7 @@ public class UserService {
 
 
     private MyPageData buildStudentData(int userNo, String semester) {
-        List<Course> courseList = courseDao.getStudentMyCourseMap(userNo, semester);
+        List<Course> courseList = courseDao.getStudentCourseList(userNo, semester);
         List<MyGrade> gradeList = enrollmentDao.getStudentMyGradeList(userNo);
 
         System.err.println("courseList size: " + courseList.size());
@@ -152,7 +168,22 @@ public class UserService {
         dao.updateProfileImg(userId, currentProfileImg);
     }
 
-    public void updateInfo(UserEditForm userEditForm) {
+    public void updateInfo(UserEditForm userEditForm, SessionUser sessionUser) {
+
+        if (userEditForm.getProfileImg() != null && !userEditForm.getProfileImg().isEmpty()) {
+            String newProfileImgUrl = null;
+
+            try {
+                newProfileImgUrl = supabaseStorageService.uploadImg(userEditForm.getProfileImg());
+            } catch (Exception e) {
+                throw new IllegalArgumentException("이미지 업로드에 실패했습니다.");
+            }
+
+            userEditForm.setCurrentProfileImg(newProfileImgUrl);
+            dao.updateProfileImg(userEditForm.getUserId(), newProfileImgUrl);
+        } else {
+            userEditForm.setCurrentProfileImg(sessionUser.getProfileImg());
+        }
         dao.updateInfo(userEditForm);
     }
 
@@ -162,20 +193,31 @@ public class UserService {
 
     public SessionUser login(String userId, String password) {
 
+        if (loginUserRegistry.isLoggedIn(userId)) {
+            throw new LoginFailException("error.duplicate.login");
+        }
+
         User dbUser = dao.selectUser(userId);
 
         if (dbUser == null) {
             throw new LoginFailException("error.loginFail");
         }
 
-        if (validateLastLogin(dbUser)) {
-            dao.updateStatus(dbUser.getUserId(), UserStatus.LOCKED);
-            throw new LoginFailException("error.account.locked.inactive");
-        }
+        //장기 미접속 확인
+        lockIfInactive(dbUser);
 
-        if (dbUser.getStatus() == UserStatus.LOCKED) {
-            throw new LoginFailException("error.status.locked");
-        }
+        //계정 상태 확인
+        validateStatus(dbUser);
+
+        //비밀번호 검증
+        validatePassword(userId, password, dbUser);
+
+        dao.resetLockCount(userId);
+        loginUserRegistry.login(userId);
+        return new SessionUser(dbUser);
+    }
+
+    private void validatePassword(String userId, String password, User dbUser) {
 
         if (!passwordEncoder.matches(password, dbUser.getPassword())) {
             int newCount = dbUser.getLock_count() + 1;
@@ -188,21 +230,31 @@ public class UserService {
             dao.updateLockCount(userId, newCount);
             throw new LoginFailException("error.loginFail");
         }
+    }
+
+    private void validateStatus(User dbUser) {
+
+        if (dbUser.getStatus() == UserStatus.LOCKED) {
+            throw new LoginFailException("error.status.locked");
+        }
 
         if (dbUser.getStatus() != UserStatus.ACTIVE) {
             throw new LoginFailException("error.status.notActive");
         }
-
-        dao.resetLockCount(userId);
-        return new SessionUser(dbUser);
     }
 
-    private static boolean validateLastLogin(User dbUser) {
+    private void lockIfInactive(User dbUser) {
+
+        if(dbUser.getLastLoginAt() == null) return;
+
         long daysSinceLastLogin = ChronoUnit.DAYS.between(
                 dbUser.getLastLoginAt(), LocalDate.now()
         );
 
-        return daysSinceLastLogin >= 90L;
+        if (daysSinceLastLogin >= 90) {
+            dao.updateStatus(dbUser.getUserId(), UserStatus.LOCKED);
+            throw new LoginFailException("error.account.locked.inactive");
+        }
     }
 
     @Transactional
@@ -241,10 +293,16 @@ public class UserService {
     }
 
     public User createUser(UserJoinForm userJoinForm) {
+
         String profileImage = "";
 
         if (userJoinForm.getProfileImg() != null && !userJoinForm.getProfileImg().isEmpty()) {
-            profileImage = fileService.saveProfileImage(userJoinForm.getProfileImg());
+
+            try {
+                profileImage = supabaseStorageService.uploadImg(userJoinForm.getProfileImg());
+            } catch (Exception e) {
+                throw new IllegalArgumentException("이미지 업로드에 실패했습니다");
+            }
         }
 
         int findUserCode = getUserCode();
@@ -310,16 +368,20 @@ public class UserService {
 
     public List<TimetableData> buildTimetableCells(List<Course> courseList, int minHour) {
         Map<String, Integer> dayCol = Map.of(
-                "월", 2, "화", 3, "수", 4, "목", 5, "금", 6
+                "월", 1, "화", 2, "수", 3, "목", 4, "금", 5
         );
 
         List<TimetableData> cells = new ArrayList<>();
+
         for (Course course : courseList) {
             if (course.getDay_of_week() == null || course.getDay_of_week().isEmpty()) continue; // 추가
             String[] days = course.getDay_of_week().split(",");
 
             for (String day : days) {
                 day = day.trim();
+
+                System.err.println("day='" + day + "' length=" + day.length() + " colIndex=" + dayCol.getOrDefault(day, 2));
+
                 int startHour = parseHour(course.getStart_time());
                 int endHour = parseHour(course.getEnd_time());
 
@@ -334,6 +396,11 @@ public class UserService {
                 cells.add(cell);
             }
         }
+
+        cells.forEach(c -> System.err.println(
+                c.getCourseName() + " rowStart=" + c.getRowStart() + " rowSpan=" + c.getRowSpan() + " colIndex=" + c.getColIndex()
+        ));
+
         return cells;
     }
 
@@ -348,4 +415,9 @@ public class UserService {
     }
 
 
+    public String findMaskUserId(String email) {
+        String userId = dao.selectUserIdByEmail(email);
+        if (userId == null) return null;
+        return userId.replaceAll("^(.{2}).*", "$1****");
+    }
 }

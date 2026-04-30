@@ -9,6 +9,7 @@ import java.util.Set;
 import dto.user.grade.GradeForm;
 import dto.user.grade.GradeRow;
 import dto.user.grade.MyGrade;
+import dto.CourseListInDashboard;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -20,9 +21,14 @@ import dto.user.User;
 
 @Service
 public class CourseService {
+
 	@Autowired
 	private CourseDao coursedao;
 	CourseMapper courseMapper;
+
+    public List<CourseListInDashboard> getMyCourseInDashboard(int userNo) {
+		return coursedao.getMyCourseInDashboard(userNo);
+    }
 
 	public List<Course> list() {
 		return coursedao.list();
@@ -251,4 +257,16 @@ public class CourseService {
 	public Course getCourse(Integer courseNo) {
 		return coursedao.getCourse(courseNo);
 	}
+
+	public List<Course> getCourseListWithProfessorInDashboard(int userNo) {
+		return coursedao.getCourseListWithProfessorInDashboard(userNo);
+	}
+
+    public List<String> getRoomList(String semester) {
+		return coursedao.getRoomList(semester);
+    }
+
+    public List<Course> getAllCoursesForTimetable(String semester) {
+		return coursedao.getAllCoursesForTimetable(semester);
+    }
 }

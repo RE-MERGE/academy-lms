@@ -90,7 +90,7 @@
     <c:choose>
         <%-- 프로필 이미지가 있는 경우 --%>
         <c:when test="${not empty userEditForm.currentProfileImg and userEditForm.currentProfileImg != 'default-profile.png'}">
-            <img id="preview" src="${pageContext.request.contextPath}/upload/profiles/${userEditForm.currentProfileImg}" class="profile-preview">
+            <img id="preview" src="${userEditForm.currentProfileImg}" class="profile-preview">
         </c:when>
 
         <%-- 프로필 이미지가 없는 경우 (기본 이미지) --%>

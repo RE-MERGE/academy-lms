@@ -610,7 +610,7 @@ function submitForm() {
   formData.append('start_time',   startTime);
   formData.append('end_time',     endTime);
   formData.append('max_students', 30);
-  formData.append('status', '${sessionUser.role == "ADMIN" ? "APPROVED" : "APPLIED"}');
+  formData.append('status', '${sessionUser.role == "ADMIN" ? "APPROVED" : "PENDING"}');
   formData.append('professor_no', professorNo);
 
   var pdfFile = document.getElementById('curriculumPdf').files[0];

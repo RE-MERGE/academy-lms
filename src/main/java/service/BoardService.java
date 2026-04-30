@@ -124,6 +124,14 @@ public class BoardService {
         boardDao.viewCount(boardNo);
     }
 
+    public List<PostDetail> getNoticeListInDashboard() {
+        return boardDao.getNoticeListInDashboard();
+    }
+
+    public List<PostDetail> getFreeListInDashboard() {
+        return boardDao.getFreeListInDashboard();
+    }
+
     public List<EnrollmentStudent> getStudentList(int courseNo) {
         return boardDao.getStudentList(courseNo);
     }

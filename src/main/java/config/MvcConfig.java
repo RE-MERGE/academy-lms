@@ -117,7 +117,6 @@ public class MvcConfig implements WebMvcConfigurer {
                 .addPathPatterns("/**")
                 .excludePathPatterns(
                         "/",
-                        "/admin/**",
                         "/css/**",
                         "/img/**",
                         "/js/**",

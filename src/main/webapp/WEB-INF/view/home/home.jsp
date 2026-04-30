@@ -179,6 +179,9 @@ border-radius: 10px; font-size: 18px; font-weight: 600; color: #fff; cursor: poi
       </button>
     </div>
   </div>
+    <c:if test="${not empty expiredMessage}">
+        <div class="alert-message">${expiredMessage}</div>
+    </c:if>
 
 </div>
 

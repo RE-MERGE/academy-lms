@@ -27,15 +27,15 @@ public class GlobalControllerAdvice {
 		return courseService.getFavoriteCourses(sessionUser.getUserNo()); // 즐겨찾기 과목만
 	}
 
-	@ModelAttribute("favoriteNos")
-	public List<Integer> favoriteNos(@Login SessionUser sessionUser, HttpServletRequest request) {
-		if (sessionUser == null) return new ArrayList<>();
-
-		String uri = request.getRequestURI();
-
-		if (uri.contains("/home/home") || uri.contains("/user/editProfile") || uri.contains("/user/myPage"))
-			return new ArrayList<>();
-
-		return courseService.getFavoriteCourseNos(sessionUser.getUserNo());
-	}
+//	@ModelAttribute("favoriteNos")
+//	public List<Integer> favoriteNos(@Login SessionUser sessionUser, HttpServletRequest request) {
+//		if (sessionUser == null) return new ArrayList<>();
+//
+//		String uri = request.getRequestURI();
+//
+//		if (uri.contains("/home/home") || uri.contains("/user/editProfile") || uri.contains("/user/myPage"))
+//			return new ArrayList<>();
+//
+//		return courseService.getFavoriteCourseNos(sessionUser.getUserNo());
+//	}
 }

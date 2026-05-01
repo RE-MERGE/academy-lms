@@ -12,7 +12,11 @@
   <!-- ── 페이지 헤더 ── -->
   <div class="write-header">
     <div class="header-title">
-      <h2>${course.course_name}</h2>
+      <h2>수강생 목록 및 수강 관리</h2>
+      <div class="page-breadcrumb">
+        <a href="${pageContext.request.contextPath}/board/subjectHome?courseNo=${course.course_no}">${course.course_name}</a>
+        학생 조회 및 수강신청 처리를 할 수 있습니다.
+      </div>
       <p>${professorName} 교수 &middot; ${course.semester} &middot; ${course.day_of_week} ${course.start_time}~${course.end_time}</p>
     </div>
     <div style="display:flex; align-items:center; gap:10px;">

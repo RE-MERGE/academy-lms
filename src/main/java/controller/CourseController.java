@@ -230,45 +230,26 @@ public class CourseController {
 		return mav;
 	}
 
-	@GetMapping("score")
-	public void score(@Login SessionUser sessionUser, @RequestParam(value="courseNo", required=false) Integer courseNo, Model model){
-		if (courseNo == null) courseNo = 1;
 
-		List<MyGrade> studentList = courseService.getStudentList(courseNo);
-		Course course = courseService.getCourse(courseNo);
 
-		model.addAttribute("course", course);
-		model.addAttribute("studentList", studentList);
+	@PostMapping("cancelEnrollment")
+	@ResponseBody
+	public String cancelEnrollment(@RequestParam("course_no") int courseNo, @Login SessionUser sessionUser) {
+		// 세션에서 로그인한 사용자 정보 가져오기 (클래스명은 본인의 프로젝트에 맞게 수정)
 
-		if (studentList != null && sessionUser != null) {
-			// [수정 포인트] == 대신 equals()를 사용하여 객체 안의 '값'만 비교합니다.
-			MyGrade myData = studentList.stream()
-					.filter(u -> Integer.valueOf(u.getUserNo()).equals(sessionUser.getUserNo()))
-					.findFirst()
-					.orElse(null);
-
-			if (myData != null) {
-				model.addAttribute("midtermGrade", myData);
-				model.addAttribute("finalGrade", myData);
-				model.addAttribute("attendanceGrade", myData);
-			}
+		if (sessionUser == null) {
+			return "login_required";
 		}
-	}
-	@PostMapping("saveGradeList")
-	public String saveGrades(GradeForm gradeForm, RedirectAttributes rttr) {
-		try {
-			// 서비스에 데이터 전달
-			courseService.saveGradesList(gradeForm);
 
-			// 성공 시 메시지 전달
-			rttr.addFlashAttribute("saveResult", "ok");
+		try {
+			// student_no와 course_no를 사용하여 해당 행 삭제
+			// 단, status가 'PENDING'인 경우에만 삭제하도록 쿼리를 짜는 것이 안전합니다.
+			boolean success = courseService.deletePendingEnrollment(sessionUser.getUserNo(), courseNo);
+			return success ? "ok" : "fail";
 		} catch (Exception e) {
 			e.printStackTrace();
-			rttr.addFlashAttribute("saveResult", "fail");
+			return "error";
 		}
-
-		// 다시 성적 관리 페이지로 리다이렉트 (courseNo를 쿼리스트링으로 전달)
-		return "redirect:/course/score?courseNo=" + gradeForm.getCourse_no();
 	}
 //	@GetMapping("*")
 //	public void getCourse(Course course) {

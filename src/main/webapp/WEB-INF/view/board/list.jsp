@@ -34,6 +34,17 @@
             </div>
         </div>
     </c:if>
+    <c:if test="${empty course.course_no}">
+        <div class="page-header">
+            <h2 class="page-title">
+                <c:choose>
+                    <c:when test="${boardType == 'NOTICE'}">📢 전체 공지사항</c:when>
+                    <c:when test="${boardType == 'FREE'}">💬 자유게시판</c:when>
+                </c:choose>
+            </h2>
+            <div class="page-breadcrumb">홈 › 게시판</div>
+        </div>
+    </c:if>
   <!-- ── 검색 툴바 ── -->
   <div class="board-toolbar">
     <form class="search-form" method="get" action="">

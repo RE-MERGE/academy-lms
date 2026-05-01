@@ -5,7 +5,11 @@
 <c:set var="role" value="${sessionScope.sessionUser.role}" />
 <c:set var="canEdit" value="${role eq 'ADMIN' or role eq 'PROFESSOR'}" />
 <link rel="stylesheet" href="${pageContext.request.contextPath}/css/board.css">
-<h1 class="page-title">${course.course_name} — 성적 관리</h1>
+<h1 class="page-title">학습 성과</h1>
+<div class="page-breadcrumb">
+    <a href="${pageContext.request.contextPath}/board/subjectHome?courseNo=${course.course_no}">${course.course_name}</a>
+성적과 평가 결과를 확인할 수 있습니다.
+</div>
 <c:choose>
 
     <%-- ══════════════════════════════════════
@@ -29,7 +33,7 @@
             </c:choose>
         </c:if>
 
-        <form method="post" action="${pageContext.request.contextPath}/course/saveGradeList" id="gradeForm">
+        <form method="post" action="${pageContext.request.contextPath}/board/saveGradeList" id="gradeForm">
             <input type="hidden" name="course_no" value="${course.course_no}" />
 
             <div class="board-card">

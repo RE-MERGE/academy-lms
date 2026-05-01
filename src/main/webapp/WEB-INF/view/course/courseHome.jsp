@@ -6,7 +6,7 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>전체 과목</title>
-<link rel="stylesheet" href="${pageContext.request.contextPath}/css/main.css"/>
+<link rel="stylesheet" href="${pageContext.request.contextPath}/css/main.css"/><link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: 'Noto Sans KR', sans-serif; background: #f5f6fa; color: #1a1a2e; }
@@ -111,6 +111,21 @@
   .card-meta { font-size: 12px; color: #aaa; }
 
   .empty-state { padding: 40px 0; text-align: center; color: #aaa; font-size: 14px; }
+  /* 취소 버튼 호버 효과 */
+  .btn-cancel-enroll {
+    transition: all 0.2s ease !important;
+  }
+  .btn-cancel-enroll:hover {
+    background-color: #ef4444 !important;
+    color: #fff !important;
+    border-color: #ef4444 !important;
+    box-shadow: 0 2px 8px rgba(239, 68, 68, 0.2);
+  }
+
+  /* 카드 내 텍스트 줄바꿈 방지 */
+  .card-meta span {
+    white-space: nowrap;
+  }
 </style>
 </head>
 <body>
@@ -218,9 +233,13 @@
   <div class="grid-wrap">
     <div class="course-grid">
       <c:forEach var="course" items="${pendingList}">
-        <a href="${pageContext.request.contextPath}/course/subject?no=${course.course_no}"
-           class="course-card" data-name="${course.course_name}" data-fav="false" data-courseno="${course.course_no}">
+        <%-- 승인 대기 중에는 상세 페이지 이동을 막기 위해 href="#" 및 클릭 방지 처리 --%>
+        <a href="javascript:void(0)"
+           class="course-card"
+           data-name="${course.course_name}"
+           style="cursor: default;">
           <div class="card-accent" style="background:#f59e0b;"></div>
+
           <c:choose>
             <c:when test="${course.course_type == 'MAJOR_REQUIRED'}"><c:set var="typeClass" value="type-major-req"/><c:set var="typeLabel" value="전공필수"/></c:when>
             <c:when test="${course.course_type == 'MAJOR_ELECTIVE'}"><c:set var="typeClass" value="type-major-elec"/><c:set var="typeLabel" value="전공선택"/></c:when>
@@ -228,20 +247,36 @@
             <c:when test="${course.course_type == 'GENERAL_ELECTIVE'}"><c:set var="typeClass" value="type-gen-elec"/><c:set var="typeLabel" value="교양선택"/></c:when>
             <c:otherwise><c:set var="typeClass" value="type-free"/><c:set var="typeLabel" value="일반선택"/></c:otherwise>
           </c:choose>
+
           <div class="card-type-badge ${typeClass}">${typeLabel}</div>
           <div class="card-name">${course.course_name}</div>
           <div class="card-info">${course.semester} &nbsp;|&nbsp; ${course.credits}학점</div>
           <hr class="card-divider"/>
-          <div class="card-meta" style="display:flex; justify-content:space-between; align-items:center;">
-            <span>${course.day_of_week}요일 &nbsp;${course.start_time} ~ ${course.end_time}</span>
-            <span style="font-size:11px; font-weight:700; color:#f59e0b;">⏳ 승인대기</span>
+
+            <%-- 구조 변경: 세로 배치 (Flex Column) --%>
+          <div class="card-meta" style="display:flex; flex-direction:column; gap:10px;">
+            <!-- 첫 번째 줄: 강의 시간 -->
+            <div style="font-size:12px; color:#888;">
+                ${course.day_of_week}요일 &nbsp;${course.start_time} ~ ${course.end_time}
+            </div>
+
+            <!-- 두 번째 줄: 상태 및 취소 버튼 -->
+            <div style="display:flex; justify-content:space-between; align-items:center; padding-top:8px; border-top:1px solid #f0f0f5;">
+              <span style="font-size:11px; font-weight:700; color:#f59e0b; display:flex; align-items:center; gap:4px;">
+                ⏳ 승인대기
+              </span>
+              <button type="button" class="btn-cancel-enroll"
+                      onclick="cancelEnrollment(event, ${course.course_no})"
+                      style="padding:5px 12px; font-size:11px; border:1px solid #ef4444; color:#ef4444; background:#fff; border-radius:4px; cursor:pointer; font-weight:700;">
+                취소
+              </button>
+            </div>
           </div>
         </a>
       </c:forEach>
     </div>
   </div>
 </c:if>
-<c:if test="${userRole != 'ADMIN'}"><hr class="section-divider"/></c:if>
 
 <%-- ════════════ 전체 강의 (수강중 제외) ════════════ --%>
 <c:if test="${userRole != 'ADMIN'}">
@@ -257,8 +292,11 @@
     <c:forEach var="course" items="${otherList}">
       <c:set var="isFav" value="${favSet.contains(course.course_no)}"/>
       <c:if test="${isFav}">
-        <a href="${pageContext.request.contextPath}/course/subject?no=${course.course_no}"
-           class="course-card" data-name="${course.course_name}" data-fav="true" data-courseno="${course.course_no}">
+        <a href="${not empty course.curriculum_pdf ? course.curriculum_pdf : '#'}"
+           target="${not empty course.curriculum_pdf ? '_blank' : '_self'}"
+           class="course-card ${empty course.curriculum_pdf ? 'no-pdf' : ''}"
+           data-name="${course.course_name}" data-fav="..." data-courseno="${course.course_no}"
+           onclick="${empty course.curriculum_pdf ? 'return false;' : ''}">
           <div class="card-accent"></div>
           <button class="star-btn on" title="즐겨찾기 해제" onclick="toggleStar(event,this,${course.course_no})">
             <svg width="20" height="20" viewBox="0 0 20 20"><path d="M10 2l2.4 4.9 5.4.8-3.9 3.8.9 5.3L10 14.3l-4.8 2.5.9-5.3L2.2 7.7l5.4-.8z"/></svg>
@@ -283,8 +321,11 @@
     <c:forEach var="course" items="${otherList}">
       <c:set var="isFav" value="${favSet.contains(course.course_no)}"/>
       <c:if test="${!isFav}">
-        <a href="${pageContext.request.contextPath}/course/subject?no=${course.course_no}"
-           class="course-card" data-name="${course.course_name}" data-fav="false" data-courseno="${course.course_no}">
+        <a href="${not empty course.curriculum_pdf ? course.curriculum_pdf : '#'}"
+           target="${not empty course.curriculum_pdf ? '_blank' : '_self'}"
+           class="course-card ${empty course.curriculum_pdf ? 'no-pdf' : ''}"
+           data-name="${course.course_name}" data-fav="..." data-courseno="${course.course_no}"
+           onclick="${empty course.curriculum_pdf ? 'return false;' : ''}">
           <div class="card-accent"></div>
           <button class="star-btn" title="즐겨찾기 추가" onclick="toggleStar(event,this,${course.course_no})">
             <svg width="20" height="20" viewBox="0 0 20 20"><path d="M10 2l2.4 4.9 5.4.8-3.9 3.8.9 5.3L10 14.3l-4.8 2.5.9-5.3L2.2 7.7l5.4-.8z"/></svg>
@@ -369,6 +410,31 @@
       }
     })
     .catch(err => console.error('즐겨찾기 오류:', err));
+  }
+  function cancelEnrollment(e, courseNo) {
+    e.preventDefault();
+    e.stopPropagation(); // 카드 클릭 이벤트 방지
+
+    if (!confirm('수강신청을 취소하시겠습니까?')) return;
+
+    fetch(contextPath + '/course/cancelEnrollment', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: 'course_no=' + courseNo
+    })
+            .then(res => res.text())
+            .then(result => {
+              if (result === 'ok') {
+                alert('수강신청이 취소되었습니다.');
+                location.reload(); // 목록 갱신
+              } else {
+                alert('취소 처리 중 오류가 발생했습니다.');
+              }
+            })
+            .catch(err => {
+              console.error('취소 오류:', err);
+              alert('서버 통신 오류가 발생했습니다.');
+            });
   }
 </script>
 </body>

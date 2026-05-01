@@ -92,9 +92,8 @@ public class BoardService {
         boardDao.deletePost(boardNo);
     }
 
-    public Map<String, Object> getBoardList(Integer courseNo, String boardType, String keyword,
-                                            String searchType, int page, Integer writerNo) {
-        int totalCount = boardDao.getTotalCount(courseNo, boardType, keyword, searchType, writerNo);
+    public Map<String, Object> getBoardList(Integer courseNo, String boardType, String keyword, String searchType, String answerStatus, int page, Integer writerNo) {
+        int totalCount = boardDao.getTotalCount(courseNo, boardType, keyword, answerStatus, searchType, writerNo);
         PageInfo pageInfo = new PageInfo(page, totalCount, PAGE_SIZE, BLOCK_SIZE);
 
         BoardListRequest dto = new BoardListRequest();
@@ -105,6 +104,7 @@ public class BoardService {
         dto.setOffset(pageInfo.getOffset());
         dto.setPageSize(PAGE_SIZE);
         dto.setWriterNo(writerNo);
+        dto.setAnswerStatus(answerStatus);
 
         List<PostList> postList = boardDao.getList(dto);
 
@@ -150,5 +150,9 @@ public class BoardService {
             boardDao.deleteLike(boardLike);
             return "unliked";
         }
+    }
+
+    public boolean checkLike(BoardLike boardlike) {
+        return boardDao.checkLike(boardlike) > 0;
     }
 }

@@ -539,7 +539,8 @@ html, body {
   display: flex;
   align-items: center;
   gap: .4rem;
-  margin-top: .35rem;
+  margin-top: 5px;
+    margin-bottom: 5px;
   font-size: .74rem;
   color: var(--gray-400);
   font-weight: 500;

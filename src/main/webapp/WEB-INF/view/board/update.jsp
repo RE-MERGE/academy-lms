@@ -9,6 +9,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&family=Syne:wght@700;800&display=swap" rel="stylesheet"/>
   <link rel="stylesheet" href="${pageContext.request.contextPath}/css/board.css"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/summernote/0.8.20/summernote-lite.min.css">
 </head>
 <body>
 <div class="board-wrap">
@@ -22,6 +23,7 @@
     </div>
   </div>
   <!-- 수정 폼 -->
+  <div class="card board-card" style="padding: 30px;">
   <form method="post" action="update"
         enctype="multipart/form-data">
     <input type="hidden" name="boardNo" value="${post.boardNo}">
@@ -35,9 +37,8 @@
     </div>
     <!-- 내용 -->
     <div class="form-group" style="margin-bottom: 1rem;">
-      <label>내용</label>
-      <textarea name="content" class="lms-textarea"
-                placeholder="내용을 입력하세요">${post.content}</textarea>
+      <label for="content">내용</label>
+      <textarea name="content" id="content" class="lms-textarea">${post.content}</textarea>
     </div>
     <!-- 첨부파일 -->
     <div class="form-group" style="margin-bottom: 1rem;">
@@ -71,6 +72,7 @@
       <button type="submit" class="btn-submit">저장하기</button>
     </div>
   </form>
+  </div>
 </div>
 <script>
   // 파일 선택 시 파일명 표시
@@ -85,6 +87,23 @@
     document.getElementById('existingFileUrl').value = '';
     document.querySelector('.current-file').style.display = 'none';
   }
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/summernote/0.8.20/summernote-lite.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/summernote/0.8.20/lang/summernote-ko-KR.min.js"></script>
+<script>
+  $('#content').summernote({
+    lang: 'ko-KR',
+    height: 400,
+    placeholder: '내용을 상세히 입력해 주세요. 타인에 대한 비방이나 부적절한 콘텐츠는 제재를 받을 수 있습니다.',
+    toolbar: [
+      ['style', ['bold', 'italic', 'underline', 'clear']],
+      ['font', ['strikethrough']],
+      ['fontsize', ['fontsize']],
+      ['color', ['color']],
+      ['para', ['ul', 'ol', 'paragraph']]
+    ]
+  });
 </script>
 </body>
 </html>

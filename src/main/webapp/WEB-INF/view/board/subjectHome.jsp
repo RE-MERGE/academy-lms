@@ -20,6 +20,9 @@
       </c:otherwise>
     </c:choose></span>
     <h2 class="detail-title">${course.course_name}</h2>
+    <div class="page-breadcrumb">
+      최신 게시글 및 성적을 확인하세요.
+    </div>
     <div class="detail-meta">
       <span>👨‍🏫 ${professorName} 교수</span>
       <span>🗓 ${course.semester}</span>
@@ -98,7 +101,7 @@
           <h3 style="font-size: 0.95rem; font-weight: 700; color: var(--lms-primary); display: flex; align-items: center; gap: 6px;">
             📊 성적
           </h3>
-          <a href="${pageContext.request.contextPath}/course/score?courseNo=${course.course_no}"
+          <a href="${pageContext.request.contextPath}/board/subjectScore?courseNo=${course.course_no}"
              class="back-link" style="margin-bottom: 0;">전체보기 →</a>
         </div>
 

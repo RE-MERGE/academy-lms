@@ -46,15 +46,14 @@
     <!-- 본문 -->
     <div class="detail-body">${post.content}</div>
 
-    <%-- ── 좋아요 버튼 ── --%>
-    <div style="padding: 0.8rem 0; border-bottom: 1px solid var(--lms-border); margin-bottom: 1rem; display:flex; justify-content:center;">
-      <button id="likeBtn" onclick="toggleLike(${post.boardNo})" class="btn-cancel" style="gap:6px;">
-        <span id="likeIcon">🤍</span>
-        <span id="likeCount">${post.likeCount}</span>
-      </button>
-    </div>
+
 <div class="detail-actions">
     <!-- 하단 버튼 -->
+  <%-- ── 좋아요 버튼 ── --%>
+  <button id="likeBtn" onclick="toggleLike(${post.boardNo})" class="btn-cancel" style="gap:6px;">
+    <span id="likeIcon">${checkLike? '❤️' : '🤍'}</span>
+    <span id="likeCount">${post.likeCount}</span>
+  </button>
   <c:choose>
     <%-- courseNo가 없으면 일반 리스트로 --%>
     <c:when test="${empty post.courseNo}">

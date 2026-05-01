@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import dao.EnrollmentDao;
 import dto.user.grade.GradeForm;
 import dto.user.grade.GradeRow;
 import dto.user.grade.MyGrade;
@@ -25,8 +26,10 @@ public class CourseService {
 	@Autowired
 	private CourseDao coursedao;
 	CourseMapper courseMapper;
+    @Autowired
+    private EnrollmentDao enrollmentDao;
 
-    public List<CourseListInDashboard> getMyCourseInDashboard(int userNo) {
+	public List<CourseListInDashboard> getMyCourseInDashboard(int userNo) {
 		return coursedao.getMyCourseInDashboard(userNo);
     }
 
@@ -269,4 +272,10 @@ public class CourseService {
     public List<Course> getAllCoursesForTimetable(String semester) {
 		return coursedao.getAllCoursesForTimetable(semester);
     }
+
+	public boolean deletePendingEnrollment(int studentNo, int courseNo) {
+		// Mapper를 통해 삭제 실행
+		int count = enrollmentDao.deleteEnrollment(studentNo, courseNo);
+		return count > 0;
+	}
 }

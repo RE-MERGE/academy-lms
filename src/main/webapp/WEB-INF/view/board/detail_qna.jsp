@@ -77,7 +77,7 @@
       <c:when test="${post.answered == true}">
         <div class="comment-item" style="border-left: 3px solid var(--lms-primary); padding-left: 1.2rem; margin-bottom: 1rem;">
           <div class="comment-item-header">
-            <span class="comment-writer">👨‍🏫 교수</span>
+            <span class="comment-writer">👨‍🏫 ${professorName} 교수</span>
               <%-- 교수/관리자만 삭제 버튼 --%>
             <c:if test="${sessionScope.sessionUser.role eq 'PROFESSOR'
                      or sessionScope.sessionUser.role eq 'ADMIN'}">

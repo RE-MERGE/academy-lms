@@ -73,6 +73,16 @@ public interface BoardMapper {
                 <if test="writerNo != null">
                     AND b.writer_no = #{writerNo}
                 </if>
+                <if test="answerStatus != null and answerStatus != ''">
+                    <choose>
+                        <when test="answerStatus == 'WAIT'">
+                            AND b.is_answered = false
+                        </when>
+                        <when test="answerStatus == 'ANSWERED'">
+                            AND b.is_answered = true
+                        </when>
+                    </choose>
+                </if>
                 ORDER BY b.created_at DESC
                 LIMIT #{pageSize} OFFSET #{offset}
             </script>
@@ -111,11 +121,22 @@ public interface BoardMapper {
                 <if test="writerNo != null">
                     AND b.writer_no = #{writerNo}
                 </if>
+                <if test="answerStatus != null and answerStatus != ''">
+                    <choose>
+                        <when test="answerStatus == 'WAIT'">
+                            AND b.is_answered = false
+                        </when>
+                        <when test="answerStatus == 'ANSWERED'">
+                            AND b.is_answered = true
+                        </when>
+                    </choose>
+                </if>
             </script>
             """)
     int getTotalCount(@Param("courseNo") Integer courseNo, // courseNo 파라미터 추가
                       @Param("boardType") String boardType,
                       @Param("keyword") String keyword,
+                      @Param("answerStatus") String answerStatus,
                       @Param("searchType") String searchType,
                       @Param("writerNo") Integer writerNo);
 

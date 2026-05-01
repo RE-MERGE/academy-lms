@@ -10,7 +10,7 @@
 <c:set var="ctx" value="${pageContext.request.contextPath}"/>
 <c:set var="showSubjectSidebar" value="${
            fn:contains(uri, '/board/subjectHome') or
-           fn:contains(uri, '/course/score') or
+           fn:contains(uri, '/board/subjectScore') or
            fn:contains(uri, '/board/list_qna') or
            fn:contains(uri, '/board/subjectStudents')
            }"/>
@@ -150,7 +150,7 @@
                         </a>
                         <div class="sidebar-divider"></div>
 
-                        <a href="${ctx}/course/score?courseNo=${course.course_no}"
+                        <a href="${ctx}/board/subjectScore?courseNo=${course.course_no}"
                            class="subject-nav-item ${fn:contains(uri,'/score') ? 'active' : ''}">
                             <img src="${ctx}/img/icon_grades.png" alt="성적" width="40px" height="40px">성적
                         </a>
@@ -158,12 +158,12 @@
 
                         <a href="${ctx}/board/list_qna?boardType=QNA&courseNo=${course.course_no}"
                            class="subject-nav-item ${fn:contains(uri,'/list_qna') ? 'active' : ''}">
-                            <img src="${ctx}/img/icon_qna.png" alt="QNA" width="40px" height="40px">Q&A
+                            <img src="${ctx}/img/icon_qna.png" alt="QNA" width="40px" height="40px">질문
                         </a>
                         <div class="sidebar-divider"></div>
                         <c:if test="${sessionScope.sessionUser.role eq 'ADMIN' || sessionScope.sessionUser.role eq 'PROFESSOR'}">
                             <a href="${ctx}/board/subjectStudents?courseNo=${course.course_no}" class="subject-nav-item">
-                                <img src="${ctx}/img/icon_studentList.png" alt="학생 리스트" width="40px" height="40px">학생 리스트
+                                <img src="${ctx}/img/icon_studentList.png" alt="학생 리스트" width="40px" height="40px">학생
                             </a>
                         </c:if>
                     </nav>

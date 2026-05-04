@@ -2,6 +2,7 @@ package config;
 
 import interceptor.AdminCheckInterceptor;
 import interceptor.BoardAccessInterceptor;
+import interceptor.EnrollmentPeriodInterceptor;
 import interceptor.LoginCheckInterceptor;
 import interceptor.SavePrevUrlInterceptor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -142,12 +143,12 @@ public class MvcConfig implements WebMvcConfigurer {
         registry.addInterceptor(new SavePrevUrlInterceptor())
                 .order(3)
                 .addPathPatterns("/admin/**");
-
+        registry.addInterceptor(new EnrollmentPeriodInterceptor())
+        .order(4)
+        .addPathPatterns("/enrollment/courseEnrollment"); 
         registry.addInterceptor(new BoardAccessInterceptor(enrollmentService, courseService, boardService))
                 .addPathPatterns("/board/**");
-        /*registry.addInterceptor(new EnrollmentPeriodInterceptor())
-        .order(4)
-        .addPathPatterns("/enrollment/**"); */
+        
     }
 
     @Bean

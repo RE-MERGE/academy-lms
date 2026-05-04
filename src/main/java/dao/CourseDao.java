@@ -62,9 +62,7 @@ public class CourseDao {
         return template.getMapper(cls).getlist(semester, type, credits, keyword, status, offset, size);
     }
 
-    public List<Course> getStudentMyCourseMap(int userNo, String semester) {
-        return template.getMapper(cls).getStudentMyCourseMap(userNo, semester);
-    }
+    
 
     public List<Course> getMyCourse(int userNo, String semester) {
         return template.getMapper(cls).getMyCourse(userNo, semester);

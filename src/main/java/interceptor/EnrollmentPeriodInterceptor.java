@@ -30,7 +30,7 @@ public class EnrollmentPeriodInterceptor implements HandlerInterceptor {
         	response.setContentType("text/html; charset=UTF-8");
         	response.getWriter().write(
         	    "<script>alert('수강신청 기간이 아닙니다.'); location.href='" 
-        	    + request.getContextPath() + "/home/dashboard';</script>"
+        	    + request.getContextPath() + "/dashboard/dashboard';</script>"
         	);
         	return false;
         }

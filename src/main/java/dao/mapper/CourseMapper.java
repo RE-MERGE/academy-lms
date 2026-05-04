@@ -79,7 +79,7 @@ public interface CourseMapper {
             "FROM COURSE c " +
             "JOIN USERS u ON c.professor_no = u.user_no " +
             "WHERE c.semester = #{semester} " +
-            "AND c.professor_no = #{userNo})" +
+            "AND c.professor_no = #{userNo} " +
             "ORDER BY FIELD(c.course_type, 'MAJOR_REQUIRED', 'MAJOR_ELECTIVE', 'GENERAL_REQUIRED', 'GENERAL_ELECTIVE', 'FREE_ELECTIVE')")
 
     List<Course> getMyCourse(@Param("userNo") int userNo, @Param("semester") String semester);

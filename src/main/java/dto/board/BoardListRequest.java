@@ -13,4 +13,5 @@ public class BoardListRequest {
     private String searchType;
     private int offset;
     private int pageSize;
+    private String answerStatus;
 }

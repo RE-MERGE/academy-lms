@@ -14,40 +14,45 @@
 
   <!-- 타이틀 -->
   <div class="page-header">
-    <h2 class="page-title">Q&amp;A</h2>
+    <h2 class="page-title">질문과 답변</h2>
     <div class="page-breadcrumb">
-      <a href="${pageContext.request.contextPath}/board/subjectHome?courseNo=${course.course_no}">${courseName}</a>
+      <a href="${pageContext.request.contextPath}/board/subjectHome?courseNo=${course.course_no}">${course.course_name}</a>
       <span>›</span>
-      Q&amp;A
+      궁금한 내용을 질문하고 답변을 받아보세요.
     </div>
   </div>
 
   <!-- 검색 툴바 -->
-  <div class="board-toolbar">
-    <form class="search-form" method="get" action="">
-      <input type="hidden" name="boardType" value="QNA">
-      <input type="hidden" name="courseNo" value="${course.course_no}">
+    <div class="board-toolbar">
+      <form class="search-form" method="get" action="">
+        <input type="hidden" name="boardType" value="QNA">
+        <input type="hidden" name="courseNo" value="${course.course_no}">
+        <input type="hidden" name="answerStatus" value="${answerStatus}">
 
-      <select name="answerStatus" class="search-select">
-        <option value="">전체</option>
-        <option value="WAIT"     ${post.isAnswered ? 'selected' : ''}>미답변</option>
-        <option value="ANSWERED" ${!post.isAnswered ? 'selected' : ''}>답변완료</option>
-      </select>
+        <select name="searchType" class="search-select">
+          <option value="title"  ${searchType == 'title'  ? 'selected' : ''}>제목</option>
+          <option value="writer" ${searchType == 'writer' ? 'selected' : ''}>작성자</option>
+          <option value="all"    ${searchType == 'all'    ? 'selected' : ''}>제목+작성자</option>
+        </select>
+        <input type="text" name="keyword" class="search-input"
+               placeholder="검색어를 입력하세요" value="${keyword}">
+        <button type="submit" class="btn-search">검색</button>
+      </form>
+    </div>
 
-      <select name="searchType" class="search-select">
-        <option value="title"  ${searchType == 'title'  ? 'selected' : ''}>제목</option>
-        <option value="writer" ${searchType == 'writer' ? 'selected' : ''}>작성자</option>
-        <option value="all"    ${searchType == 'all'    ? 'selected' : ''}>제목+작성자</option>
-      </select>
-
-      <input type="text" name="keyword" class="search-input"
-             placeholder="검색어를 입력하세요" value="${keyword}">
-      <button type="submit" class="btn-search">검색</button>
-    </form>
-  </div>
+    <!-- 필터 탭 (검색폼 아래 별도 줄) -->
+    <div class="board-tabs">
+      <a href="?boardType=QNA&courseNo=${course.course_no}&searchType=${searchType}&keyword=${keyword}&answerStatus="
+         class="${empty answerStatus ? 'active' : ''}">전체</a>
+      <a href="?boardType=QNA&courseNo=${course.course_no}&searchType=${searchType}&keyword=${keyword}&answerStatus=ANSWERED"
+         class="${answerStatus == 'ANSWERED' ? 'active' : ''}">답변완료</a>
+      <a href="?boardType=QNA&courseNo=${course.course_no}&searchType=${searchType}&keyword=${keyword}&answerStatus=WAIT"
+         class="${answerStatus == 'WAIT' ? 'active' : ''}">미답변</a>
+    </div>
+  </form>
 
   <!-- 게시글 테이블 -->
-  <div class="board-card">
+    <div class="board-card">
     <table class="board-table">
       <colgroup>
         <col class="col-no">
@@ -164,7 +169,7 @@
     </div>
 
   </div>
-
 </div>
+
 </body>
 </html>

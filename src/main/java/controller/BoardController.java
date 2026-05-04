@@ -5,6 +5,7 @@ import dto.EnrollmentStudent;
 import dto.board.*;
 import dto.user.SessionUser;
 import dto.user.UserRole;
+import dto.user.grade.GradeForm;
 import dto.user.grade.MyGrade;
 import dto.user.login.Login;
 import exception.PostAccessDeniedException;
@@ -13,7 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import service.BoardService;
 import service.CourseService;
 
@@ -73,7 +74,7 @@ public class BoardController {
                             @RequestParam(defaultValue = "") String keyword,
                             @RequestParam(defaultValue = "title") String searchType,
                             Model model) {
-        Map<String, Object> data = boardService.getBoardList(courseNo, boardType, keyword, searchType, page, null);
+        Map<String, Object> data = boardService.getBoardList(courseNo, boardType, keyword, searchType, null, page, null);
 
         if(courseNo != null) {
             Course course = courseService.getBoardCourse(courseNo);
@@ -88,7 +89,7 @@ public class BoardController {
     }
 
     @GetMapping({"detail","detail_qna"})
-    public String detail(int boardNo, Integer courseNo, HttpServletRequest request, HttpServletResponse response, @RequestParam(defaultValue = "") String answerStatus, Model model) {
+    public String detail(int boardNo, Integer courseNo, HttpServletRequest request, HttpServletResponse response, @RequestParam(defaultValue = "") String answerStatus, Model model, @Login SessionUser sessionUser) {
         // 1. 해당 게시글용 쿠키 이름 생성
         String cookieName = "alreadyViewed_" + boardNo;
         Cookie[] cookies = request.getCookies();
@@ -113,11 +114,17 @@ public class BoardController {
             newCookie.setPath("/"); // 프로젝트 전체 경로에서 유효
             response.addCookie(newCookie);
         }
-
+        BoardLike boardlike = new BoardLike();
+        boardlike.setBoardNo(boardNo);
+        boardlike.setUserNo(sessionUser.getUserNo());
+        boolean checkLike = boardService.checkLike(boardlike);
         PostDetail postDetail = boardService.detailPost(boardNo);
+
+        model.addAttribute("checkLike", checkLike);
         model.addAttribute("post", postDetail);
         model.addAttribute("courseNo", courseNo);
         if ("QNA".equals(postDetail.getBoardType())) {
+            model.addAttribute("professorName",   courseService.selectProfessorName(courseNo));
             model.addAttribute("answerStatus", answerStatus);
             return "board/detail_qna";
         }
@@ -186,7 +193,7 @@ public class BoardController {
     }
 
     @GetMapping("list_qna")
-    public String list_qna(@RequestParam(required = false) Integer courseNo,
+    public void list_qna(@RequestParam(required = false) Integer courseNo,
                                @RequestParam(defaultValue = "1") int page,
                                @RequestParam(defaultValue = "QNA") String boardType,
                                @RequestParam(defaultValue = "") String keyword,
@@ -204,7 +211,7 @@ public class BoardController {
             writerNo = sessionUser.getUserNo();
         }
 
-        Map<String, Object> data = boardService.getBoardList(courseNo, boardType, keyword, searchType, page, writerNo);
+        Map<String, Object> data = boardService.getBoardList(courseNo, boardType, keyword, searchType, answerStatus, page, writerNo);
 
 
         model.addAttribute("postList", data.get("postList"));
@@ -213,12 +220,10 @@ public class BoardController {
         model.addAllAttributes(((PageInfo) data.get("pageInfo")).toMap());
         model.addAttribute("boardType", boardType);
         model.addAttribute("answerStatus", answerStatus);
-        return "board/list_qna";
-
     }
 
     @GetMapping("subjectHome")
-    public String subjectHome(@RequestParam Integer courseNo,
+    public void subjectHome(@RequestParam Integer courseNo,
                               @Login SessionUser sessionUser,
                               Model model) {
 
@@ -227,7 +232,7 @@ public class BoardController {
         String professorName = courseService.selectProfessorName(courseNo);
 
         // 2. 공지사항 리스트 (3개 추출)
-        Map<String, Object> noticeData = boardService.getBoardList(courseNo, "NOTICE", "", "title", 1, null);
+        Map<String, Object> noticeData = boardService.getBoardList(courseNo, "NOTICE", "", "title", null,1, null);
         List<PostList> noticeList = (List<PostList>) noticeData.get("postList");
 
         // 리스트가 존재하고 3개보다 많을 때만 자름 (오류 방지)
@@ -238,7 +243,7 @@ public class BoardController {
 
         // 3. Q&A 리스트 (5개 추출)
         Integer writerNo = (sessionUser.getRole() == UserRole.STUDENT) ? sessionUser.getUserNo() : null;
-        Map<String, Object> qnaData = boardService.getBoardList(courseNo, "QNA", "", "title", 1, writerNo);
+        Map<String, Object> qnaData = boardService.getBoardList(courseNo, "QNA", "", "title", "ANSWERED",1, writerNo);
         List<PostList> qnaList = (List<PostList>) qnaData.get("postList");
 
         // 리스트가 존재하고 5개보다 많을 때만 자름 (오류 방지)
@@ -263,12 +268,35 @@ public class BoardController {
 
         model.addAttribute("course", course);
         model.addAttribute("professorName", professorName);
+    }
 
-        return "board/subjectHome";
+    @GetMapping("subjectScore")
+    public void subjectScore(@Login SessionUser sessionUser, @RequestParam(value="courseNo", required=false) Integer courseNo, Model model){
+        if (courseNo == null) courseNo = 1;
+
+        List<MyGrade> studentList = courseService.getStudentList(courseNo);
+        Course course = courseService.getCourse(courseNo);
+
+        model.addAttribute("course", course);
+        model.addAttribute("studentList", studentList);
+
+        if (studentList != null && sessionUser != null) {
+            // [수정 포인트] == 대신 equals()를 사용하여 객체 안의 '값'만 비교합니다.
+            MyGrade myData = studentList.stream()
+                    .filter(u -> Integer.valueOf(u.getUserNo()).equals(sessionUser.getUserNo()))
+                    .findFirst()
+                    .orElse(null);
+
+            if (myData != null) {
+                model.addAttribute("midtermGrade", myData);
+                model.addAttribute("finalGrade", myData);
+                model.addAttribute("attendanceGrade", myData);
+            }
+        }
     }
 
     @GetMapping("subjectStudents")
-    public String subjectStudents(@RequestParam int courseNo,
+    public void subjectStudents(@RequestParam int courseNo,
                                   @Login SessionUser sessionUser,
                                   Model model) {
         Course course = courseService.getBoardCourse(courseNo);
@@ -277,7 +305,23 @@ public class BoardController {
         model.addAttribute("professorName", professorName);
         model.addAttribute("course", course);
         model.addAttribute("students", students);
-        return "board/subjectStudents";
+    }
+
+    @PostMapping("saveGradeList")
+    public String saveGrades(GradeForm gradeForm, RedirectAttributes rttr) {
+        try {
+            // 서비스에 데이터 전달
+            courseService.saveGradesList(gradeForm);
+
+            // 성공 시 메시지 전달
+            rttr.addFlashAttribute("saveResult", "ok");
+        } catch (Exception e) {
+            e.printStackTrace();
+            rttr.addFlashAttribute("saveResult", "fail");
+        }
+
+        // 다시 성적 관리 페이지로 리다이렉트 (courseNo를 쿼리스트링으로 전달)
+        return "redirect:/board/subjectScore?courseNo=" + gradeForm.getCourse_no();
     }
 
     @PostMapping("approveEnrollment")

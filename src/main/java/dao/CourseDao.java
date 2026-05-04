@@ -62,10 +62,6 @@ public class CourseDao {
         return template.getMapper(cls).getlist(semester, type, credits, keyword, status, offset, size);
     }
 
-    public List<Course> getStudentMyCourseMap(int userNo, String semester) {
-        return template.getMapper(cls).getStudentMyCourseMap(userNo, semester);
-    }
-
     public List<Course> getMyCourse(int userNo, String semester) {
         return template.getMapper(cls).getMyCourse(userNo, semester);
     }
@@ -163,8 +159,8 @@ public class CourseDao {
         return template.getMapper(cls).selectCoursesByStudent(userNo);
     }
 
-    public List<Course> selectCoursesByStatus(int userNo, String status){
-        return  template.getMapper(cls).selectCoursesByStatus(userNo, status);
+    public List<Course> selectCoursesByStatus(int userNo, String status) {
+        return template.getMapper(cls).selectCoursesByStatus(userNo, status);
     }
 
     public List<Course> getFavoriteCourse(int userNo) {
@@ -210,6 +206,7 @@ public class CourseDao {
     public List<Course> getAllCoursesForTimetable(String semester) {
         return template.getMapper(cls).getAllCoursesForTimetable(semester);
     }
+
     public Integer selectProfessorNoByCourseNo(int courseNo) {
         return template.getMapper(cls).selectProfessorNoByCourseNo(courseNo);
     }

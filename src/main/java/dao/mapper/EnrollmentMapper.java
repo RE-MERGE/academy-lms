@@ -108,4 +108,9 @@ public interface EnrollmentMapper {
 			"ORDER BY e.enrolled_at DESC LIMIT 5")
 	List<EnrollmentPending> getPendingEnrollmentList();
 
+	@Delete("DELETE FROM ENROLLMENT\n" +
+			"    WHERE student_no = #{studentNo}\n" +
+			"      AND course_no = #{courseNo}\n" +
+			"      AND status = 'PENDING'")
+    int deleteEnrollment(@Param("studentNo") int studentNo,@Param("courseNo") int courseNo);
 }

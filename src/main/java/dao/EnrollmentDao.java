@@ -61,4 +61,8 @@ public class EnrollmentDao {
 	public List<EnrollmentPending> getPendingEnrollmentList() {
 		return template.getMapper(cls).getPendingEnrollmentList();
 	}
+
+    public int deleteEnrollment(int studentNo, int courseNo) {
+		 return template.getMapper(cls).deleteEnrollment(studentNo, courseNo);
+    }
 }

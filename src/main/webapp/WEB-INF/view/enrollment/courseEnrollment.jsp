@@ -40,6 +40,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>수강신청 — re-merge LMS</title>
   <link rel="stylesheet" href="${pageContext.request.contextPath}/css/main.css">
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
   <style>
     /* ====================================================
        공통 스타일

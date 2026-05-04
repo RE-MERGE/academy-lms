@@ -33,8 +33,8 @@ public class BoardDao {
         template.getMapper(cls).deletePost(boardNo);
     }
 
-    public int getTotalCount(Integer courseNo, String boardType, String keyword, String searchType, Integer writerNo) {
-        return template.getMapper(cls).getTotalCount(courseNo ,boardType, keyword, searchType, writerNo);
+    public int getTotalCount(Integer courseNo, String boardType, String keyword, String answerStatus, String searchType, Integer writerNo) {
+        return template.getMapper(cls).getTotalCount(courseNo ,boardType, keyword, answerStatus, searchType, writerNo);
     }
 
     public List<PostList> getList(BoardListRequest dto) {

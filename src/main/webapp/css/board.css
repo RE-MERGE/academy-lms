@@ -70,6 +70,7 @@
 .page-title {
     font-family: 'Noto Sans KR', sans-serif;
     font-weight: 800;
+    padding-top: 20px;
 }
 
 .search-select {

@@ -1,4 +1,4 @@
-<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <!DOCTYPE html>
 <html lang="ko">
@@ -6,9 +6,9 @@
     <meta charset="UTF-8">
     <title>re-merge LMS — 글쓰기</title>
     <link rel="stylesheet" href="${pageContext.request.contextPath}/css/board.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/summernote/0.8.20/summernote-lite.min.css">
 </head>
 <body>
-<div class="bg-mesh"></div>
 <main class="write-wrap">
     <div class="write-header">
         <div class="header-title">
@@ -36,7 +36,7 @@
             </div>
             <div class="form-group">
                 <label for="content">내용</label>
-                <textarea name="content" id="content" class="lms-textarea" placeholder="내용을 상세히 입력해 주세요. 타인에 대한 비방이나 부적절한 콘텐츠는 제재를 받을 수 있습니다."></textarea>
+                <textarea name="content" id="content"></textarea>
             </div>
             <div class="form-group">
                 <label>파일 첨부</label>
@@ -57,6 +57,23 @@
         display.textContent = this.files.length > 0
             ? this.files[0].name
             : '클릭하여 파일을 선택하거나 드래그하세요.';
+    });
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/summernote/0.8.20/summernote-lite.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/summernote/0.8.20/lang/summernote-ko-KR.min.js"></script>
+<script>
+    $('#content').summernote({
+        lang: 'ko-KR',
+        height: 400,
+        placeholder: '내용을 상세히 입력해 주세요. 타인에 대한 비방이나 부적절한 콘텐츠는 제재를 받을 수 있습니다.',
+        toolbar: [
+            ['style', ['bold', 'italic', 'underline', 'clear']],
+            ['font', ['strikethrough']],
+            ['fontsize', ['fontsize']],
+            ['color', ['color']],
+            ['para', ['ul', 'ol', 'paragraph']]
+        ]
     });
 </script>
 </body>
